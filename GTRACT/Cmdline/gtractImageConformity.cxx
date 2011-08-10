@@ -26,7 +26,7 @@
 #include "gtractImageConformityCLP.h"
 #include "GenericTransformImage.h"
 #include "BRAINSThreadControl.h"
-int main(int argc, char * *argv)
+int main(int argc, char *argv[])
 {
   PARSE_ARGS;
   BRAINSUtils::SetThreadCount(numberOfThreads);
@@ -125,5 +125,6 @@ int main(int argc, char * *argv)
     std::cout << ex << std::endl;
     throw;
     }
+  return EXIT_SUCCESS;
 }
 

@@ -78,7 +78,7 @@ typename IOImageType::Pointer SetVectorImageRigidTransformInPlace(
   return OutputAlignedImage;
 }
 
-int main(int argc, char * *argv)
+int main(int argc, char *argv[])
 {
 
   PARSE_ARGS;
@@ -187,6 +187,6 @@ int main(int argc, char * *argv)
     {
     std::cout << e << std::endl;
     }
-  return 0;
+  return EXIT_SUCCESS;
 }
 

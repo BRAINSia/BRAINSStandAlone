@@ -287,5 +287,6 @@ int main( int argc, char *argv[] )
     fiberWriter->SetInput( inputFiber );
     fiberWriter->Update();
     }
+  return EXIT_SUCCESS;
 }
 

@@ -32,7 +32,7 @@
 #include "gtractResampleB0CLP.h"
 #include "GenericTransformImage.h"
 
-int main(int argc, char * *argv)
+int main(int argc, char *argv[])
 {
   PARSE_ARGS;
   BRAINSUtils::SetThreadCount(numberOfThreads);
@@ -185,5 +185,6 @@ int main(int argc, char * *argv)
     throw;
     }
   std::cout << "wrote image" << std::endl;
+  return EXIT_SUCCESS;
 }
 

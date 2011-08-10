@@ -49,7 +49,7 @@ PURPOSE.  See the above copyright notices for more information.
 #include "GenericTransformImage.h"
 
 
-int main(int argc, char * *argv)
+int main(int argc, char *argv[])
 {
   PARSE_ARGS;
   BRAINSUtils::SetThreadCount(numberOfThreads);
@@ -133,7 +133,6 @@ int main(int argc, char * *argv)
     // std::cerr<< vcl_exp <<std::endl;
     throw;
     }
-
-  return 0;
+  return EXIT_SUCCESS;
 }
 

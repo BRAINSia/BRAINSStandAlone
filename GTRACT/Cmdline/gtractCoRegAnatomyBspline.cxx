@@ -29,7 +29,7 @@
 
 #include "gtractCoRegAnatomyBsplineCLP.h"
 #include "BRAINSThreadControl.h"
-int main(int argc, char * *argv)
+int main(int argc, char *argv[])
 {
   PARSE_ARGS;
   BRAINSUtils::SetThreadCount(numberOfThreads);
@@ -211,5 +211,6 @@ itk::AddExtraTransformRegister();
 
   GenericTransformType::Pointer bsplineTransform = registerImageFilter->GetCurrentGenericTransform();
   WriteTransformToDisk(bsplineTransform.GetPointer(), outputBsplineTransform);
+  return EXIT_SUCCESS;
 }
 

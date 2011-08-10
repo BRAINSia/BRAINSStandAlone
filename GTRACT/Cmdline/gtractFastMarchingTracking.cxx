@@ -239,7 +239,6 @@ int main(int argc, char *argv[])
     fiberWriter->SetInput( fibers );
     fiberWriter->Update();
     }
-
-  return 0;
+  return EXIT_SUCCESS;
 }
 
