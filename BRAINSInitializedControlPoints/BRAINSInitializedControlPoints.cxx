@@ -179,5 +179,6 @@ int main(int argc, char* argv[])
   permutedWriter->Update();
 
   WriteITKtoSlicer3Lmk( outputLandmarksFile, outputLandmarks);
+  return EXIT_SUCCESS;
 }
 
