@@ -12,7 +12,7 @@ TransformResample(
   const itk::ImageBase<InputImageType::ImageDimension> * const ReferenceImage,
   typename InputImageType::PixelType defaultValue,
   typename itk::InterpolateImageFunction<InputImageType,
-                                         typename itk::NumericTraits<typename InputImageType::PixelType>::RealType>
+  typename itk::NumericTraits<typename InputImageType::PixelType>::RealType>
   ::Pointer interp,
   typename GenericTransformType::Pointer transform)
 {
@@ -45,7 +45,7 @@ TransformWarp(
   const itk::ImageBase<InputImageType::ImageDimension> *ReferenceImage,
   typename InputImageType::PixelType defaultValue,
   typename itk::InterpolateImageFunction<InputImageType,
-                                         typename itk::NumericTraits<typename InputImageType::PixelType>::RealType>
+  typename itk::NumericTraits<typename InputImageType::PixelType>::RealType>
   ::Pointer interp,
   typename DeformationImageType::Pointer deformationField)
 {
@@ -78,37 +78,112 @@ Pointer
 GetInterpolatorFromString(const std::string interpolationMode)
 {
   typedef typename itk::NumericTraits<typename InputImageType::PixelType>::RealType TInterpolatorPrecisionType;
+  typedef typename itk::ConstantBoundaryCondition<InputImageType> BoundaryConditionType;
+  //
+  // WindowRadius set to 3 to match default for Slicer
+  static const unsigned int SlicerWindowedSincWindowRadius = 3;
+
   if( interpolationMode == "NearestNeighbor" )
     {
     typedef typename itk::NearestNeighborInterpolateImageFunction<InputImageType, TInterpolatorPrecisionType>
-    InterpolatorType;
+      InterpolatorType;
     return ( InterpolatorType::New() ).GetPointer();
     }
   else if( interpolationMode == "Linear" )
     {
     typedef typename itk::LinearInterpolateImageFunction<InputImageType, TInterpolatorPrecisionType>
-    InterpolatorType;
+      InterpolatorType;
     return ( InterpolatorType::New() ).GetPointer();
     }
   else if( interpolationMode == "BSpline" )
     {
     typedef typename itk::BSplineInterpolateImageFunction<InputImageType, TInterpolatorPrecisionType>
-    InterpolatorType;
+      InterpolatorType;
     return ( InterpolatorType::New() ).GetPointer();
     }
-  else if( interpolationMode == "WindowedSinc" )
+  else if( interpolationMode == "WindowedSinc")
     {
-    typedef typename itk::ConstantBoundaryCondition<InputImageType>
-    BoundaryConditionType;
     static const unsigned int WindowedSincHammingWindowRadius = 5;
-    typedef typename itk::Function::HammingWindowFunction<
-      WindowedSincHammingWindowRadius, TInterpolatorPrecisionType, TInterpolatorPrecisionType> WindowFunctionType;
-    typedef typename itk::WindowedSincInterpolateImageFunction<
-      InputImageType,
-      WindowedSincHammingWindowRadius,
-      WindowFunctionType,
-      BoundaryConditionType,
-      TInterpolatorPrecisionType>   InterpolatorType;
+    typedef typename itk::Function::HammingWindowFunction<WindowedSincHammingWindowRadius,
+                                                          TInterpolatorPrecisionType,
+                                                          TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               WindowedSincHammingWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
+    return ( InterpolatorType::New() ).GetPointer();
+    }
+  else if(interpolationMode == "Hamming")
+    {
+    typedef typename itk::Function::HammingWindowFunction<SlicerWindowedSincWindowRadius,
+                                                          TInterpolatorPrecisionType,
+                                                          TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               SlicerWindowedSincWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
+    return ( InterpolatorType::New() ).GetPointer();
+    }
+  else if(interpolationMode == "Cosine")
+    {
+    typedef typename itk::Function::CosineWindowFunction<SlicerWindowedSincWindowRadius,
+                                                         TInterpolatorPrecisionType,
+                                                         TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               SlicerWindowedSincWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
+    return ( InterpolatorType::New() ).GetPointer();
+    }
+  else if(interpolationMode == "Welch")
+    {
+    typedef typename itk::Function::WelchWindowFunction<SlicerWindowedSincWindowRadius,
+                                                        TInterpolatorPrecisionType,
+                                                        TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               SlicerWindowedSincWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
+    return ( InterpolatorType::New() ).GetPointer();
+    }
+  else if(interpolationMode == "Lanczos")
+    {
+    typedef typename itk::Function::LanczosWindowFunction<SlicerWindowedSincWindowRadius,
+                                                          TInterpolatorPrecisionType,
+                                                          TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               SlicerWindowedSincWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
+    return ( InterpolatorType::New() ).GetPointer();
+    }
+  else if(interpolationMode == "Blackman")
+    {
+    typedef typename itk::Function::BlackmanWindowFunction<SlicerWindowedSincWindowRadius,
+                                                           TInterpolatorPrecisionType,
+                                                           TInterpolatorPrecisionType>
+      WindowFunctionType;
+    typedef typename itk::WindowedSincInterpolateImageFunction<InputImageType,
+                                                               SlicerWindowedSincWindowRadius,
+                                                               WindowFunctionType,
+                                                               BoundaryConditionType,
+                                                               TInterpolatorPrecisionType>
+      InterpolatorType;
     return ( InterpolatorType::New() ).GetPointer();
     }
   else
@@ -157,35 +232,35 @@ typename OutputImageType::Pointer GenericTransformImage(
       */
 
     typedef itk::BinaryThresholdImageFilter<InputImageType,
-                                            InputImageType> FloatThresholdFilterType;
+      InputImageType> FloatThresholdFilterType;
     typename FloatThresholdFilterType::Pointer initialFilter =
       FloatThresholdFilterType::New();
     initialFilter->SetInput(OperandImage);
-      {
-      const typename FloatThresholdFilterType::OutputPixelType outsideValue = 1.0;
-      const typename FloatThresholdFilterType::OutputPixelType insideValue  = 0.0;
-      initialFilter->SetOutsideValue(outsideValue);
-      initialFilter->SetInsideValue(insideValue);
-      const typename FloatThresholdFilterType::InputPixelType lowerThreshold = 0;
-      const typename FloatThresholdFilterType::InputPixelType upperThreshold = 0;
-      initialFilter->SetLowerThreshold(lowerThreshold);
-      initialFilter->SetUpperThreshold(upperThreshold);
-      }
+    {
+    const typename FloatThresholdFilterType::OutputPixelType outsideValue = 1.0;
+    const typename FloatThresholdFilterType::OutputPixelType insideValue  = 0.0;
+    initialFilter->SetOutsideValue(outsideValue);
+    initialFilter->SetInsideValue(insideValue);
+    const typename FloatThresholdFilterType::InputPixelType lowerThreshold = 0;
+    const typename FloatThresholdFilterType::InputPixelType upperThreshold = 0;
+    initialFilter->SetLowerThreshold(lowerThreshold);
+    initialFilter->SetUpperThreshold(upperThreshold);
+    }
     initialFilter->Update();
-      {
-      typedef itk::SignedMaurerDistanceMapImageFilter<InputImageType,
-                                                      InputImageType> DistanceFilterType;
-      typename DistanceFilterType::Pointer DistanceFilter = DistanceFilterType::New();
-      DistanceFilter->SetInput( initialFilter->GetOutput() );
-      // DistanceFilter->SetNarrowBandwidth( m_BandWidth );
-      DistanceFilter->SetInsideIsPositive(true);
-      DistanceFilter->SetUseImageSpacing(true);
-      DistanceFilter->SetSquaredDistance(false);
+    {
+    typedef itk::SignedMaurerDistanceMapImageFilter<InputImageType,
+      InputImageType> DistanceFilterType;
+    typename DistanceFilterType::Pointer DistanceFilter = DistanceFilterType::New();
+    DistanceFilter->SetInput( initialFilter->GetOutput() );
+    // DistanceFilter->SetNarrowBandwidth( m_BandWidth );
+    DistanceFilter->SetInsideIsPositive(true);
+    DistanceFilter->SetUseImageSpacing(true);
+    DistanceFilter->SetSquaredDistance(false);
 
-      DistanceFilter->Update();
-      PrincipalOperandImage = DistanceFilter->GetOutput();
-      // PrincipalOperandImage->DisconnectPipeline();
-      }
+    DistanceFilter->Update();
+    PrincipalOperandImage = DistanceFilter->GetOutput();
+    // PrincipalOperandImage->DisconnectPipeline();
+    }
     // Using suggestedDefaultValue based on the size of the image so that
     // intensity values
     // are kept to a reasonable range.  (A costlier way calculates the image
@@ -247,11 +322,11 @@ typename OutputImageType::Pointer GenericTransformImage(
       else
         {
         TransformedImage = TransformResample<InputImageType, OutputImageType>(
-            PrincipalOperandImage,
-            ReferenceImage,
-            suggestedDefaultValue,
-            GetInterpolatorFromString<InputImageType>(interpolationMode),
-            genericTransform);
+          PrincipalOperandImage,
+          ReferenceImage,
+          suggestedDefaultValue,
+          GetInterpolatorFromString<InputImageType>(interpolationMode),
+          genericTransform);
         }
       }
     }
@@ -261,11 +336,11 @@ typename OutputImageType::Pointer GenericTransformImage(
     //  std::cout<< "Deformation Field is given, so applied to the image..." <<
     // std::endl;
     TransformedImage = TransformWarp<InputImageType, OutputImageType, DeformationImageType>(
-        PrincipalOperandImage,
-        ReferenceImage,
-        suggestedDefaultValue,
-        GetInterpolatorFromString<InputImageType>(interpolationMode),
-        DeformationField);
+      PrincipalOperandImage,
+      ReferenceImage,
+      suggestedDefaultValue,
+      GetInterpolatorFromString<InputImageType>(interpolationMode),
+      DeformationField);
     }
 
   // FINALLY will need to convert signed distance to binary image in case
