@@ -75,7 +75,7 @@ namespace itk
   * WriteTransformToDisk(myAffine.GetPointer(), "myAffineFile.mat");
   * \endcode
   */
-BRAINSCommonLib_EXPORT extern void WriteTransformToDisk(GenericTransformType const *const genericTransformToWrite,
+extern void WriteTransformToDisk(GenericTransformType const *const genericTransformToWrite,
                                                         const std::string & outputTransform);
 
 /**
@@ -111,7 +111,7 @@ BRAINSCommonLib_EXPORT extern void WriteTransformToDisk(GenericTransformType con
   * }
   * \endcode
   */
-BRAINSCommonLib_EXPORT extern GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialTransform);
+extern GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialTransform);
 
 /**
   * \author Hans J. Johnson
@@ -130,7 +130,7 @@ BRAINSCommonLib_EXPORT extern GenericTransformType::Pointer ReadTransformFromDis
   * WriteTransformToDisk(myAffine.GetPointer(), "myAffineFile.mat");
   * \endcode
   */
-BRAINSCommonLib_EXPORT extern VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
+extern VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
   const GenericTransformType::ConstPointer genericTransformToWrite);
 
 /**
@@ -138,7 +138,7 @@ BRAINSCommonLib_EXPORT extern VersorRigid3DTransformType::Pointer ComputeRigidTr
   * \brief Special purpose convenience function -- should not have a public
   *interface.
   */
-BRAINSCommonLib_EXPORT extern int WriteBothTransformsToDisk(
+extern int WriteBothTransformsToDisk(
   const GenericTransformType::ConstPointer genericTransformToWrite, const std::string & outputTransform,
   const std::string & strippedOutputTransform);
 
@@ -147,10 +147,10 @@ BRAINSCommonLib_EXPORT extern int WriteBothTransformsToDisk(
   * \brief Special purpose convenience function -- should not have a public
   *interface.
   */
-BRAINSCommonLib_EXPORT extern int WriteStrippedRigidTransformToDisk(
+extern int WriteStrippedRigidTransformToDisk(
   const GenericTransformType::ConstPointer genericTransformToWrite, const std::string & strippedOutputTransform);
 
-BRAINSCommonLib_EXPORT extern void AddExtraTransformRegister(void);
+extern void AddExtraTransformRegister(void);
 
 }
 
