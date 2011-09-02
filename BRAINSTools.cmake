@@ -37,7 +37,7 @@ include(${ITK_USE_FILE})
 
 find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
 include(${SlicerExecutionModel_USE_FILE})
-include(${SlicerExecutionModel_MACROS}/SEMMacroBuildCLI.cmake)
+include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 include(${SlicerExecutionModel_USE_FILE})
 if(GenerateCLP_DIR)
   include(${GenerateCLP_USE_FILE})
