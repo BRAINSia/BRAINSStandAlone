@@ -279,6 +279,7 @@ BRAINSFitHelper::SetupRegistration()
   localCostMetric->ReinitializeSeed(76926294);
   localCostMetric->SetInterpolator(localLinearInterpolator);
   localCostMetric->SetFixedImage(this->m_FixedVolume);
+  localCostMetric->SetFixedImageRegion( this->m_FixedVolume->GetBufferedRegion() );
   localCostMetric->SetMovingImage(this->m_PreprocessedMovingVolume);
 
   if( this->m_MovingBinaryVolume.IsNotNull() )
@@ -327,7 +328,6 @@ BRAINSFitHelper::SetupRegistration()
     }
   else
     {
-    localCostMetric->SetFixedImageRegion( this->m_FixedVolume->GetBufferedRegion() );
     if( this->m_NumberOfSamples > 0 )
       {
       localCostMetric->SetNumberOfSpatialSamples(this->m_NumberOfSamples);
