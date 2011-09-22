@@ -1,0 +1,10 @@
+#Fiducial List file /IPLlinux/raid0/homes/aghayoor/BCD-test/dendrite/temp/EMSP.fcsv
+#numPoints = 2
+#symbolScale = 5
+#visibility = 1
+#textScale = 4.5
+#color = 0.4,1,1
+#selectedColor = 1,0.5,0.5
+#label,x,y,z,sel,vis
+LE,27.965,77.2183,-4.78873,1,1
+RE,-31.1268,79.014,-3.59155,1,1

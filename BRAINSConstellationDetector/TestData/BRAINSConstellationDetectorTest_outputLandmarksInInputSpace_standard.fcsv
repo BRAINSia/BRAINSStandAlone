@@ -1,0 +1,63 @@
+#Fiducial List file /raid0/homes/aghayoor/StandAloneBRAINSConstellationDetector-build/BRAINSConstellationDetector-build/TestSuite/TEST_LOCATION/BRAINSConstellationDetectorTest_outputLandmarksInInputSpace_aligned.fcsv
+#numPoints = 55
+#symbolScale = 5
+#visibility = 1
+#textScale = 4.5
+#color = 0.4,1,1
+#selectedColor = 1,0.5,0.5
+#label,x,y,z,sel,vis
+AC,1.49733,29.7814,20.7771,1,1
+BPons,-0.320147,4.12651,-23.0091,1,1
+CM,1.29416,12.7646,4.60315,1,1
+LE,-28.4614,93.7036,-5.01385,1,1
+PC,1.75607,0.494528,12.8825,1,1
+RE,33.4136,91.8286,-7.41386,1,1
+RP,0.287088,7.18121,1.64904,1,1
+VN4,0.291394,-19.5366,-12.0904,1,1
+aq_4V,1.23204,-9.22407,-1.62847,1,1
+genu,1.49698,47.5985,30.1245,1,1
+l_corp,-32.3404,-11.8544,-20.0078,1,1
+l_ext,-51.1548,-20.8879,-16.6279,1,1
+l_horiz_ant,-33.8878,-2.1522,-18.4722,1,1
+l_horiz_corp,-13.8724,-35.0541,-19.6885,1,1
+l_horiz_ext,-41.5497,-18.3825,-22.2638,1,1
+l_inf_prim,-16.7027,-23.9444,-9.52086,1,1
+l_prim_ext,-28.5117,-2.09252,-7.80044,1,1
+l_sup,-32.0236,-26.7861,-5.76123,1,1
+l_sup_prim,-13.7293,-29.8708,-0.591606,1,1
+lateralventricle_temporalhorn,-30.2304,21.9619,6.22483,1,1
+left_caudate_head,-11.6778,52.4223,29.3965,1,1
+left_frontal_pole,-7.73683,92.95,40.1191,1,1
+left_lateral_inner_ear,-57.0895,25.9376,-23.3421,1,1
+left_occipital_pole,-9.62243,-77.2555,3.41387,1,1
+left_parieto_occipetal_sulcus,-1.77057,-55.1405,14.8349,1,1
+left_precentral_sulcus,-2.68298,2.09751,73.5405,1,1
+left_sup_frontal_g,-30.644,73.2532,58.2806,1,1
+left_sylvian_fissure,-40.3809,46.2494,27.4334,1,1
+mid_ant,1.52467,-10.9838,0.86389,1,1
+mid_horiz,2.0543,-37.262,-15.5672,1,1
+mid_prim,2.0831,-31.2456,-7.19539,1,1
+mid_prim_inf,1.231,-23.4426,-10.6686,1,1
+mid_prim_sup,4.87838,-38.1796,1.43506,1,1
+mid_sup,3.72975,-26.0399,11.0267,1,1
+nasal_septum,0.908318,93.3125,-25.4374,1,1
+optic_chiasm,0.503721,36.918,5.51143,1,1
+r_corp,30.3103,-13.9703,-23.8217,1,1
+r_ext,50.5676,-23.7372,-21.8061,1,1
+r_horiz_ant,29.0313,-1.47045,-19.8435,1,1
+r_horiz_corp,15.4416,-36.2096,-19.7791,1,1
+r_horiz_ext,41.3024,-20.4335,-29.6581,1,1
+r_inf_prim,14.2074,-20.286,-8.18444,1,1
+r_prim_ext,27.2715,-2.47261,-10.9097,1,1
+r_sup,32.343,-27.752,-7.73857,1,1
+r_sup_prim,14.5069,-25.1507,2.80934,1,1
+right_caudate_head,13.9362,51.9319,27.3251,1,1
+right_frontal_pole,14.8051,92.9284,38.9508,1,1
+right_lateral_inner_ear,57.5893,27.2642,-31.8227,1,1
+right_occipital_pole,15.4118,-74.4964,4.07036,1,1
+right_parieto_occipetal_sulcus,10.1882,-52.3149,21.0803,1,1
+right_precentral_sulcus,14.046,5.71672,70.2933,1,1
+right_sup_frontal_g,25.8701,69.2691,66.7194,1,1
+right_sylvian_fissure,48.5694,45.0961,25.6852,1,1
+rostrum,1.67136,41.1215,24.1228,1,1
+third_ventricle,1.50496,20.595,24.767,1,1
