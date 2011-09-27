@@ -101,7 +101,7 @@ GetInterpolatorFromString(const std::string interpolationMode)
       InterpolatorType;
     return ( InterpolatorType::New() ).GetPointer();
     }
-  else if( interpolationMode == "WindowedSinc")
+  else if( interpolationMode == "WindowedSinc" )
     {
     static const unsigned int WindowedSincHammingWindowRadius = 5;
     typedef typename itk::Function::HammingWindowFunction<WindowedSincHammingWindowRadius,

@@ -115,7 +115,7 @@ endif()
 
 set(ep_common_args
   --no-warn-unused-cli
-  -DMAKECOMMAND:STRING=${MAKECOMMAND}
+  -DMAKECOMMAND:STRING=${CMAKE_MAKE_PROGRAM}
   -DCMAKE_SKIP_RPATH:BOOL=ON
   -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
@@ -143,7 +143,10 @@ set(ep_common_args
   -DBUILDNAME:STRING=${BUILDNAME}
 )
 
-
+option(BUILD_STYLE_UTILS "Build uncrustify, cppcheck, & KWStule" OFF)
+if(BUILD_STYLE_UTILS)
+include(External_Utilities)
+endif()
 #------------------------------------------------------------------------------
 # Determine if building stand-alone, or using external versions of ITKv4
 # and SEM (i.e. for tight integration with Slicer)
@@ -188,6 +191,7 @@ option(USE_GTRACT                      "Build GTRACT"                      ON)
 option(USE_BRAINSCommonLib             "Build BRAINSCommonLib"             ON)
 option(USE_BRAINSFit                   "Build BRAINSFit"                   ON)
 option(USE_BRAINSABC                   "Build BRAINSABC"                   ON)
+option(USE_BRAINSCUT                   "Build BRAINSCut"                   OFF)
 option(USE_BRAINSROIAuto               "Build BRAINSROIAuto"               ON)
 option(USE_BRAINSDemonWarp             "Build BRAINSDemonWarp"             ON)
 option(USE_BRAINSResample              "Build BRAINSResample"              ON)
@@ -195,6 +199,7 @@ option(USE_BRAINSConstellationDetector "Build BRAINSConstellationDetector" ON)
 option(USE_BRAINSMush                  "Build BRAINSMush"                  ON)
 option(USE_BRAINSMultiModeSegment      "Build BRAINSMultiModeSegment"      ON)
 option(USE_BRAINSInitializedControlPoints      "Build BRAINSInitializedControlPoints"      ON)
+option(USE_BRAINSTransformConvert       "Build BRAINSTransformConvert"     ON)
 #option(USE_BRAINSCut                   "Build BRAINSCut"                   OFF)
 
 set(BRAINSTools_DEPENDENCIES ITKv4 SlicerExecutionModel VTK)
@@ -240,6 +245,7 @@ ExternalProject_Add(${proj}
     -DUSE_BRAINSFit:BOOL=${USE_BRAINSFit}
     -DUSE_BRAINSCommonLib:BOOL=${USE_BRAINSCommonLib}
     -DUSE_BRAINSABC:BOOL=${USE_BRAINSABC}
+    -DUSE_BRAINSCUT:BOOL=${USE_BRAINSCUT}
     -DUSE_BRAINSMush:BOOL=${USE_BRAINSMush}
     -DUSE_BRAINSROIAuto:BOOL=${USE_BRAINSROIAuto}
     -DUSE_BRAINSResample:BOOL=${USE_BRAINSResample}
@@ -247,6 +253,7 @@ ExternalProject_Add(${proj}
     -DUSE_BRAINSDemonWarp:BOOL=${USE_BRAINSDemonWarp}
     -DUSE_BRAINSMultiModeSegment:BOOL=${USE_BRAINSMultiModeSegment}
     -DUSE_BRAINSInitializedControlPoints:BOOL=${USE_BRAINSInitializedControlPoints}
+    -DUSE_BRAINSTransformConvert:BOOL=${USE_BRAINSTransformConvert}
     -D${CMAKE_PROJECT_NAME}_USE_ITK4:BOOL=ON
     ${VTK_BUILD_FLAGS}
     ${OpenCV_BUILD_FLAGS}

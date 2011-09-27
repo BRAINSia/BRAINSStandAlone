@@ -14,8 +14,9 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory")
 endif()
 
-# Set dependency list
-set(SlicerExecutionModel_DEPENDENCIES ${ITK_EXTERNAL_NAME})
+if(NOT SlicerExecutionModel_DEPENDENCIES)
+  set(SlicerExecutionModel_DEPENDENCIES ${ITK_EXTERNAL_NAME})
+endif(NOT SlicerExecutionModel_DEPENDENCIES)
 
 # Include dependent projects if any
 # SlicerMacroCheckExternalProjectDependency(SlicerExecutionModel)
@@ -34,13 +35,19 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
   #message(STATUS "${__indent}Adding project ${proj}")
   ExternalProject_Add(${proj}
     #GIT_REPOSITORY "${git_protocol}://github.com/Slicer/SlicerExecutionModel.git"
-    GIT_REPOSITORY "https://github.com/Slicer/SlicerExecutionModel.git"
+    #GIT_REPOSITORY "https://github.com/Slicer/SlicerExecutionModel.git"
+    GIT_REPOSITORY ${git_protocol}://github.com/Chaircrusher/SlicerExecutionModel.git
     GIT_TAG "origin/master"
     SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}
     BINARY_DIR ${proj}-build
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
+      -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+      -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+      -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+      -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DCMAKE_CXX_FLAGS:STRING=${ep_common_cxx_flags}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags} # Unused
@@ -52,8 +59,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
       #-DSlicerExecutionModel_INSTALL_SHARE_DIR:PATH=${Slicer_INSTALL_ROOT}share/${SlicerExecutionModel}
       -DSlicerExecutionModel_INSTALL_NO_DEVELOPMENT:BOOL=${Slicer_INSTALL_NO_DEVELOPMENT}
     INSTALL_COMMAND ""
-    DEPENDS
-      ${SlicerExecutionModel_DEPENDENCIES}
+    DEPENDS ${SlicerExecutionModel_DEPENDENCIES}
     )
   set(SlicerExecutionModel_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 else()

@@ -59,6 +59,7 @@ void qh_qhull(void)
 {
   int numoutside;
 
+
   qh hulltime = qh_CPUclock;
 
   if( qh RERUN || qh JOGGLEmax < REALmax / 2 )
