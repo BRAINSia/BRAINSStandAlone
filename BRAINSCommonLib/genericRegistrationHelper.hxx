@@ -71,6 +71,7 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
   m_Registration(0),                       // has to be provided by
                                            // this->Initialize().
   m_PermitParameterVariation(0),
+  m_CostMetricObject(NULL),
   m_NumberOfSamples(100000),
   m_NumberOfHistogramBins(200),
   m_NumberOfIterations(0),
@@ -96,7 +97,6 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
 
   this->SetTransform( TransformType::New() );
   this->m_Transform->SetIdentity();
-  this->m_CostMetricObject = NULL;
 }
 
 /*
