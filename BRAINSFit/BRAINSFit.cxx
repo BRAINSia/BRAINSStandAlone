@@ -411,65 +411,60 @@ int main(int argc, char *argv[])
   //
   ImageMaskPointer fixedMask = NULL;
   ImageMaskPointer movingMask = NULL;
+  if( maskProcessingMode == "NOMASK" )
     {
-    if( maskProcessingMode == "NOMASK" )
+    if( fixedBinaryVolume != "" || movingBinaryVolume != "")
       {
-      if( ( !fixedBinaryVolume.empty() )
-          || ( !movingBinaryVolume.empty() ) )
-        {
-        std::cout
+      std::cout
         << "ERROR:  Can not specify mask file names when the default of NOMASK is used for the maskProcessingMode"
         << std::endl;
-        exit(-1);
-        }
+      exit(-1);
       }
-    else if( maskProcessingMode == "ROIAUTO" )
+    }
+  else if( maskProcessingMode == "ROIAUTO" )
+    {
+    if( fixedBinaryVolume != "" || movingBinaryVolume != "")
       {
-      if( ( !fixedBinaryVolume.empty() )
-          || ( !movingBinaryVolume.empty() ) )
-        {
-        std::cout
+      std::cout
         << "ERROR:  Can not specify mask file names when ROIAUTO is used for the maskProcessingMode"
         << std::endl;
-        exit(-1);
-        }
-        {
-        typedef itk::BRAINSROIAutoImageFilter<FixedVolumeType, itk::Image<unsigned char, 3> > ROIAutoType;
-        ROIAutoType::Pointer ROIFilter = ROIAutoType::New();
-        ROIFilter->SetInput(extractFixedVolume);
-        ROIFilter->SetClosingSize(ROIAutoClosingSize);
-        ROIFilter->SetDilateSize(ROIAutoDilateSize);
-        ROIFilter->Update();
-        fixedMask = ROIFilter->GetSpatialObjectROI();
-        }
-        {
-        typedef itk::BRAINSROIAutoImageFilter<MovingVolumeType, itk::Image<unsigned char, 3> > ROIAutoType;
-        ROIAutoType::Pointer ROIFilter = ROIAutoType::New();
-        ROIFilter->SetInput(extractMovingVolume);
-        ROIFilter->SetClosingSize(ROIAutoClosingSize);
-        ROIFilter->SetDilateSize(ROIAutoDilateSize);
-        ROIFilter->Update();
-        movingMask = ROIFilter->GetSpatialObjectROI();
-        }
+      exit(-1);
       }
-    else if( maskProcessingMode == "ROI" )
+    {
+    typedef itk::BRAINSROIAutoImageFilter<FixedVolumeType, itk::Image<unsigned char, 3> > ROIAutoType;
+    ROIAutoType::Pointer ROIFilter = ROIAutoType::New();
+    ROIFilter->SetInput(extractFixedVolume);
+    ROIFilter->SetClosingSize(ROIAutoClosingSize);
+    ROIFilter->SetDilateSize(ROIAutoDilateSize);
+    ROIFilter->Update();
+    fixedMask = ROIFilter->GetSpatialObjectROI();
+    }
+    {
+    typedef itk::BRAINSROIAutoImageFilter<MovingVolumeType, itk::Image<unsigned char, 3> > ROIAutoType;
+    ROIAutoType::Pointer ROIFilter = ROIAutoType::New();
+    ROIFilter->SetInput(extractMovingVolume);
+    ROIFilter->SetClosingSize(ROIAutoClosingSize);
+    ROIFilter->SetDilateSize(ROIAutoDilateSize);
+    ROIFilter->Update();
+    movingMask = ROIFilter->GetSpatialObjectROI();
+    }
+    }
+  else if( maskProcessingMode == "ROI" )
+    {
+    if( fixedBinaryVolume == "" || movingBinaryVolume == "")
       {
-      if( ( !fixedBinaryVolume.empty() )
-          || ( !movingBinaryVolume.empty() ) )
-        {
-        std::cout
+      std::cout
         <<
         "ERROR:  Must specify mask file names when ROI is used for the maskProcessingMode"
         << std::endl;
-        exit(-1);
-        }
-      fixedMask = ReadImageMask<SpatialObjectType, Dimension>(
-          fixedBinaryVolume,
-          extractFixedVolume.GetPointer() );
-      movingMask = ReadImageMask<SpatialObjectType, Dimension>(
-          movingBinaryVolume,
-          extractMovingVolume.GetPointer() );
+      exit(-1);
       }
+    fixedMask = ReadImageMask<SpatialObjectType, Dimension>(
+      fixedBinaryVolume,
+      extractFixedVolume.GetPointer() );
+    movingMask = ReadImageMask<SpatialObjectType, Dimension>(
+      movingBinaryVolume,
+      extractMovingVolume.GetPointer() );
     }
   /* This default fills the background with zeros
    *  const double BackgroundFillValue =
@@ -489,11 +484,11 @@ int main(int argc, char *argv[])
 //  int permittedIterations = 0;
 //  int allLevelsIterations = 0;
 
-    {
-    typedef itk::BRAINSFitHelper HelperType;
-    HelperType::Pointer myHelper = HelperType::New();
-    myHelper->SetTransformType(localTransformType);
-    myHelper->SetFixedVolume(extractFixedVolume);
+  {
+  typedef itk::BRAINSFitHelper HelperType;
+  HelperType::Pointer myHelper = HelperType::New();
+  myHelper->SetTransformType(localTransformType);
+  myHelper->SetFixedVolume(extractFixedVolume);
     myHelper->SetMovingVolume(extractMovingVolume);
     myHelper->SetHistogramMatch(histogramMatch);
     myHelper->SetRemoveIntensityOutliers(removeIntensityOutliers);
