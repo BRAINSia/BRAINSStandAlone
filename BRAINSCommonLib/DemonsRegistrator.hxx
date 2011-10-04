@@ -195,7 +195,7 @@ void DemonsRegistrator<TRealImage, TOutputImage, TFieldValue>::Execute()
     // Perform the registration.
     try
       {
-      m_Registration->Update();
+      m_Registration->UpdateLargestPossibleRegion();
       }
     catch( itk::ExceptionObject & err )
       {
@@ -296,12 +296,10 @@ void DemonsRegistrator<TRealImage, TOutputImage, TFieldValue>::Execute()
       std::cout << "Caught an exception: " << std::endl;
       std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
       throw err;
-      throw err;
       }
     catch( ... )
       {
-      std::
-      cout << "Caught a non-ITK exception " << __FILE__ << " " << __LINE__
+      std::cout << "Caught a non-ITK exception " << __FILE__ << " " << __LINE__
            << std::endl;
       }
     if( this->GetOutDebug() )
@@ -428,7 +426,7 @@ void DemonsRegistrator<TRealImage, TOutputImage, TFieldValue>::Execute()
       checker->SetCheckerPattern( this->GetCheckerBoardPattern() );
       try
         {
-        checker->Update();
+        checker->UpdateLargestPossibleRegion();
         }
       catch( itk::ExceptionObject & err )
         {
@@ -459,7 +457,7 @@ void DemonsRegistrator<TRealImage, TOutputImage, TFieldValue>::StartNewLevel()
     {
     if( !this->GetUseLogDomain() )
       {
-      std::cout << "--- Starting level " << m_Registration->GetCurrentLevel() << std::endl;
+      std::cout << "-- Starting level " << m_Registration->GetCurrentLevel() << std::endl;
       }
     else
       {
