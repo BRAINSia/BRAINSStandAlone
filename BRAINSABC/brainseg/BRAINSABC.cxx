@@ -369,13 +369,15 @@ static FloatImageType::Pointer AverageImageList(
   // Loop over the voxels calculating the averages.
   for ( imgItr.GoToBegin(); !imgItr.IsAtEnd(); ++imgItr)
     {
-    FloatImageType::IndexType idx = imgItr.GetIndex();
+    const FloatImageType::IndexType &idx = imgItr.GetIndex();
     FloatImageType::PixelType avgValue = 0;
+    const unsigned int inputListSize = inputImageList.size();
+    const float invListSize = 1.0F/static_cast<float>(inputListSize);
     for (unsigned int j=0; j<inputImageList.size(); ++j)
       {
       avgValue += inputImageList[j]->GetPixel(idx);
       }
-    averageImage->SetPixel(idx,avgValue/(inputImageList.size()+1));
+    averageImage->SetPixel(idx,static_cast<FloatImageType::PixelType>(avgValue*invListSize));
     }
 
   return averageImage;
@@ -1289,7 +1291,7 @@ int main(int argc, char * *argv)
       volumesByImgType[inputVolumeTypes[k]].push_back(imgset[k]);
       }
 
-    imgTypeMapType::iterator mapItr;
+    imgTypeMapType::const_iterator mapItr;
 
     for(mapItr=volumesByImgType.begin();
         mapItr!=volumesByImgType.end();
