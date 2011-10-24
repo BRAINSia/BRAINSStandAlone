@@ -48,12 +48,13 @@
 #include "itkExtractImageFilter.h"
 #if ITK_VERSION_MAJOR < 4
 #include "itkDifferenceImageFilter.h"
+namespace itk { typedef unsigned int SizeValueType; }
 #else
+#include "itkFloatingPointExceptions.h"
 #include "itkTestingComparisonImageFilter.h"
 #endif
 #include "itksys/SystemTools.hxx"
 #include "itkIntTypes.h"
-#include "itkFloatingPointExceptions.h"
 
 #define ITK_TEST_DIMENSION_MAX 6
 
@@ -90,7 +91,9 @@ void PrintAvailableTests()
 
 int main(int ac, char *av[])
 {
+#if ITK_VERSION_MAJOR >= 4
   itk::FloatingPointExceptions::Enable();
+#endif
 
   double intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
@@ -355,7 +358,9 @@ int RegressionTestImage(const char *testImageFilename,
     region.SetSize(size);
 
     ExtractType::Pointer extract = ExtractType::New();
+#if ITK_VERSION_MAJOR >= 4
     extract->SetDirectionCollapseToSubmatrix();
+#endif
     extract->SetInput( rescale->GetOutput() );
     extract->SetExtractionRegion(region);
 
