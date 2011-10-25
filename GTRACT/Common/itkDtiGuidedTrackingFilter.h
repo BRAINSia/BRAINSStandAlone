@@ -52,7 +52,7 @@ namespace itk
  */
 
 template <class TTensorImageType, class TAnisotropyImageType, class TMaskImageType>
-GTRACT_COMMON_EXPORT class DtiGuidedTrackingFilter : public itk::DtiTrackingFilterBase<TTensorImageType,
+class DtiGuidedTrackingFilter : public itk::DtiTrackingFilterBase<TTensorImageType,
                                                                                        TAnisotropyImageType,
                                                                                        TMaskImageType>
 {
