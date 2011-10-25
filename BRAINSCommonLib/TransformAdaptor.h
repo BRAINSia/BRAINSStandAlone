@@ -5,6 +5,7 @@
 
 namespace itk
 {
+
 /** \class TransformAdaptor
   *
   * This component converts transform formats required for

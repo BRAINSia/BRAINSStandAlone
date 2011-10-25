@@ -7,6 +7,7 @@
 #include "landmarksConstellationDetector.h"
 // landmarkIO has to be included after landmarksConstellationDetector
 #include "landmarkIO.h"
+#include "itkOrthogonalize3DRotationMatrix.h"
 
 SImageType::PointType
 landmarksConstellationDetector::FindCandidatePoints
@@ -531,7 +532,8 @@ void landmarksConstellationDetector::Compute( void )
         VersorTransformType::Pointer VersorZeroCenteredTransform = VersorTransformType::New();
         VersorZeroCenteredTransform->SetFixedParameters( ZeroCenteredTransform->GetFixedParameters() );
         itk::Versor<double> versorRotation;
-        versorRotation.Set( ZeroCenteredTransform->GetRotationMatrix() );
+        const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( ZeroCenteredTransform->GetRotationMatrix() );
+        versorRotation.Set( CleanedOrthogonalized );
         VersorZeroCenteredTransform->SetRotation( versorRotation );
         VersorZeroCenteredTransform->SetTranslation( ZeroCenteredTransform->GetTranslation() );
         VersorTransformType::Pointer InverseVersorZeroCenteredTransform = VersorTransformType::New();

@@ -32,6 +32,7 @@
 
 #include "BRAINSConstellationDetector2.h"
 #include "GenericTransformImage.h"
+#include "itkOrthogonalize3DRotationMatrix.h"
 
 namespace itk
 {
@@ -299,7 +300,8 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
       this->m_VersorTransform = VersorTransformType::New();
       this->m_VersorTransform->SetFixedParameters( ZeroCenteredTransform->GetFixedParameters() );
       itk::Versor<double> versorRotation;
-      versorRotation.Set( ZeroCenteredTransform->GetRotationMatrix() );
+      const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( ZeroCenteredTransform->GetRotationMatrix() );
+      versorRotation.Set( CleanedOrthogonalized );
       this->m_VersorTransform->SetRotation(versorRotation);
       this->m_VersorTransform->SetTranslation( ZeroCenteredTransform->GetTranslation() );
       }
