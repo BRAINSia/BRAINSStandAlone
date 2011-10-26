@@ -7,7 +7,6 @@ enable_testing()
 #include(Dart)
 include(CTest)
 include(CPack)
-include(${BRAINS_CMAKE_HELPER_DIR}/CMakeBuildMacros.cmake)
 include(${BRAINS_CMAKE_HELPER_DIR}/PreventInSourceBuilds.cmake)
 set(BRAINSLogo ${BRAINS_CMAKE_HELPER_DIR}/BRAINSLogo.h CACHE
 FILEPATH "Path to BRAINS Logo")
@@ -24,10 +23,6 @@ find_package( OpenCV REQUIRED)
 #
 include(${BRAINS_CMAKE_HELPER_DIR}/CMakeBRAINS3BuildMacros.cmake)
 #SETOPTIONALDEBUGIMAGEVIEWER()
-
-
-# No need to add with nothing to compile. add_subdirectory(BRAINSFit_Common)
-include(${BRAINS_CMAKE_HELPER_DIR}/IJMacros.txt)
 
 ###
 include_directories(${BRAINSCut_SOURCE_DIR}/ProcessDescription)

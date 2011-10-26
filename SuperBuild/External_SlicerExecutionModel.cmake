@@ -5,6 +5,10 @@ if(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED)
 endif()
 set(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED 1)
 
+if(${USE_SYSTEM_SlicerExecutionModel})
+  unset(SlicerExecutionModel_DIR CACHE)
+endif()
+
 # Sanity checks
 if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory")
@@ -39,7 +43,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR AND NOT ${USE_SYSTEM_SlicerExecutionMode
     BINARY_DIR ${proj}-build
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      ${ep_common_compiler_args}
+      ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DBUILD_TESTING:BOOL=OFF
@@ -61,7 +65,7 @@ if(NOT DEFINED SlicerExecutionModel_DIR AND NOT ${USE_SYSTEM_SlicerExecutionMode
   set(SlicerExecutionModel_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 else()
   if(${USE_SYSTEM_SlicerExecutionModel})
-    find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
+    find_package(SlicerExecutionModel REQUIRED GenerateCLP)
     if(NOT SlicerExecutionModel_DIR)
       message(FATAL_ERROR "To use the system SlicerExecutionModel, set SlicerExecutionModel_DIR")
     endif()

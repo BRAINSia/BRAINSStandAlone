@@ -6,6 +6,10 @@ if(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED)
 endif()
 set(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED 1)
 
+if(${USE_SYSTEM_ITK})
+  unset(ITK_DIR CACHE)
+endif()
+
 # Sanity checks
 if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
   message(FATAL_ERROR "ITK_DIR variable is defined but corresponds to non-existing directory")
@@ -42,7 +46,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${USE_SYSTEM_ITK})
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
-      ${ep_common_compiler_args}
+      ${COMMON_EXTERNAL_PROJECT_ARGS}
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
       -DITK_LEGACY_REMOVE:BOOL=ON
@@ -66,7 +70,7 @@ if(NOT DEFINED ITK_DIR AND NOT ${USE_SYSTEM_ITK})
   set(ITK_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 else()
   if(${USE_SYSTEM_ITK})
-    find_package(ITK REQUIRED)
+    find_package(ITK ${ITK_MAJOR_VERSION} REQUIRED)
     if(NOT ITK_DIR)
       message(FATAL_ERROR "To use the system ITK, set ITK_DIR")
     endif()

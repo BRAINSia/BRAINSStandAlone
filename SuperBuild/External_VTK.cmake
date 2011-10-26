@@ -6,6 +6,11 @@ if(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED)
 endif()
 set(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED 1)
 
+if(${USE_SYSTEM_VTK})
+  unset(VTK_DIR CACHE)
+  unset(VTK_SOURCE_DIR CACHE)
+endif()
+
 # Sanity checks
 if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory")
@@ -133,7 +138,7 @@ if((NOT DEFINED VTK_DIR OR NOT DEFINED VTK_SOURCE_DIR) AND NOT ${USE_SYSTEM_VTK}
     BINARY_DIR ${proj}-build
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      ${ep_common_compiler_args}
+      ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DBUILD_TESTING:BOOL=OFF
