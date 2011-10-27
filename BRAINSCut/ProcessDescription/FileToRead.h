@@ -24,6 +24,7 @@ public:
   FileToRead()
   {
   }
+
   virtual bool Verify()
   {
     bool returnvalue = true;

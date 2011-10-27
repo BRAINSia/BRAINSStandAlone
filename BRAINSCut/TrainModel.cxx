@@ -300,7 +300,7 @@ void ANNTrain( // ProcessDescription & prob,
     }
 
   struct timeval t_start, t_current;
-  int          t_diff = 0;
+  int            t_diff = 0;
   gettimeofday(&t_start, NULL);
   // HACK  This should be a command line variable, or related to the number of
   // epochs
@@ -603,8 +603,8 @@ void ANNTrain( // ProcessDescription & prob,
               << " Iteration. "
               << "\n###################################################\n";
     }
-  if( doTest )  // if training has been proceeeded
-    { // Wirte to the header file as well at this point
+  if( doTest ) // if training has been proceeeded
+    {          // Wirte to the header file as well at this point
     std::cout <<  "###################################################\n"
               << " * Minimum MSE of Testing : " << TestSet_MinimumMSE
               << " at "                          << TestSet_MinimumMSEPoint
@@ -921,4 +921,3 @@ int TrainModel(const std::string & XMLFile, int verbose, int StartIteration, boo
     }
   return rval;
 }
-

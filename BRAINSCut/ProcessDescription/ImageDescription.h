@@ -29,6 +29,7 @@ public:
   ImageList() : CompoundObjectBase("ImageList")
   {
   }
+
 };
 
 #endif // ImageDescription_h

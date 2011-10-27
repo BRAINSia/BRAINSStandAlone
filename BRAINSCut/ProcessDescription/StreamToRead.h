@@ -26,6 +26,7 @@ public:
   StreamToRead() : m_F(0)
   {
   }
+
   virtual ~StreamToRead();
   virtual ReturnType GetValue(void);
 

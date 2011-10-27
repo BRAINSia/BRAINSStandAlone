@@ -9,8 +9,8 @@
   Copyright (c) Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -20,7 +20,7 @@
 #include "itkImageFileWriter.h"
 
 #include "itkBinaryDilateImageFilter.h"
-#include "itkBinaryBallStructuringElement.h" 
+#include "itkBinaryBallStructuringElement.h"
 
 #include "itkBinaryThresholdImageFilter.h"
 
@@ -30,47 +30,41 @@ int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
   const unsigned int Dimension = 3;
-  
-  typedef float InputPixelType;
-  typedef unsigned char   OutputPixelType;
 
-  typedef itk::Image< InputPixelType,  Dimension >   InputImageType;
-  typedef itk::Image< OutputPixelType, Dimension >   OutputImageType;
+  typedef float         InputPixelType;
+  typedef unsigned char OutputPixelType;
 
-  typedef itk::ImageFileReader< InputImageType  >  ReaderType;
-  typedef itk::ImageFileWriter< OutputImageType >  WriterType;
+  typedef itk::Image<InputPixelType,  Dimension> InputImageType;
+  typedef itk::Image<OutputPixelType, Dimension> OutputImageType;
 
+  typedef itk::ImageFileReader<InputImageType>  ReaderType;
+  typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
-  typedef itk::BinaryThresholdImageFilter< InputImageType, OutputImageType>  ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<InputImageType, OutputImageType> ThresholdFilterType;
 
-
-  typedef itk::BinaryBallStructuringElement< 
-                      InputPixelType,
-                      Dimension  >             StructuringElementType;
+  typedef itk::BinaryBallStructuringElement<
+    InputPixelType,
+    Dimension>             StructuringElementType;
 
   typedef itk::BinaryDilateImageFilter<
-                            OutputImageType, 
-                            OutputImageType, 
-                            StructuringElementType >  DilateFilterType;
-
+    OutputImageType,
+    OutputImageType,
+    StructuringElementType>  DilateFilterType;
 
   ReaderType::Pointer reader = ReaderType::New();
   WriterType::Pointer writerDilation = WriterType::New();
 
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
-
   DilateFilterType::Pointer binaryDilate = DilateFilterType::New();
-  StructuringElementType  structuringElement;
+  StructuringElementType    structuringElement;
   structuringElement.SetRadius( sizeStructuralElement);  // 3x3 structuring element
   structuringElement.CreateStructuringElement();
   binaryDilate->SetKernel( structuringElement );
 
-
   reader->SetFileName( inputMaskVolume );
- 
+
   writerDilation->SetFileName( outputDilation );
-  
 
   thresholder->SetInput( reader->GetOutput() );
 
@@ -81,7 +75,7 @@ int main( int argc, char * argv[] )
   thresholder->SetInsideValue(  foreground );
 
   thresholder->SetLowerThreshold( lowerThreshold );
-  //thresholder->SetUpperThreshold( upperThreshold );
+  // thresholder->SetUpperThreshold( upperThreshold );
 
   binaryDilate->SetInput( thresholder->GetOutput() );
 
@@ -90,7 +84,5 @@ int main( int argc, char * argv[] )
   writerDilation->SetInput( binaryDilate->GetOutput() );
   writerDilation->Update();
 
-
   return EXIT_SUCCESS;
 }
-

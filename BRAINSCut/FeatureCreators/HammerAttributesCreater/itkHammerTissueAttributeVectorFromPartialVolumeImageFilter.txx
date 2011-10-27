@@ -68,7 +68,8 @@ HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImag
 template <class TInputImage, class TOutputImage>
 void
 HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImage>
-::GenerateInputRequestedRegion() throw (InvalidRequestedRegionError)
+::GenerateInputRequestedRegion()
+throw (InvalidRequestedRegionError)
 {
   printf("* GenerateInputRequestRegion() \n");
   // call the superclass' implementation of this method
@@ -118,7 +119,7 @@ HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImag
   dummyImage->SetRegions(dummyRegion);
   dummyImage->SetOrigin(dummyOrigin);
 
-  float    radiusSqr = this->m_Scale * this->m_Scale;
+  float                                             radiusSqr = this->m_Scale * this->m_Scale;
   itk::ImageRegionIteratorWithIndex<InputImageType> it(dummyImage, dummyRegion);
   for( it.GoToBegin(); !it.IsAtEnd(); ++it )
     {
@@ -240,12 +241,12 @@ HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImag
   typename TOutputImage::PixelType attributeVector;
 
   // Get the input and output
-  OutputImageType *     outputImage = this->GetOutput();
+  OutputImageType * outputImage = this->GetOutput();
 
-  const InputImageType *inputGMVolume= this->GetInput(0);
-  const InputImageType *inputWMVolume= this->GetInput(1);
-  const InputImageType *inputCSFVolume= this->GetInput(2);
-  
+  const InputImageType *inputGMVolume = this->GetInput(0);
+  const InputImageType *inputWMVolume = this->GetInput(1);
+  const InputImageType *inputCSFVolume = this->GetInput(2);
+
   // Use inputVolume as a reference volume for image information
   //
 
@@ -256,126 +257,146 @@ HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImag
   CreateFeatureNeighbor( static_cast<int>( m_Scale ) );
 
   // Initialize
-  outputImage->SetLargestPossibleRegion( 
-                  inputWMVolume ->GetLargestPossibleRegion());
+  outputImage->SetLargestPossibleRegion(
+    inputWMVolume->GetLargestPossibleRegion() );
   ImageRegionIteratorWithIndex<OutputImageType> it( outputImage, outputImage->GetLargestPossibleRegion() );
 
   ImageRegionConstIteratorWithIndex<InputImageType> source( inputWMVolume, inputWMVolume->GetLargestPossibleRegion() );
   attributeVector.Fill( 0 );
-  for(it.GoToBegin(),source.GoToBegin();!it.IsAtEnd();++it,++source)
-  {
+  for( it.GoToBegin(), source.GoToBegin(); !it.IsAtEnd(); ++it, ++source )
+    {
     //
     // copy the WM Posterior to the attirubuteVector[1]
     // For WHAT though??????
     //
     attributeVector[1] = source.Get();
     it.Set(attributeVector);
-  }
+    }
 
   // Compute the Edge Information
-  float flag_GM, flag_CSF, flag_WM ;
+  float flag_GM, flag_CSF, flag_WM;
   //
   // TODO make strength as a input parameter.
   //
   int strength = 1;
-  typename InputImageType::PixelType centerPixel ;
+  typename InputImageType::PixelType centerPixel;
   typename InputImageType::PixelType PWm, PGm, PCsf;
-  std::string centerTissueType =""; // WM, GM, or CSF
+  std::string    centerTissueType = ""; // WM, GM, or CSF
   InputIndexType centerIdx, neighborIdx;
-  for(it.GoToBegin();!it.IsAtEnd();++it)
-  {
+  for( it.GoToBegin(); !it.IsAtEnd(); ++it )
+    {
     //
     // [WM edge]
     // For voxle WM > 0.3, in 6 neghibors
     //     if #( GM > 0.3) > #( CSF > 0.3) ==> WM || GM edge
     //     else if #( CSF > 0.3) > 0        ==> WM || CSF edge
     //
-	  attributeVector = it.Get();
-	  centerIdx = it.GetIndex();
-    
+    attributeVector = it.Get();
+    centerIdx = it.GetIndex();
+
     // determin which tissue type it belongs to.
     //
 
     PWm = inputWMVolume->GetPixel( centerIdx );
     PGm = inputGMVolume->GetPixel( centerIdx );
     PCsf = inputCSFVolume->GetPixel( centerIdx );
-    
-    if( PWm > PGm ){
-      if( PWm > PCsf) {  centerTissueType="WM"; centerPixel = PWm;  }
-      else{              centerTissueType="CSF"; centerPixel = PCsf;}
-    }
-    else{
-      if( PGm > PCsf) {  centerTissueType="GM"; centerPixel = PGm;  }
-      else{              centerTissueType="CSF";centerPixel = PCsf; }
-    }
+
+    if( PWm > PGm )
+      {
+      if( PWm > PCsf )
+        {
+        centerTissueType = "WM"; centerPixel = PWm;
+        }
+      else
+        {
+        centerTissueType = "CSF"; centerPixel = PCsf;
+        }
+      }
+    else
+      {
+      if( PGm > PCsf )
+        {
+        centerTissueType = "GM"; centerPixel = PGm;
+        }
+      else
+        {
+        centerTissueType = "CSF"; centerPixel = PCsf;
+        }
+      }
 
     if( centerPixel < 0.1 )
-    {
-      centerTissueType="NONE";
+      {
+      centerTissueType = "NONE";
       centerPixel = 0;
-    }
+      }
 
     // Determin which Bondary the edge is
     //
-	  if(centerIdx[0]==0 || centerIdx[1]==0 || centerIdx[2]==0)
-	    continue;
-	  if(centerIdx[0]==static_cast<signed int>(dummyRegion.GetSize()[0]-1) || 
-       centerIdx[1]==static_cast<signed int>(dummyRegion.GetSize()[1]-1) ||
-       centerIdx[2]==static_cast<signed int>(dummyRegion.GetSize()[2]-1) )
-	    continue;
-		flag_GM = 0.0F ;
-		flag_CSF = 0.0F ;
+    if( centerIdx[0] == 0 || centerIdx[1] == 0 || centerIdx[2] == 0 )
+      {
+      continue;
+      }
+    if( centerIdx[0] == static_cast<signed int>(dummyRegion.GetSize()[0] - 1) ||
+        centerIdx[1] == static_cast<signed int>(dummyRegion.GetSize()[1] - 1) ||
+        centerIdx[2] == static_cast<signed int>(dummyRegion.GetSize()[2] - 1) )
+      {
+      continue;
+      }
+    flag_GM = 0.0F;
+    flag_CSF = 0.0F;
     flag_WM = 0.0F;
-		for(unsigned int k=0;k<m_N1Neighborhood.size();k++)
-		{
-			  for(int s=0;s<InputImageDimension;s++)
-				  neighborIdx[s] = centerIdx[s] + m_N1Neighborhood[k][s];
+    for( unsigned int k = 0; k < m_N1Neighborhood.size(); k++ )
+      {
+      for( int s = 0; s < InputImageDimension; s++ )
+        {
+        neighborIdx[s] = centerIdx[s] + m_N1Neighborhood[k][s];
+        }
 
-        //Sum
-        flag_GM+=inputGMVolume->GetPixel( neighborIdx);
-        flag_CSF+=inputCSFVolume->GetPixel( neighborIdx);
-        flag_WM+=inputWMVolume->GetPixel( neighborIdx);
-		}
-	  if( centerTissueType == "WM" )
-	  {
-		  if( flag_GM>flag_CSF && flag_GM > strength)
-		  {
-			  attributeVector[0] = m_WMGMEDGE ;
-			  it.Set(attributeVector);
-		  }
-		  if( flag_GM<=flag_CSF && flag_CSF>strength )
-		  {
-			  attributeVector[0] = m_WMCSFEDGE ;
-			  it.Set(attributeVector);
-		  }
-	  }
-	  if( centerTissueType == "GM" )
-	  {
-		  if( flag_WM>flag_CSF && flag_WM > strength)
-		  {
-			  attributeVector[0] = m_WMGMEDGE ;
-			  it.Set(attributeVector);
-		  }
-		  if( flag_WM<=flag_CSF && flag_CSF>strength )
-		  {
-			  attributeVector[0] = m_WMCSFEDGE ;
-			  it.Set(attributeVector);
-		  }
-	  }
-	  if( centerTissueType == "CSF" )
-	  {
-		  if( flag_GM>flag_WM && flag_GM > strength)
-		  {
-			  attributeVector[0] = m_WMCSFEDGE ;
-			  it.Set(attributeVector);
-		  }
-		  if( flag_GM<=flag_WM && flag_GM>strength )
-		  {
-			  attributeVector[0] = m_GMCSFEDGE ;
-			  it.Set(attributeVector);
-		  }
-	  }
-  }//end of Edge computation
+      // Sum
+      flag_GM += inputGMVolume->GetPixel( neighborIdx);
+      flag_CSF += inputCSFVolume->GetPixel( neighborIdx);
+      flag_WM += inputWMVolume->GetPixel( neighborIdx);
+      }
+    if( centerTissueType == "WM" )
+      {
+      if( flag_GM > flag_CSF && flag_GM > strength )
+        {
+        attributeVector[0] = m_WMGMEDGE;
+        it.Set(attributeVector);
+        }
+      if( flag_GM <= flag_CSF && flag_CSF > strength )
+        {
+        attributeVector[0] = m_WMCSFEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    if( centerTissueType == "GM" )
+      {
+      if( flag_WM > flag_CSF && flag_WM > strength )
+        {
+        attributeVector[0] = m_WMGMEDGE;
+        it.Set(attributeVector);
+        }
+      if( flag_WM <= flag_CSF && flag_CSF > strength )
+        {
+        attributeVector[0] = m_WMCSFEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    if( centerTissueType == "CSF" )
+      {
+      if( flag_GM > flag_WM && flag_GM > strength )
+        {
+        attributeVector[0] = m_WMCSFEDGE;
+        it.Set(attributeVector);
+        }
+      if( flag_GM <= flag_WM && flag_GM > strength )
+        {
+        attributeVector[0] = m_GMCSFEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    } // end of Edge computation
 
   //
   // [Compute the GMIs]
@@ -384,59 +405,57 @@ HammerTissueAttributeVectorFromPartialVolumeImageFilter<TInputImage, TOutputImag
   float pixelNumInBubble = m_FeatureNeighborhood.size();
   printf("* Here we compute GMIs\n");
   for( it.GoToBegin(); !it.IsAtEnd(); ++it )
-  {
+    {
     attributeVector = it.Get();
     centerIdx = it.GetIndex();
 
-    //float sum = inputWMVolume->GetPixel(centerIdx) +
+    // float sum = inputWMVolume->GetPixel(centerIdx) +
     //            inputGMVolume->GetPixel(centerIdx) +
     //            inputCSFVolume->GetPixel(centerIdx) ;
-    //if( sum < 0.1F )
+    // if( sum < 0.1F )
     if( attributeVector.GetEdge() == 0 )
-    {
+      {
       continue;
-    }
-    NonWM_value = 0.0F ;
-    CSF_value = 0.0F ;
-    GM_value = 0.0F ;
-    for(unsigned int t=0; t<m_FeatureNeighborhood.size(); t++)
-    {
-      for(int s=0;s<InputImageDimension;s++)
+      }
+    NonWM_value = 0.0F;
+    CSF_value = 0.0F;
+    GM_value = 0.0F;
+    for( unsigned int t = 0; t < m_FeatureNeighborhood.size(); t++ )
       {
+      for( int s = 0; s < InputImageDimension; s++ )
+        {
         neighborIdx[s] = centerIdx[s] + (int)m_FeatureNeighborhood[t][s];
-      }
-      if(neighborIdx[0]<0 || neighborIdx[1]<0 || neighborIdx[2]<0)
-      {
+        }
+      if( neighborIdx[0] < 0 || neighborIdx[1] < 0 || neighborIdx[2] < 0 )
+        {
         continue;
-      }
-      
-      
-      if(neighborIdx[0]>=static_cast<signed int>(dummyRegion.GetSize()[0])||
-        neighborIdx[1]>=static_cast<signed int>(dummyRegion.GetSize()[1])|| 
-        neighborIdx[2]>=static_cast<signed int>(dummyRegion.GetSize()[2]) )
-      {
+        }
+
+      if( neighborIdx[0] >= static_cast<signed int>(dummyRegion.GetSize()[0]) ||
+          neighborIdx[1] >= static_cast<signed int>(dummyRegion.GetSize()[1]) ||
+          neighborIdx[2] >= static_cast<signed int>(dummyRegion.GetSize()[2]) )
+        {
         continue;
-      }
+        }
 
       // Sum all the probaiblity in the ball
       //
-      NonWM_value += (1.0F-inputWMVolume->GetPixel(neighborIdx));
+      NonWM_value += (1.0F - inputWMVolume->GetPixel(neighborIdx) );
       CSF_value   += (float)(inputCSFVolume->GetPixel(neighborIdx) );
       GM_value    += (float)(inputGMVolume->GetPixel(neighborIdx) );
-        
-      float degree = (NonWM_value/pixelNumInBubble) ;
-      attributeVector[2] = degree *100.0F;
 
-      float CSF_degree=CSF_value/pixelNumInBubble;
-      attributeVector[3] = CSF_degree *100.0F;
-        
-      float GM_degree = GM_value/pixelNumInBubble;
-      attributeVector[4] = GM_degree *100.0F;
-        
+      float degree = (NonWM_value / pixelNumInBubble);
+      attributeVector[2] = degree * 100.0F;
+
+      float CSF_degree = CSF_value / pixelNumInBubble;
+      attributeVector[3] = CSF_degree * 100.0F;
+
+      float GM_degree = GM_value / pixelNumInBubble;
+      attributeVector[4] = GM_degree * 100.0F;
+
       it.Set(attributeVector);
+      }
     }
-  }
-
 
 }
 

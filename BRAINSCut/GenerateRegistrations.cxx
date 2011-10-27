@@ -179,4 +179,3 @@ int GenerateRegistrations(ProcessDescription & ANNXMLObject,
     }
   return 0;
 }
-

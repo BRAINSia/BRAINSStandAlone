@@ -515,7 +515,6 @@ main(int argc, char *argv[])
                      << ", " << IMAGE_FILENAME2
                      << ", " << FrequencyName
                      << std::endl;
-
     //
     // - Iterate for each label type
     //
@@ -556,4 +555,3 @@ main(int argc, char *argv[])
     }
   return 0;
 }
-

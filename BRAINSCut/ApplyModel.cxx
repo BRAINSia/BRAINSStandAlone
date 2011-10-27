@@ -272,8 +272,8 @@ void         CleanUpOverlapArea(ProcessDescription & ANNXMLObject,
       if( verbose > 5 )
         {
         const std::string LabelWriteID(OutputDir + "ANNCutOut_median_cleanup"
-          + StructureID[strt] + ImageID
-          + "_labeled.nii.gz");
+                                       + StructureID[strt] + ImageID
+                                       + "_labeled.nii.gz");
         itkUtil::WriteImage<BinaryMaskImageType>(labeledImage, LabelWriteID);
         }
       typedef itk::RelabelComponentImageFilter<BinaryMaskImageType,
@@ -299,8 +299,8 @@ void         CleanUpOverlapArea(ProcessDescription & ANNXMLObject,
       if( verbose > 5 )
         {
         const std::string MultiLabelWriteID(OutputDir + "ANNCutOut_median_cleanup"
-          + StructureID[strt] + ImageID
-          + "_MultiLabeled.nii.gz");
+                                            + StructureID[strt] + ImageID
+                                            + "_MultiLabeled.nii.gz");
         itkUtil::WriteImage<BinaryMaskImageType>(MultiLabeledImage,
                                                  MultiLabelWriteID);
         }
@@ -321,7 +321,7 @@ void         CleanUpOverlapArea(ProcessDescription & ANNXMLObject,
       std::string OneLabelWriteID_Mask(
         curDataSet->GetMaskFilenameByType( StructureID[strt] ) );
 
-      if ((OneLabelWriteID_Mask == "") || (OneLabelWriteID_Mask == "na"))
+      if( (OneLabelWriteID_Mask == "") || (OneLabelWriteID_Mask == "na") )
         {
         std::cout << " MaskName is " << OneLabelWriteID_Mask << std::endl;
         OneLabelWriteID_Mask = OutputDir
@@ -398,7 +398,7 @@ static void CreateOutputMasks(ProcessDescription & ANNXMLObject,
     ANNXMLObject.Get<RegistrationParams>("RegistrationParams");
   const std::string regID( regParams->GetAttribute<StringValue>("ID") );
 
-  const std::string ImageID( curDataSet->GetAttribute<StringValue>("Name") );
+  const std::string       ImageID( curDataSet->GetAttribute<StringValue>("Name") );
   const RegistrationType *transform = curDataSet->GetRegistrationWithID(regID);
   if( transform == 0 )
     {
@@ -739,7 +739,7 @@ static void CreateOutputMasks(ProcessDescription & ANNXMLObject,
           {
           itkUtil::WriteImage<RealImageType>(ANNCutOut, WriteID);
           std::string DefMapWriteID(m_OutputDir + "ANNCutOut" + StructureID
-            + ImageID + "_defprobmap.nii.gz");
+                                    + ImageID + "_defprobmap.nii.gz");
           itkUtil::WriteImage<RealImageType>(DeformedProbabilityMap[structure],
                                              DefMapWriteID);
           }
@@ -1108,7 +1108,7 @@ int ApplyModel(ProcessDescription & ANNXMLObject,
       if( !multiStructureThreshold )
         {
 
-        const std::string ImageID( ( *dsIt )->GetAttribute<StringValue>("Name") );
+        const std::string       ImageID( ( *dsIt )->GetAttribute<StringValue>("Name") );
         const RegistrationType *transform = ( *dsIt )->GetRegistrationWithID(regID);
         if( transform == 0 )
           {
@@ -1322,6 +1322,7 @@ int ApplyModel(ProcessDescription & ANNXMLObject,
                                                                       //
                                                                       // AtlasLandmark
                                                                       //
+                                                                      //
                                                                       // probabilityMap->GetAttribute<FloatValue>("Gaussian"),
                                                                       //     //
                                                                       //
@@ -1472,4 +1473,3 @@ int ApplyModel(const std::string & XMLFile,
     }
   return rval;
 }
-

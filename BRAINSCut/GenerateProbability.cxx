@@ -387,7 +387,7 @@ static int GenerateProbabilityMaps(ProcessDescription & ANNXMLObject,
       // Get SubjtoAtlasRegistrationFilename
       // RegistrationType *reg = (*it)->Get<RegistrationType>("Registration");
       const RegistrationType *reg = ( *it )->GetRegistrationWithID(regID);
-      std::string       SubjToAtlasRegistrationFilename
+      std::string             SubjToAtlasRegistrationFilename
       (
         reg->GetAttribute<StringValue>(
           "SubjToAtlasRegistrationFilename") );
@@ -439,7 +439,7 @@ static int GenerateProbabilityMaps(ProcessDescription & ANNXMLObject,
     // Get SubjtoAtlasRegistrationFilename
     // RegistrationType *reg = (*it)->Get<RegistrationType>("Registration");
     const RegistrationType *reg = ( *it )->GetRegistrationWithID(regID);
-    std::string       SubjToAtlasRegistrationFilename
+    std::string             SubjToAtlasRegistrationFilename
     (
       reg->GetAttribute<StringValue>(
         "SubjToAtlasRegistrationFilename") );
@@ -659,4 +659,3 @@ int GenerateProbability(const std::string & XMLFile, int verbose, bool validate)
     }
   return rval;
 }
-

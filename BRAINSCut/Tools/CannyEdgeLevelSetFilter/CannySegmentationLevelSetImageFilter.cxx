@@ -9,8 +9,8 @@
   Copyright (c) Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -55,7 +55,7 @@
 // the feature image $g$ from which propagation and advection terms are
 // calculated.  It is generally a good idea to do some preprocessing of the
 // feature image to remove noise.
-// 
+//
 // Figure~\ref{fig:CannySegmentationLevelSetImageFilterDiagram} shows how the
 // image processing pipeline is constructed.  We read two images: the image to
 // segment and the image that contains the initial implicit surface.  The goal
@@ -73,8 +73,7 @@
 //
 // Let's start by including the appropriate header file.
 //
-// Software Guide : EndLatex 
-
+// Software Guide : EndLatex
 
 #include "itkImage.h"
 
@@ -109,34 +108,34 @@ int main( int argc, char *argv[] )
   PARSE_ARGS;
 
   //  Software Guide : BeginLatex
-  //  
+  //
   //  We define the image type using a particular pixel type and
   //  dimension. In this case we will use 2D \code{float} images.
   //
-  //  Software Guide : EndLatex 
+  //  Software Guide : EndLatex
 
   // Software Guide : BeginCodeSnippet
-  typedef   float           InternalPixelType;
-  const     unsigned int    Dimension = 3;
-  typedef itk::Image< InternalPixelType, Dimension >  InternalImageType;
+  typedef   float InternalPixelType;
+  const     unsigned int Dimension = 3;
+  typedef itk::Image<InternalPixelType, Dimension> InternalImageType;
   // Software Guide : EndCodeSnippet
 
-  typedef unsigned char                            OutputPixelType;
-  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
-  typedef itk::BinaryThresholdImageFilter< 
-                        InternalImageType, 
-                        OutputImageType    >       ThresholdingFilterType;
+  typedef unsigned char                          OutputPixelType;
+  typedef itk::Image<OutputPixelType, Dimension> OutputImageType;
+  typedef itk::BinaryThresholdImageFilter<
+    InternalImageType,
+    OutputImageType>       ThresholdingFilterType;
 
   ThresholdingFilterType::Pointer thresholder = ThresholdingFilterType::New();
-                        
+
   thresholder->SetUpperThreshold( 10.0 );
   thresholder->SetLowerThreshold( 0.0 );
 
   thresholder->SetOutsideValue(  0  );
   thresholder->SetInsideValue(  255 );
 
-  typedef  itk::ImageFileReader< InternalImageType > ReaderType;
-  typedef  itk::ImageFileWriter<  OutputImageType  > WriterType;
+  typedef  itk::ImageFileReader<InternalImageType> ReaderType;
+  typedef  itk::ImageFileWriter<OutputImageType>   WriterType;
 
   ReaderType::Pointer reader1 = ReaderType::New();
   ReaderType::Pointer reader2 = ReaderType::New();
@@ -155,31 +154,30 @@ int main( int argc, char *argv[] )
   //  Software Guide : EndLatex
 
   // Software Guide : BeginCodeSnippet
-  typedef itk::GradientAnisotropicDiffusionImageFilter< InternalImageType,
-    InternalImageType> DiffusionFilterType;
+  typedef itk::GradientAnisotropicDiffusionImageFilter<InternalImageType,
+                                                       InternalImageType> DiffusionFilterType;
   DiffusionFilterType::Pointer diffusion = DiffusionFilterType::New();
   diffusion->SetNumberOfIterations(5);
   diffusion->SetTimeStep(0.125);
   diffusion->SetConductanceParameter(1.0);
   // Software Guide : EndCodeSnippet
-  
+
   //  Software Guide : BeginLatex
-  //  
+  //
   //  The following lines define and instantiate a
   //  CannySegmentationLevelSetImageFilter.
   //
-  //  Software Guide : EndLatex 
-  
+  //  Software Guide : EndLatex
+
   // Software Guide : BeginCodeSnippet
-  typedef  itk::CannySegmentationLevelSetImageFilter< InternalImageType, 
-                InternalImageType > CannySegmentationLevelSetImageFilterType;
-  CannySegmentationLevelSetImageFilterType::Pointer cannySegmentation = 
-                CannySegmentationLevelSetImageFilterType::New();
+  typedef  itk::CannySegmentationLevelSetImageFilter<InternalImageType,
+                                                     InternalImageType> CannySegmentationLevelSetImageFilterType;
+  CannySegmentationLevelSetImageFilterType::Pointer cannySegmentation =
+    CannySegmentationLevelSetImageFilterType::New();
   // Software Guide : EndCodeSnippet
 
-  
   //  Software Guide : BeginLatex
-  //  
+  //
   // As with the other ITK level set segmentation filters, the terms of the
   // CannySegmentationLevelSetImageFilter level set equation can be
   // weighted by scalars.  For this application we will modify the relative
@@ -189,28 +187,27 @@ int main( int argc, char *argv[] )
   //  \index{itk::Canny\-Segmentation\-LevelSet\-Image\-Filter!SetAdvectionScaling()}
   //  \index{itk::Segmentation\-LevelSet\-ImageFilter!SetAdvectionScaling()}
   //
-  //  Software Guide : EndLatex 
+  //  Software Guide : EndLatex
 
   //  Software Guide : BeginCodeSnippet
   cannySegmentation->SetAdvectionScaling( advectionWeight );
   cannySegmentation->SetCurvatureScaling( 1.0 );
   cannySegmentation->SetPropagationScaling( 0.0 );
   //  Software Guide : EndCodeSnippet
- 
 
   //  Software Guide : BeginLatex
   //
   //  The maximum number of iterations is specified from the command line.
   //  It may not be desirable in some applications to run the filter to
   //  convergence.  Only a few iterations may be required.
-  //  
+  //
   //  Software Guide : EndLatex
 
   // Software Guide : BeginCodeSnippet
   cannySegmentation->SetMaximumRMSError( 0.01 );
   cannySegmentation->SetNumberOfIterations( maxIterations );
   // Software Guide : EndCodeSnippet
-  
+
   //  Software Guide : BeginLatex
   //
   //  There are two important parameters in the
@@ -220,14 +217,13 @@ int main( int argc, char *argv[] )
   //  parameter indicates the lowest allowed value in the output image.
   //  Thresholding is used to suppress Canny edges whose gradient magnitudes
   //  fall below a certain value.
-  //  
-  //  Software Guide : EndLatex 
-  
+  //
+  //  Software Guide : EndLatex
+
   // Software Guide : BeginCodeSnippet
   cannySegmentation->SetThreshold( cannyThreshold );
   cannySegmentation->SetVariance(  cannyVariance );
   // Software Guide : EndCodeSnippet
-
 
   // Software Guide : BeginLatex
   //
@@ -236,18 +232,18 @@ int main( int argc, char *argv[] )
   // isosurface is found midway between the foreground and background values.
   //
   // Software Guide : EndLatex
-  
+
   // Software Guide : BeginCodeSnippet
   cannySegmentation->SetIsoSurfaceValue( initialModelIsovalue );
   // Software Guide : EndCodeSnippet
-  
+
   //  Software Guide : BeginLatex
-  //  
+  //
   //  The filters are now connected in a pipeline indicated in
   //  Figure~\ref{fig:CannySegmentationLevelSetImageFilterDiagram}.
   //
-  //  Software Guide : EndLatex 
-  
+  //  Software Guide : EndLatex
+
   // Software Guide : BeginCodeSnippet
   diffusion->SetInput( reader1->GetOutput() );
   cannySegmentation->SetInput( reader2->GetOutput() );
@@ -256,14 +252,13 @@ int main( int argc, char *argv[] )
   writer->SetInput( thresholder->GetOutput() );
   // Software Guide : EndCodeSnippet
 
-  
   //  Software Guide : BeginLatex
-  //  
+  //
   //  Invoking the \code{Update()} method on the writer triggers the
   //  execution of the pipeline.  As usual, the call is placed in a
   //  \code{try/catch} block to handle any exceptions that may be thrown.
   //
-  //  Software Guide : EndLatex 
+  //  Software Guide : EndLatex
 
   // Software Guide : BeginCodeSnippet
   try
@@ -277,7 +272,7 @@ int main( int argc, char *argv[] )
     }
   // Software Guide : EndCodeSnippet
 
-  // Print out some useful information 
+  // Print out some useful information
   std::cout << std::endl;
   std::cout << "Max. no. iterations: " << cannySegmentation->GetNumberOfIterations() << std::endl;
   std::cout << "Max. RMS error: " << cannySegmentation->GetMaximumRMSError() << std::endl;
@@ -325,53 +320,52 @@ int main( int argc, char *argv[] )
   //  process of tuning parameters.  These images are available using
   //  \code{Set/Get} methods from the filter after it has been updated.
   //
-  //  Software Guide : EndLatex 
+  //  Software Guide : EndLatex
 
-  //if( argc > 9 )
-    //{
-    //const char * speedImageFileName = argv[9];
+  // if( argc > 9 )
+  // {
+  // const char * speedImageFileName = argv[9];
 
-    //  Software Guide : BeginLatex
-    //  
-    // In some cases it is interesting to take a direct look at the speed image
-    // used internally by this filter. This may help for setting the correct
-    // parameters for driving the segmentation. In order to obtain such speed
-    // image, the method \code{GenerateSpeedImage()} should be invoked first.
-    // Then we can recover the speed image with the \code{GetSpeedImage()} method
-    // as illustrated in the following lines.
-    //
-    //  \index{itk::Canny\-Segmentation\-LevelSet\-Image\-Filter!GenerateSpeedImage()}
-    //  \index{itk::Segmentation\-LevelSet\-ImageFilter!GenerateSpeedImage()}
-    //  \index{itk::Canny\-Segmentation\-LevelSet\-Image\-Filter!GetSpeedImage()}
-    //  \index{itk::Segmentation\-LevelSet\-ImageFilter!GetSpeedImage()}
-    //
-    //  Software Guide : EndLatex 
-    
-    //  Software Guide : BeginCodeSnippet
-    cannySegmentation->GenerateSpeedImage();
+  //  Software Guide : BeginLatex
+  //
+  // In some cases it is interesting to take a direct look at the speed image
+  // used internally by this filter. This may help for setting the correct
+  // parameters for driving the segmentation. In order to obtain such speed
+  // image, the method \code{GenerateSpeedImage()} should be invoked first.
+  // Then we can recover the speed image with the \code{GetSpeedImage()} method
+  // as illustrated in the following lines.
+  //
+  //  \index{itk::Canny\-Segmentation\-LevelSet\-Image\-Filter!GenerateSpeedImage()}
+  //  \index{itk::Segmentation\-LevelSet\-ImageFilter!GenerateSpeedImage()}
+  //  \index{itk::Canny\-Segmentation\-LevelSet\-Image\-Filter!GetSpeedImage()}
+  //  \index{itk::Segmentation\-LevelSet\-ImageFilter!GetSpeedImage()}
+  //
+  //  Software Guide : EndLatex
 
-    typedef CannySegmentationLevelSetImageFilterType::SpeedImageType SpeedImageType;
-    typedef itk::ImageFileWriter<SpeedImageType>   SpeedWriterType;
-    SpeedWriterType::Pointer speedWriter = SpeedWriterType::New();
+  //  Software Guide : BeginCodeSnippet
+  cannySegmentation->GenerateSpeedImage();
 
-    speedWriter->SetInput( cannySegmentation->GetSpeedImage() );
-    //  Software Guide : EndCodeSnippet
+  typedef CannySegmentationLevelSetImageFilterType::SpeedImageType SpeedImageType;
+  typedef itk::ImageFileWriter<SpeedImageType>                     SpeedWriterType;
+  SpeedWriterType::Pointer speedWriter = SpeedWriterType::New();
 
+  speedWriter->SetInput( cannySegmentation->GetSpeedImage() );
+  //  Software Guide : EndCodeSnippet
 
-    speedWriter->SetFileName( outputSpeedVolume );
+  speedWriter->SetFileName( outputSpeedVolume );
 
-    try
-      {
-      speedWriter->Update();
-      }
-    catch( itk::ExceptionObject & excep )
-      {
-      std::cerr << "Exception caught ! while writing the speed image" << std::endl;
-      std::cerr << "Filename : " << outputSpeedVolume << std::endl;
-      std::cerr << excep << std::endl;
-      }
+  try
+    {
+    speedWriter->Update();
+    }
+  catch( itk::ExceptionObject & excep )
+    {
+    std::cerr << "Exception caught ! while writing the speed image" << std::endl;
+    std::cerr << "Filename : " << outputSpeedVolume << std::endl;
+    std::cerr << excep << std::endl;
+    }
 
-    //}
-  
+  // }
+
   return 0;
 }

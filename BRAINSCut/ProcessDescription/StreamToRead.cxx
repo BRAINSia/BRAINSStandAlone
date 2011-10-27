@@ -45,4 +45,3 @@ StreamToRead::Close()
     }
   m_F = 0;
 }
-

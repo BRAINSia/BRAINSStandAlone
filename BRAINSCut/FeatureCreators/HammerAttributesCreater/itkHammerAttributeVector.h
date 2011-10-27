@@ -114,6 +114,7 @@ void HammerAttributeVector<TValueType, VLength>
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
 }
+
 }   // end namespace itk
 
 #endif

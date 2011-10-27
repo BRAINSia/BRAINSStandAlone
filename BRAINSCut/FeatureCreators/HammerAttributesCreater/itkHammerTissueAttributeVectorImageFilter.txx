@@ -67,7 +67,8 @@ HammerTissueAttributeVectorImageFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 HammerTissueAttributeVectorImageFilter<TInputImage, TOutputImage>
-::GenerateInputRequestedRegion() throw (InvalidRequestedRegionError)
+::GenerateInputRequestedRegion()
+throw (InvalidRequestedRegionError)
 {
   printf("* GenerateInputRequestRegion() \n");
   // call the superclass' implementation of this method
@@ -252,16 +253,16 @@ HammerTissueAttributeVectorImageFilter<TInputImage, TOutputImage>
 
   ImageRegionConstIteratorWithIndex<InputImageType> source( inputImage, inputImage->GetLargestPossibleRegion() );
   attributeVector.Fill( 0 );
-  int voxel_num=0;
-  for(it.GoToBegin(),source.GoToBegin();!it.IsAtEnd();++it,++source)
-  {
+  int voxel_num = 0;
+  for( it.GoToBegin(), source.GoToBegin(); !it.IsAtEnd(); ++it, ++source )
+    {
     attributeVector[1] = source.Get();
     it.Set(attributeVector);
-	  if(attributeVector[1]==m_WMValue)
-    {
-		    voxel_num++;
+    if( attributeVector[1] == m_WMValue )
+      {
+      voxel_num++;
+      }
     }
-  }
   printf(" voxel_num=%d\n", voxel_num);
 
   // Compute the Edge Information
@@ -270,124 +271,150 @@ HammerTissueAttributeVectorImageFilter<TInputImage, TOutputImage>
   int edge_num = 0;
   typename InputImageType::PixelType centerPixel, currentPixel;
   InputIndexType idx, cur_idx;
-  for(it.GoToBegin();!it.IsAtEnd();++it)
-  {
-	  attributeVector = it.Get();
-	  centerPixel = attributeVector[1];
-	  idx = it.GetIndex();
-	  if(idx[0]==0 || idx[1]==0 || idx[2]==0)
-	    continue;
-	  if(idx[0]==static_cast<signed int>(dummyRegion.GetSize()[0]-1) || 
-       idx[1]==static_cast<signed int>(dummyRegion.GetSize()[1]-1) ||
-       idx[2]==static_cast<signed int>(dummyRegion.GetSize()[2]-1) )
-	    continue;
-	  if(centerPixel == m_WMValue)
-	  {
-		  flag_GM = 0 ;
-		  flag_VN = 0 ;
-		  for(unsigned int k=0;k<m_N1Neighborhood.size();k++)
-		  {
-			  for(int s=0;s<InputImageDimension;s++)
-				  cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
+  for( it.GoToBegin(); !it.IsAtEnd(); ++it )
+    {
+    attributeVector = it.Get();
+    centerPixel = attributeVector[1];
+    idx = it.GetIndex();
+    if( idx[0] == 0 || idx[1] == 0 || idx[2] == 0 )
+      {
+      continue;
+      }
+    if( idx[0] == static_cast<signed int>(dummyRegion.GetSize()[0] - 1) ||
+        idx[1] == static_cast<signed int>(dummyRegion.GetSize()[1] - 1) ||
+        idx[2] == static_cast<signed int>(dummyRegion.GetSize()[2] - 1) )
+      {
+      continue;
+      }
+    if( centerPixel == m_WMValue )
+      {
+      flag_GM = 0;
+      flag_VN = 0;
+      for( unsigned int k = 0; k < m_N1Neighborhood.size(); k++ )
+        {
+        for( int s = 0; s < InputImageDimension; s++ )
+          {
+          cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
+          }
 
-// 			  if(!dummyRegion.IsInside(cur_idx))
-// 				  continue;
+//        if(!dummyRegion.IsInside(cur_idx))
+//          continue;
 
-			  currentPixel = inputImage->GetPixel(cur_idx);
-			  if(currentPixel == m_GMValue)
-				  flag_GM++;
-			  if(currentPixel == m_VNValue)
-				  flag_VN++;
-		  }
+        currentPixel = inputImage->GetPixel(cur_idx);
+        if( currentPixel == m_GMValue )
+          {
+          flag_GM++;
+          }
+        if( currentPixel == m_VNValue )
+          {
+          flag_VN++;
+          }
+        }
 
-		  /* determine, whether edge? If edge, which type */
-		  if( flag_GM>flag_VN )
-		  {
-			  attributeVector[0] = m_WMGMEDGE ;
-			  it.Set(attributeVector);
-		  }
-		  if( flag_GM<=flag_VN && flag_VN!=0 )
-		  {
-			  attributeVector[0] = m_WMVNEDGE ;
-			  it.Set(attributeVector);
-		  }
-	  }
-  }
-
-  for(it.GoToBegin();!it.IsAtEnd();++it)
-  {
-	  attributeVector = it.Get();
-	  centerPixel = attributeVector[1];
-	  idx = it.GetIndex();
-	  if(idx[0]==0 || idx[1]==0 || idx[2]==0)
-	  continue;
-	  if(idx[0]==static_cast<signed int>(dummyRegion.GetSize()[0]-1)||
-       idx[1]==static_cast<signed int>(dummyRegion.GetSize()[1]-1)||
-       idx[2]==static_cast<signed int>(dummyRegion.GetSize()[2]-1))
-	  continue;
-	  if(centerPixel == m_GMValue)
-	  {
-		  flag_CSF = 0 ;
-		  for(unsigned int k=0;k<m_N1Neighborhood.size();k++)
-		  {
-			  for(int s=0;s<InputImageDimension;s++)
-				  cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
-// 			  if(!dummyRegion.IsInside(cur_idx))
-// 				  continue;
-			  currentPixel = inputImage->GetPixel(cur_idx);
-			  if(currentPixel <= m_CSFValue)
-				  flag_CSF++;
-		  }
-		  if( flag_CSF>=strength )
-		  {
-			  attributeVector[0] = m_GMCSFBGEDGE ;
-			  it.Set(attributeVector);
-		  }
-	  }
-  }//end of Edge computation
-
-  for(it.GoToBegin();!it.IsAtEnd();++it)
-  {
-	  attributeVector = it.Get();
-	  centerPixel = attributeVector[1];
-	  idx = it.GetIndex();
-	  if(idx[0]==0 || idx[1]==0 || idx[2]==0)
-	  continue;
-	  if(idx[0]==static_cast<signed int>(dummyRegion.GetSize()[0]-1)||
-       idx[1]==static_cast<signed int>(dummyRegion.GetSize()[1]-1)||
-       idx[2]==static_cast<signed int>(dummyRegion.GetSize()[2]-1))
-	  continue;
-	  if(centerPixel == m_GMValue)
-	  {
-		  flag_VN = 0 ;
-		  for(unsigned int k=0;k<m_N1Neighborhood.size();k++)
-		  {
-			  for(int s=0;s<InputImageDimension;s++)
-				  cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
-// 			  if(!dummyRegion.IsInside(cur_idx))
-// 				  continue;
-			  currentPixel = inputImage->GetPixel(cur_idx);
-			  if(currentPixel == m_VNValue)
-				  flag_VN++;
-		  }
-		  if( flag_VN>=strength )
-		  {
-			  attributeVector[0] = m_GMVNEDGE ;
-			  it.Set(attributeVector);
-		  }		 
-	  }
-  }//end of Edge computation
+      /* determine, whether edge? If edge, which type */
+      if( flag_GM > flag_VN )
+        {
+        attributeVector[0] = m_WMGMEDGE;
+        it.Set(attributeVector);
+        }
+      if( flag_GM <= flag_VN && flag_VN != 0 )
+        {
+        attributeVector[0] = m_WMVNEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    }
+  for( it.GoToBegin(); !it.IsAtEnd(); ++it )
+    {
+    attributeVector = it.Get();
+    centerPixel = attributeVector[1];
+    idx = it.GetIndex();
+    if( idx[0] == 0 || idx[1] == 0 || idx[2] == 0 )
+      {
+      continue;
+      }
+    if( idx[0] == static_cast<signed int>(dummyRegion.GetSize()[0] - 1) ||
+        idx[1] == static_cast<signed int>(dummyRegion.GetSize()[1] - 1) ||
+        idx[2] == static_cast<signed int>(dummyRegion.GetSize()[2] - 1) )
+      {
+      continue;
+      }
+    if( centerPixel == m_GMValue )
+      {
+      flag_CSF = 0;
+      for( unsigned int k = 0; k < m_N1Neighborhood.size(); k++ )
+        {
+        for( int s = 0; s < InputImageDimension; s++ )
+          {
+          cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
+          }
+//        if(!dummyRegion.IsInside(cur_idx))
+//          continue;
+        currentPixel = inputImage->GetPixel(cur_idx);
+        if( currentPixel <= m_CSFValue )
+          {
+          flag_CSF++;
+          }
+        }
+      if( flag_CSF >= strength )
+        {
+        attributeVector[0] = m_GMCSFBGEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    } // end of Edge computation
+  for( it.GoToBegin(); !it.IsAtEnd(); ++it )
+    {
+    attributeVector = it.Get();
+    centerPixel = attributeVector[1];
+    idx = it.GetIndex();
+    if( idx[0] == 0 || idx[1] == 0 || idx[2] == 0 )
+      {
+      continue;
+      }
+    if( idx[0] == static_cast<signed int>(dummyRegion.GetSize()[0] - 1) ||
+        idx[1] == static_cast<signed int>(dummyRegion.GetSize()[1] - 1) ||
+        idx[2] == static_cast<signed int>(dummyRegion.GetSize()[2] - 1) )
+      {
+      continue;
+      }
+    if( centerPixel == m_GMValue )
+      {
+      flag_VN = 0;
+      for( unsigned int k = 0; k < m_N1Neighborhood.size(); k++ )
+        {
+        for( int s = 0; s < InputImageDimension; s++ )
+          {
+          cur_idx[s] = idx[s] + m_N1Neighborhood[k][s];
+          }
+//        if(!dummyRegion.IsInside(cur_idx))
+//          continue;
+        currentPixel = inputImage->GetPixel(cur_idx);
+        if( currentPixel == m_VNValue )
+          {
+          flag_VN++;
+          }
+        }
+      if( flag_VN >= strength )
+        {
+        attributeVector[0] = m_GMVNEDGE;
+        it.Set(attributeVector);
+        }
+      }
+    } // end of Edge computation
 
   edge_num = 0;
-  for(it.GoToBegin();!it.IsAtEnd();++it)
-  {
-	  attributeVector = it.Get();
-	  if(attributeVector[0]==m_GMCSFBGEDGE)
-		  edge_num++;
-  }
+  for( it.GoToBegin(); !it.IsAtEnd(); ++it )
+    {
+    attributeVector = it.Get();
+    if( attributeVector[0] == m_GMCSFBGEDGE )
+      {
+      edge_num++;
+      }
+    }
   printf(" edge_num=%d\n", edge_num);
-  //Compute the GMIs
-  int NumDown, VN_value, CSFBG_value;
+  // Compute the GMIs
+  int   NumDown, VN_value, CSFBG_value;
   float pixelNumInBubble = m_FeatureNeighborhood.size();
   printf("* Here we compute GMIs\n");
   for( it.GoToBegin(); !it.IsAtEnd(); ++it )
@@ -395,50 +422,68 @@ HammerTissueAttributeVectorImageFilter<TInputImage, TOutputImage>
     attributeVector = it.Get();
     idx = it.GetIndex();
     if( attributeVector.GetEdge() == 0 )
-    {
-      continue;
-    }
-    NumDown = 0 ;
-    VN_value = 0 ;
-    CSFBG_value = 0 ;
-    for(unsigned int t=0; t<m_FeatureNeighborhood.size(); t++)
       {
-      for(int s=0;s<InputImageDimension;s++)
+      continue;
+      }
+    NumDown = 0;
+    VN_value = 0;
+    CSFBG_value = 0;
+    for( unsigned int t = 0; t < m_FeatureNeighborhood.size(); t++ )
+      {
+      for( int s = 0; s < InputImageDimension; s++ )
+        {
         cur_idx[s] = idx[s] + (int)m_FeatureNeighborhood[t][s];
+        }
 //       if(!dummyRegion.IsInside(cur_idx))
 //         continue;
-	  if(cur_idx[0]<0 || cur_idx[1]<0 || cur_idx[2]<0)
-		  continue;
-	  if(cur_idx[0]>=static_cast<signed int>(dummyRegion.GetSize()[0])||
-       cur_idx[1]>=static_cast<signed int>(dummyRegion.GetSize()[1])|| 
-       cur_idx[2]>=static_cast<signed int>(dummyRegion.GetSize()[2]) )
-		  continue;
-      currentPixel = inputImage->GetPixel(cur_idx);        
+      if( cur_idx[0] < 0 || cur_idx[1] < 0 || cur_idx[2] < 0 )
+        {
+        continue;
+        }
+      if( cur_idx[0] >= static_cast<signed int>(dummyRegion.GetSize()[0]) ||
+          cur_idx[1] >= static_cast<signed int>(dummyRegion.GetSize()[1]) ||
+          cur_idx[2] >= static_cast<signed int>(dummyRegion.GetSize()[2]) )
+        {
+        continue;
+        }
+      currentPixel = inputImage->GetPixel(cur_idx);
       if( currentPixel != m_WMValue )
-        NumDown++ ;
-      if( currentPixel == m_VNValue )  
-        VN_value++ ;
-      if( currentPixel <= m_CSFValue)
-        CSFBG_value++ ;
+        {
+        NumDown++;
+        }
+      if( currentPixel == m_VNValue )
+        {
+        VN_value++;
+        }
+      if( currentPixel <= m_CSFValue )
+        {
+        CSFBG_value++;
+        }
       }
-    float degree = ((float)NumDown/pixelNumInBubble) ;
-    float value = degree*255*1.2 ; /*degree*degree*255*/
-    if( value>255 )
-      value = 255 ;
-    attributeVector[2] = (unsigned char)value ;
+    float degree = ( (float)NumDown / pixelNumInBubble);
+    float value = degree * 255 * 1.2; /*degree*degree*255*/
+    if( value > 255 )
+      {
+      value = 255;
+      }
+    attributeVector[2] = (unsigned char)value;
     /*printf("(%d,%d,%d)=%d\n", k, i, j, NumDown) ;*/
 
     /* VN volume */
-    VN_value = static_cast<int>(VN_value*255*1.2/pixelNumInBubble) ;
-    if( VN_value>255 )
-      VN_value=255 ;
-    attributeVector[3] = static_cast<unsigned char>(VN_value) ;
-        
+    VN_value = static_cast<int>(VN_value * 255 * 1.2 / pixelNumInBubble);
+    if( VN_value > 255 )
+      {
+      VN_value = 255;
+      }
+    attributeVector[3] = static_cast<unsigned char>(VN_value);
+
     /* CSF/BG volume */
-    CSFBG_value = static_cast<int>(CSFBG_value*255*1.2/pixelNumInBubble) ;
-    if( CSFBG_value>255 )
-      CSFBG_value=255 ;
-    attributeVector[4] = static_cast<unsigned char>(CSFBG_value) ;
+    CSFBG_value = static_cast<int>(CSFBG_value * 255 * 1.2 / pixelNumInBubble);
+    if( CSFBG_value > 255 )
+      {
+      CSFBG_value = 255;
+      }
+    attributeVector[4] = static_cast<unsigned char>(CSFBG_value);
     it.Set(attributeVector);
     }
 

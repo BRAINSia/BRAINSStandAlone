@@ -34,6 +34,7 @@ public:
   ProbabilityMapList() : CompoundObjectBase("ProbabilityMapList")
   {
   }
+
 };
 
 #endif

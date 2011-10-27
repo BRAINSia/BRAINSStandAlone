@@ -740,9 +740,9 @@ int CreateVectors(ProcessDescription & ANNXMLObject,
            inputVectorDataSets.begin();
          dsIt != inputVectorDataSets.end(); ++dsIt, ++DataSetCount )
       {
-      const std::string ImageID( ( *dsIt )->GetAttribute<StringValue>("Name") );
+      const std::string       ImageID( ( *dsIt )->GetAttribute<StringValue>("Name") );
       const RegistrationType *transform = ( *dsIt )->GetRegistrationWithID(regID);
-      const std::string AtlasToSubjRegistrationFilename
+      const std::string       AtlasToSubjRegistrationFilename
       (
         transform->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename")
       );
@@ -1068,4 +1068,3 @@ int CreateVectors(const std::string & XMLFile,
     }
   return rval;
 }
-

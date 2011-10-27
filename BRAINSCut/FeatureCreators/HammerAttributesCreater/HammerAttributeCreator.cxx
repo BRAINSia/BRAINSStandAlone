@@ -19,17 +19,16 @@
 #define PARTIALVOLUME 1
 
 #if PARTIALVOLUME > 0
-  #include "itkHammerTissueAttributeVectorFromPartialVolumeImageFilter.h"
+#include "itkHammerTissueAttributeVectorFromPartialVolumeImageFilter.h"
 #else
-  #include "itkHammerTissueAttributeVectorImageFilter.h"
+#include "itkHammerTissueAttributeVectorImageFilter.h"
 #endif
-
 
 #include "HammerAttributeCreatorCLP.h"
 
-typedef itk::Image<float, 3>            ImageType;
-typedef itk::HammerTissueAttributeVector        AttributeVectorType;
-typedef itk::Image<AttributeVectorType, 3>      AttributeImageType;
+typedef itk::Image<float, 3>               ImageType;
+typedef itk::HammerTissueAttributeVector   AttributeVectorType;
+typedef itk::Image<AttributeVectorType, 3> AttributeImageType;
 #if PARTIALVOLUME  > 0
 typedef itk::HammerTissueAttributeVectorFromPartialVolumeImageFilter<ImageType, AttributeImageType> AttributeFilterType;
 #else
@@ -64,21 +63,21 @@ int main(int argc, char *argv[])
 {
   PARSE_ARGS;
   /*** Load in fixed image and compute the attribute vectors ***/
-  itk::ImageFileReader<ImageType>::Pointer gmReader 
-                                        = itk::ImageFileReader<ImageType>::New();
-  itk::ImageFileReader<ImageType>::Pointer wmReader 
-                                        = itk::ImageFileReader<ImageType>::New();
-  itk::ImageFileReader<ImageType>::Pointer csfReader 
-                                        = itk::ImageFileReader<ImageType>::New();
+  itk::ImageFileReader<ImageType>::Pointer gmReader
+    = itk::ImageFileReader<ImageType>::New();
+  itk::ImageFileReader<ImageType>::Pointer wmReader
+    = itk::ImageFileReader<ImageType>::New();
+  itk::ImageFileReader<ImageType>::Pointer csfReader
+    = itk::ImageFileReader<ImageType>::New();
   gmReader->SetFileName(inputGMVolume);
   wmReader->SetFileName(inputWMVolume);
   csfReader->SetFileName(inputCSFVolume);
   try
-  {
-      gmReader->Update();
-      wmReader->Update();
-      csfReader->Update();
-  }
+    {
+    gmReader->Update();
+    wmReader->Update();
+    csfReader->Update();
+    }
   catch( itk::ExceptionObject *ex )
     {
     std::cerr << ex << std::endl;
@@ -102,7 +101,8 @@ int main(int argc, char *argv[])
 
   std::cout << "Image read in\n";
 
-  typedef itk::HammerTissueAttributeVectorFromPartialVolumeImageFilter<ImageType, AttributeImageType> AttributeFilterType;
+  typedef itk::HammerTissueAttributeVectorFromPartialVolumeImageFilter<ImageType,
+                                                                       AttributeImageType> AttributeFilterType;
   AttributeFilterType::Pointer modleAttributeFilter = AttributeFilterType::New();
   modleAttributeFilter->SetCSFVolume( wmReader->GetOutput() );
   modleAttributeFilter->SetGMVolume( gmReader->GetOutput() );
@@ -124,4 +124,3 @@ int main(int argc, char *argv[])
 
   return 0;
 }
-

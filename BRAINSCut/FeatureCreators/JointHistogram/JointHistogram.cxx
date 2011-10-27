@@ -161,7 +161,6 @@ main(int argc, char *argv[])
                      << ", " << inputVolume2
                      << ", " << FrequencyName
                      << std::endl;
-
     //
     // - Iterate for each bins
     //
@@ -281,4 +280,3 @@ main(int argc, char *argv[])
     }
   return 0;
 }
-

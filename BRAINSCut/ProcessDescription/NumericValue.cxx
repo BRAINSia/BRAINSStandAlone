@@ -49,4 +49,3 @@ FloatValue::SetValue(const std::string & stringval)
     }
   this->NumericValue<double>::SetValue(val);
 }
-

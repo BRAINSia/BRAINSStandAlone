@@ -281,4 +281,3 @@ ShuffleVectors::Shuffling()
   delete[] buf;
   delete[] order;
 }
-

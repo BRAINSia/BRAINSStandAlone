@@ -28,6 +28,7 @@ public:
   LandmarkList() : CompoundObjectBase("LandmarkList")
   {
   }
+
 };
 
 #endif // xoLandmarkType_h

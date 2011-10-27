@@ -159,6 +159,7 @@ public:
   void PrintSelf(std::ostream & /* os */, Indent /* indent */) const
   {
   }
+
 };
 }   // end namespace itk
 

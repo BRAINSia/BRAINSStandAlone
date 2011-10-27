@@ -36,6 +36,7 @@ public:
   ProcessObjectBase()
   {
   }
+
   virtual ~ProcessObjectBase()
   {
   }
@@ -96,9 +97,11 @@ public:
   ValueObjectBase()
   {
   }
+
   virtual ~ValueObjectBase()
   {
   }
+
   virtual OutputType GetValue(void) const = 0;
 
 };

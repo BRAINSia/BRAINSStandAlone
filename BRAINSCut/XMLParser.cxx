@@ -67,4 +67,3 @@ XMLParserBase::Parse()
                    inputstream.gcount(),
                    true);
 }
-

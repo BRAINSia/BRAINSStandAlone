@@ -38,5 +38,6 @@ public:
   RegistrationList() : CompoundObjectBase("RegistrationList")
   {
   }
+
 };
 #endif

@@ -28,7 +28,7 @@ PURPOSE.  See the above copyright notices for more information.
 
 namespace itk
 {
-/** \classHammerTissueAttributeVectorFromPartialVolumeImageFilter 
+/** \classHammerTissueAttributeVectorFromPartialVolumeImageFilter
   * \brief Computes the gradient of an image using directional derivatives.
   *
   * Computes the gradient of an image using directional derivatives.
@@ -50,7 +50,7 @@ namespace itk
   * \ingroup GradientFilters
   */
 template <class TInputImage, class TOutputImage>
-class ITK_EXPORT HammerTissueAttributeVectorFromPartialVolumeImageFilter:
+class ITK_EXPORT HammerTissueAttributeVectorFromPartialVolumeImageFilter :
   public ImageToImageFilter<TInputImage, TOutputImage>
 {
 public:
@@ -114,15 +114,17 @@ public:
 
   void SetGMVolume( const TInputImage * inputGMVolume)
   {
-    SetNthInput(0,const_cast <TInputImage *> ( inputGMVolume ) );
+    SetNthInput(0, const_cast<TInputImage *>( inputGMVolume ) );
   }
+
   void SetWMVolume( const TInputImage * inputWMVolume)
   {
-    SetNthInput(1,const_cast <TInputImage *> ( inputWMVolume ) );
+    SetNthInput(1, const_cast<TInputImage *>( inputWMVolume ) );
   }
+
   void SetCSFVolume( const TInputImage * inputCSFVolume)
   {
-    SetNthInput(2,const_cast <TInputImage *> ( inputCSFVolume ) );
+    SetNthInput(2, const_cast<TInputImage *>( inputCSFVolume ) );
   }
 
   /** HammerTissueAttributeVectorFromPartialVolumeImageFilter needs a larger input requested region than
@@ -180,7 +182,6 @@ protected:
   virtual ~HammerTissueAttributeVectorFromPartialVolumeImageFilter();
   void PrintSelf(std::ostream & os, Indent indent) const;
 
-
   /** HammerTissueAttributeVectorFromPartialVolumeImageFilter can be implemented as a multithreaded filter.
   * Therefore, this implementation provides a ThreadedGenerateData()
   * routine which is called for each processing thread. The output
@@ -195,7 +196,7 @@ protected:
 
 private:
   HammerTissueAttributeVectorFromPartialVolumeImageFilter(const Self &);   // purposely not
-                                                          // implemented
+  // implemented
   void operator=(const Self &);                           // purposely not
 
   // implemented

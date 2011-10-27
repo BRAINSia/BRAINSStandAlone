@@ -21,8 +21,8 @@ private:
 
 public:
   typedef std::map<std::string, ProcessObjectBase *> MapType;
-  typedef MapType::iterator                           iterator;
-  typedef MapType::const_iterator                     const_iterator;
+  typedef MapType::iterator                          iterator;
+  typedef MapType::const_iterator                    const_iterator;
   typedef std::vector<std::string>                   StringVectorType;
   CompoundObjectBase(const char *name) :
     ProcessObjectBase(name)
@@ -44,7 +44,7 @@ public:
 
   virtual bool Verify() const
   {
-    static bool       ErrorPrinted = false;
+    static bool             ErrorPrinted = false;
     MapType::const_iterator it;
     for( it = m_Map.begin(); it != m_Map.end(); ++it )
       {
@@ -114,11 +114,11 @@ public:
       }
 
     return dynamic_cast<const T *>( it->second );     // returns zero if it can't
-                                                // cast to the required type.
+    // cast to the required type.
   }
 
   template <typename T>
-  T * Get(const char *name) 
+  T * Get(const char *name)
   {
     std::string lowercaseName(name);
 
@@ -221,7 +221,7 @@ public:
   StringVectorType CollectAttValues(const char *attributeName) const
   {
     StringVectorType rval( this->size() );
-    const_iterator         it;
+    const_iterator   it;
     unsigned         i = 0;
     for( it = this->begin(); it != this->end(); ++it )
       {

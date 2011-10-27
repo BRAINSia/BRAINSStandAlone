@@ -28,6 +28,7 @@ public:
   MaskList() : CompoundObjectBase("MaskList")
   {
   }
+
 };
 
 #endif // MaskType

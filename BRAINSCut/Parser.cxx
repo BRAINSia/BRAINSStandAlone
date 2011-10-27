@@ -389,4 +389,3 @@ bool ReadXML(const char *filename, ProcessDescription & prob)
   parser.SetUserData(&stack);
   return parser.Parse();
 }
-
