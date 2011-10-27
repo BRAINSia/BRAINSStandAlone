@@ -306,5 +306,5 @@ main(int argc, char *argv[])
                         << " < "
                         << histogramRScript
                         << std::endl;
-
+  return EXIT_SUCCESS;
 }

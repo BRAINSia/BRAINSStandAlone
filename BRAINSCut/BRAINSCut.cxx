@@ -66,7 +66,7 @@ int main(int argc, char * *argv)
 
     }
 
-/*
+/* DELETE THIS
   BRAINSUtils::SetThreadCount(numberOfThreads);
 
   // Apparently when you register one transform, you need to register all your
@@ -140,4 +140,5 @@ int main(int argc, char * *argv)
     }
   exit(status);
   */
+    return EXIT_SUCCESS;
 }

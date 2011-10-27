@@ -213,7 +213,7 @@ BRAINSCutVectorTrainingSet
   scalarType * buffer = new scalarType[bufferRecordSize];
 
   fileStream.read( (char *)buffer, recordSize );
-  for( int i = 0; i < bufferRecordSize; i++ )
+  for( unsigned int i = 0; i < bufferRecordSize; i++ )
     {
     std::cout << buffer[i] << " ";
     }
