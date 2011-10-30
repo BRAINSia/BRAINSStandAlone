@@ -151,12 +151,18 @@ BinaryImagePointer
 BRAINSCutApplyModel
 ::ThresholdImageAtLower( WorkingImagePointer image, scalarType thresholdValue  )
 {
-  typedef itk::BinaryThresholdImageFilter<WorkingImageType, WorkingImageType> ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<WorkingImageType,WorkingImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
+  std::cout<<"Treshold at "<< annOutputThreshold <<std::endl;
+  if( annOutputThreshold <= 0.0F )
+  {
+    std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
+    throw BRAINSCutExceptionStringHandler( msg );
+  }
   thresholder->SetInput( image );
-  thresholder->SetInsideValue( 1 );
   thresholder->SetOutsideValue( 0 );
+<<<<<<< HEAD
   thresholder->SetLowerThreshold( thresholdValue );
   thresholder->Update();
 
@@ -175,9 +181,23 @@ BRAINSCutApplyModel
   thresholder->SetOutsideValue( 0 );
   thresholder->SetUpperThreshold( thresholdValue );
   thresholder->SetLowerThreshold( thresholdValue );
+=======
+  thresholder->SetInsideValue( 255 );
+  thresholder->SetLowerThreshold( annOutputThreshold  );
+>>>>>>> EHN: SEM compliant command line interface fixed for
   thresholder->Update();
+  return mask;
+}
 
+BinaryTypePointer
+BRAINSCutApplyModel
+::GetOneContinuousObject( BinaryTypePointer binaryImage )
+{
+
+<<<<<<< HEAD
   BinaryImagePointer mask = itkUtil::TypeCast<BinaryImageType, BinaryImageType>( thresholder->GetOutput() );
+=======
+>>>>>>> EHN: SEM compliant command line interface fixed for
   return mask;
 }
 
