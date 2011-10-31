@@ -1,7 +1,7 @@
-#if !defined(__debugImage_h)
-#define __debugImage_h 1
-#cmakedefine BRAINSDEMONWARP_DEBUG_OUTPUT
-#if defined(BRAINSDEMONWARP_DEBUG_OUTPUT)
+#ifndef __DebugImageWrite_h
+#define __DebugImageWrite_h
+#include "BRAINSCommonLib.h"
+#if defined(BRAINS_DEBUG_IMAGE_WRITE)
 #include "itkIO.h"
 #include "itksys/SystemTools.hxx"
 
@@ -65,5 +65,5 @@ extern int fileSequenceNumber;
 #define DebugOutput(imageType,image)
 #define DebugOutputN(imageType,image,N,name)
 #define DebugOutputWName(imageType,image,name)
-#endif // BRAINSDEMONWARP_DEBUG_OUTPUT
-#endif // __debugImage_h
+#endif // BRAINS_DEBUG_IMAGE_WRITE
+#endif // __DebugImageWrite_h
