@@ -89,8 +89,7 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
       std::cout << "Unknown landmark file format!" << std::endl;
       return false;
     default:
-      std::cout << "Error. Invalid Landmark_File_Format type!" << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "Error. Invalid Landmark_File_Format type!");
     }
   return check;
 }
@@ -150,8 +149,7 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
       std::cout << "Unknown landmark file format!" << std::endl;
       return false;
     default:
-      std::cout << "Error. Invalid Landmark_File_Format type!" << std::endl;
-      exit(-1);
+      itkGenericExceptionObject(<< "Error. Invalid Landmark_File_Format type!");
     }
   return true;
 }
@@ -223,10 +221,7 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
     {
     return true;
     }
-  else
-    {
-    return false;
-    }
+  return false;
 }
 
 template <typename PointStorageType, typename PointSetType>
@@ -370,8 +365,6 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
   FILE *tempfile = fopen(lmrkfilename.c_str(), "r");
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 256;
@@ -413,51 +406,30 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
       continue;
       }
     PointType TempPnt;
+
+    double       val0;
+    double       val1;
+    double       val2;
+    double       valT;
+    double       valW;
+    unsigned int numread = sscanf(buffer, "%s %lf %lf %lf %lf %lf",
+                                  CurrentLandmarkName,
+                                  &val0, &val1, &val2, &valT, &valW);
+    if( numread < 6 )
       {
-      double       val0;
-      double       val1;
-      double       val2;
-      double       valT;
-      double       valW;
-      unsigned int numread = sscanf(buffer, "%s %lf %lf %lf %lf %lf",
-                                    CurrentLandmarkName,
-                                    &val0, &val1, &val2, &valT, &valW);
-      if( numread < 6 )
-        {
-        return false;
-        }
-      TempPnt[0] = static_cast<double>( val0 );
-      TempPnt[1] = static_cast<double>( val1 );
-      TempPnt[2] = static_cast<double>( val2 );
-      TempPnt.SetT( static_cast<double>( valT ) );
-      TempPnt.SetWeighting( static_cast<double>( valW ) );
-      }
-    if( ImageDims[0] <= TempPnt[0] )
-      {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid x
-      // coordinate.  Max value is: " << ImageDims[0]-1<<std::endl;
-      // exit( -1 );
       return false;
       }
-    if( ImageDims[1] <= TempPnt[1] )
+    TempPnt[0] = static_cast<double>( val0 );
+    TempPnt[1] = static_cast<double>( val1 );
+    TempPnt[2] = static_cast<double>( val2 );
+    TempPnt.SetT( static_cast<double>( valT ) );
+    TempPnt.SetWeighting( static_cast<double>( valW ) );
+
+    if( ImageDims[0] <= TempPnt[0] ||
+        ImageDims[1] <= TempPnt[1] ||
+        ImageDims[2] <= TempPnt[2] ||
+        ImageDims[3] <= TempPnt.GetT() )
       {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid y
-      // coordinate.  Max value is: " << ImageDims[1]-1<<std::endl;
-      // exit( -1 );
-      return false;
-      }
-    if( ImageDims[2] <= TempPnt[2] )
-      {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid z
-      // coordinate.  Max value is: " << ImageDims[2]-1<<std::endl;
-      // exit( -1 );
-      return false;
-      }
-    if( ImageDims[3] <= TempPnt.GetT() )
-      {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid t
-      // coordinate.  Max value is: " << ImageDims[3]-1<<std::endl;
-      // exit( -1 );
       return false;
       }
     ( *this )[CurrentLandmarkName] = TempPnt;
@@ -498,8 +470,6 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
   FILE *tempfile = fopen(lmrkfilename.c_str(), "r");
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 128;
@@ -645,8 +615,6 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
   FILE *tempfile = fopen(lmrkfilename.c_str(), "r");
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 128;
@@ -1028,23 +996,14 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
 
     if( ImageDims[0] <= TempPnt[0] )
       {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid x
-      // coordinate.  Max value is: " << ImageDims[0]-1<<std::endl;
-      // exit( -1 );
       return false;
       }
     if( ImageDims[1] <= TempPnt[1] )
       {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid y
-      // coordinate.  Max value is: " << ImageDims[1]-1<<std::endl;
-      // exit( -1 );
       return false;
       }
     if( ImageDims[2] <= TempPnt[2] )
       {
-      // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid z
-      // coordinate.  Max value is: " << ImageDims[2]-1<<std::endl;
-      // exit( -1 );
       return false;
       }
 
@@ -1110,8 +1069,6 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
 
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   fprintf(tempfile, "#GECLANDMARKS-v1.0\n");
@@ -1164,8 +1121,6 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
 
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   fprintf(tempfile, "Landmarks-1.0\n");
@@ -1207,8 +1162,6 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
 
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
 
@@ -1495,8 +1448,6 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
   FILE *tempfile = fopen(lmrkfilename.c_str(), "r");
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 256;
@@ -1701,30 +1652,18 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
   ModifiedPoint.SetWeighting(1.0F);
   if( local_ImageDims[0] <= ModifiedPoint[0] )
     {
-    // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid x
-    // coordinate.  Max value is: " << local_ImageDims[0]-1<<std::endl;
-    // exit( -1 );
     return false;
     }
   if( local_ImageDims[1] <= ModifiedPoint[1] )
     {
-    // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid y
-    // coordinate.  Max value is: " << local_ImageDims[1]-1<<std::endl;
-    // exit( -1 );
     return false;
     }
   if( local_ImageDims[2] <= ModifiedPoint[2] )
     {
-    // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid z
-    // coordinate.  Max value is: " << local_ImageDims[2]-1<<std::endl;
-    // exit( -1 );
     return false;
     }
   if( local_ImageDims[3] <= ModifiedPoint.GetT() )
     {
-    // std::cout << "Error: Point "<< CurrentLandmarkName << " has invalid t
-    // coordinate.  Max value is: " << local_ImageDims[3]-1<<std::endl;
-    // exit( -1 );
     return false;
     }
   for( int i = 0; i < 3; ++i )
@@ -1749,8 +1688,6 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
   FILE *tempfile = fopen(lmrkfilename.c_str(), "r");
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 256;
@@ -2120,8 +2057,6 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
 
   if( tempfile == NULL )
     {
-    // std::cout << "ERROR: can not open " << lmrkfilename << std::endl;
-    // exit( -1 );
     return false;
     }
   const unsigned short int FILE_BUFFER_SIZE = 256;
