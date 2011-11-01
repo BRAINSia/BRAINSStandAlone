@@ -70,8 +70,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "ProbabilityMap" )
@@ -98,8 +97,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "Registration" )
@@ -134,8 +132,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "RegistrationConfiguration" )
@@ -157,8 +154,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "Mask" )
@@ -177,8 +173,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "Image" )
@@ -197,8 +192,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "SpatialLocation" )
@@ -217,8 +211,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "NeuralNetParams" )
@@ -254,8 +247,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "ANNParams" )
@@ -293,8 +285,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else if( Name == "ApplyModel" )
@@ -312,8 +303,7 @@ NetConfigurationParser::StartElement(void *userData,
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
-      std::cout << ex.Error() << std::endl;
-      exit(EXIT_SUCCESS);
+      throw;
       }
     }
   else

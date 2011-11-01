@@ -100,6 +100,6 @@ int main(int, char *argv[])
   itkUtil::WriteImage<ImageType>(theImage, filename);
   std::string maskFilename(argv[2]);
   itkUtil::WriteImage<ImageType>(theMaskImage, maskFilename);
-  exit(0);
+  return EXIT_SUCCESS;
 }
 

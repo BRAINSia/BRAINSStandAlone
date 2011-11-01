@@ -32,6 +32,7 @@ PURPOSE.  See the above copyright notices for more information.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 #include <vcl_cmath.h>
 #include "ImageCalculatorUtils.h"
 #include <metaCommand.h>
@@ -562,18 +563,10 @@ void ProcessOutputStage( const typename itk::Image< InPixelType, dims >::Pointer
   writer->SetFileName(outputImageFilename);
   writer->SetInput(OutputImage);
 
-  try
-    {
-    writer->Update();
-    }
-  catch (itk::ExceptionObject &err)
-    {
-    std::cout << "Exception Object caught: " << std::endl;
-    std::cout << err << std::endl;
-    exit(-1);
-    }
-    //Caluculate Statistics of the Image.
-    statfilters<OutputImageType>(OutputImage,command);
+  writer->Update();
+
+  //Caluculate Statistics of the Image.
+  statfilters<OutputImageType>(OutputImage,command);
 }
 
 
@@ -682,8 +675,7 @@ void ImageCalculatorReadWrite( MetaCommand &command )
    //Check whether the image dimensions and the spacing are the same.
     if( (AccImage->GetLargestPossibleRegion().GetSize() != image->GetLargestPossibleRegion().GetSize()) )
       {
-      std::cout<<"Error::The size of the images don't match. \n";
-      exit(-1);
+      itkGenericExceptionMacro(<< "Error:: The size of the images don't match.")
       }
 
     vnl_vector_fixed<double,3> spacingDifference;
@@ -693,8 +685,7 @@ void ImageCalculatorReadWrite( MetaCommand &command )
 
     if(spacingDifference.two_norm() > 0.0001) //HACK:  Should be a percentage of the actaul spacing size.
       {
-      std::cout<<"ERROR: ::The pixel spacing of the images are not close enough. \n";
-      exit(-1);
+      itkGenericExceptionMacro(<<"ERROR: ::The pixel spacing of the images are not close enough.");
       }
     else if( AccImage->GetSpacing() != image->GetSpacing() )
       {
@@ -702,8 +693,7 @@ void ImageCalculatorReadWrite( MetaCommand &command )
       }
     if(AccImage->GetDirection() != image->GetDirection())
       {
-      std::cout<<"Error::The orientation of the images are different. \n";
-      exit(-1);
+      itkGenericExceptionMacro(<<"Error::The orientation of the images are different.");
       }
 
     //Do the math for the Accumulator image and the image read in for each iteration.
@@ -778,33 +768,41 @@ void ImageCalculatorReadWrite( MetaCommand &command )
     if ( command.GetValueAsString("OutputPixelType","PixelType" ) != "" )
       {
       // process the string for the data type
-      if ( CompareNoCase( OutType.c_str(), std::string("UCHAR") ) == 0 ) {
-      ProcessOutputStage< PixelType , unsigned char , dims >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("SHORT") ) == 0 ) {
-      ProcessOutputStage< PixelType , short , dims  >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("USHORT") ) == 0 ) {
-      ProcessOutputStage< PixelType , unsigned short , dims  >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("INT") ) == 0 ) {
-      ProcessOutputStage< PixelType , int , dims  >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("UINT") ) == 0 ) {
-      ProcessOutputStage< PixelType , unsigned int , dims  >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("FLOAT") ) == 0 ) {
-      ProcessOutputStage< PixelType , float , dims  >(AccImage,outputFilename,command);
-      }
-      else if ( CompareNoCase( OutType.c_str(), std::string("DOUBLE") ) == 0 ) {
+      if ( CompareNoCase( OutType.c_str(), std::string("UCHAR") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , unsigned char , dims >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("SHORT") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , short , dims  >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("USHORT") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , unsigned short , dims  >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("INT") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , int , dims  >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("UINT") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , unsigned int , dims  >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("FLOAT") ) == 0 )
+        {
+        ProcessOutputStage< PixelType , float , dims  >(AccImage,outputFilename,command);
+        }
+      else if ( CompareNoCase( OutType.c_str(), std::string("DOUBLE") ) == 0 )
+        {
 
-      ProcessOutputStage< PixelType, double , dims  >(AccImage,outputFilename,command);
-      }
-      else {
-      std::cout << "Error. Invalid data type for -outtype!  Use one of these:" << std::endl;
-      PrintDataTypeStrings();
-      exit(-1);
-      }
+        ProcessOutputStage< PixelType, double , dims  >(AccImage,outputFilename,command);
+        }
+      else
+        {
+        std::cout << "Error. Invalid data type for -outtype!  Use one of these:" << std::endl;
+        PrintDataTypeStrings();
+        throw;
+        }
       }
     else
       {
