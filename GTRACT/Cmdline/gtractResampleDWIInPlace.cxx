@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef signed short                        PixelType;
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
               << inputTransform
               << " wasn't of the expected type itk::VersorRigid3DTransform<double"
               << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
   resampleImage = SetVectorImageRigidTransformInPlace<NrrdImageType>(rigidTransform.GetPointer(), resampleImage);
   for( unsigned int i = 0; i < resampleImage->GetVectorLength(); i++ )

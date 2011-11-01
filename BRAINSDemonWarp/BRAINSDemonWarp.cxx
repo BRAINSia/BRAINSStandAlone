@@ -181,12 +181,12 @@ int main(int argc, char *argv[])
     <<
     "Invalid Patameters. The value of checkboardPatternSubdivisions should not be zero!"
     << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
 
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   // Test if the input data type is valid
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
       << std::endl;
       std::cout << "Use one of the following:" << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
 
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
       << std::endl;
       std::cout << "Use one of the following:" << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
 
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
     << "Error. Invalid data type for --inputPixelType!  Use one of these:"
     << std::endl;
     PrintDataTypeStrings();
-    exit(-1);
+    return EXIT_FAILURE;
     }
   return 0;
 }

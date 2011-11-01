@@ -135,7 +135,7 @@ main(int argc, char *argv[])
     {
     std::cout << "Using: " << histogramAlgorithm << " algorithm." << std::endl;
     std::cout << "This is under the construction. " << std::endl;
-    exit(1);
+    return EXIT_FAILURE;
     // Find quantiles and linearly scale image.
     //
     }
@@ -284,9 +284,10 @@ main(int argc, char *argv[])
   else
     {
     std::cout << "Unsupported Histogram Algorithm Option "
-              << "Please check available option with  -help"
+              << histogramAlgorithm
+              << ". Please check available option with  -help"
               << std::endl;
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   /*

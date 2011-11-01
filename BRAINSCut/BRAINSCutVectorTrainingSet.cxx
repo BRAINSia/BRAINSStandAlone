@@ -146,8 +146,7 @@ BRAINSCutVectorTrainingSet::ShufflingOrder()
 
   if( rval == 0 )
     {
-    std::cerr << "Can't allocate shuffled ordering" << std::endl;
-    exit(1);
+    return 0;
     }
   for( int i = 0; i < totalVectorSize; i++ )
     {
@@ -221,9 +220,7 @@ BRAINSCutVectorTrainingSet
 
   if( buffer[bufferRecordSize - 1] != LineGuard )
     {
-    std::cout << "Record not properly terminated by sentinel value" << std::endl;
     throw ( BRAINSCutExceptionStringHandler( "Record not properly terminated by sentinel value") );
-    exit( EXIT_FAILURE );
     }
   return buffer;
 }

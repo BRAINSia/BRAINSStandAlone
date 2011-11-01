@@ -25,16 +25,7 @@ void
 BRAINSCutGenerateProbability
 ::SetTrainingDataSetsList()
 {
-  try
-    {
-    trainingDataSetList = BRAINSCutNetConfiguration.GetTrainDataSets();
-    }
-  catch( BRAINSCutExceptionStringHandler& e )
-    {
-    std::cout << e.Error() << std::endl;
-    exit(EXIT_SUCCESS);
-    }
-
+  trainingDataSetList = BRAINSCutNetConfiguration.GetTrainDataSets();
 }
 
 /*
