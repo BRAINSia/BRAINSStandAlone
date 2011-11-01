@@ -9,7 +9,7 @@ main(int argc, char * *argv)
     {
     std::cerr << "TestLargestForegrounFilledMaskImageFilter <input image> <output image>"
               << std::endl;
-    exit(1);
+    return EXIT_FAILURE;
     }
   typedef itk::Image<float, 3> ImageType;
   typedef itk::LargestForegroundFilledMaskImageFilter<ImageType>
@@ -22,6 +22,6 @@ main(int argc, char * *argv)
   filter->Update();
   ImageType::Pointer outputImage = filter->GetOutput();
   itkUtil::WriteImage<ImageType>(outputImage, outputname);
-  return 0;
+  return EXIT_SUCCESS;
 }
 
