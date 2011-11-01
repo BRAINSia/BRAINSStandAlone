@@ -73,7 +73,7 @@ itk::AddExtraTransformRegister();
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef float AnisotropyPixelType;

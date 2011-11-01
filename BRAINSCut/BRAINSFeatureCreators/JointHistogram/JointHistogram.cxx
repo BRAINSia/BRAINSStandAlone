@@ -69,7 +69,7 @@ main(int argc, char *argv[])
       std::cerr << "Exception in Resampling." << std::endl;
       std::cerr << e.GetDescription() << std::endl;
       std::cerr << e.GetLocation() << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
 
     //
@@ -100,7 +100,7 @@ main(int argc, char *argv[])
       std::cerr << "Exception in Resampling." << std::endl;
       std::cerr << e.GetDescription() << std::endl;
       std::cerr << e.GetLocation() << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
 
     //
@@ -266,7 +266,7 @@ main(int argc, char *argv[])
       std::cerr << "Exception in Resampling." << std::endl;
       std::cerr << e.GetDescription() << std::endl;
       std::cerr << e.GetLocation() << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
 
     }
@@ -275,7 +275,7 @@ main(int argc, char *argv[])
     std::cout << " Wrong Argument! " << std::endl
               << " inputVolume1, inputVolume2, and inputLabelVolume are necessary! "
               << std::endl;
-    exit( EXIT_FAILURE);
+    return EXIT_FAILURE;
 
     }
   return 0;

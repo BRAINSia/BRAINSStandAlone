@@ -209,7 +209,7 @@ int main(int argc,char **argv)
   int numdims = -1;
   if(!ProcessArgs(argc,argv,filename,x,y,z,t,PType,value,numdims))
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
   std::cerr << "Filename: " << filename << " Dimensions: " << x << " "
             << y << " " << z << " " << " Value: " << value
@@ -218,52 +218,52 @@ int main(int argc,char **argv)
   switch(PType)                                                         \
     {                                                                   \
     case Char:                                                          \
-      exit(MakeImage<char,dim>(filename,x,y,z,t,                        \
+      return (MakeImage<char,dim>(filename,x,y,z,t,                     \
                                static_cast<char>(value)));              \
       break;                                                            \
     case UnsignedChar:                                                  \
-      exit(MakeImage<unsigned char,dim>(filename,x,y,z,t,               \
+      return (MakeImage<unsigned char,dim>(filename,x,y,z,t,            \
                                         static_cast<unsigned char>(value))); \
       break;                                                            \
     case Short:                                                         \
-      exit(MakeImage<short,dim>(filename,x,y,z,t,                       \
+      return (MakeImage<short,dim>(filename,x,y,z,t,                    \
                                 static_cast<short>(value)));            \
       break;                                                            \
     case UnsignedShort:                                                 \
-      exit(MakeImage<unsigned short,dim> \
+      return (MakeImage<unsigned short,dim>                             \
            (filename,x,y,z,t,                                           \
                                          static_cast<unsigned short>(value))); \
       break;                                                            \
     case Int:                                                           \
-      exit(MakeImage<int,dim>(filename,x,y,z,t,                         \
+      return (MakeImage<int,dim>(filename,x,y,z,t,                      \
                               static_cast<int>(value)));                \
       break;                                                            \
     case UnsignedInt:                                                   \
-      exit(MakeImage<unsigned int,dim>\
+      return (MakeImage<unsigned int,dim>                               \
            (filename,x,y,z,t,                                           \
                                        static_cast<unsigned int>(value))); \
       break;                                                            \
     case Float:                                                         \
-      exit(MakeImage<float,dim>(filename,x,y,z,t,                       \
+      return (MakeImage<float,dim>(filename,x,y,z,t,                    \
                                 static_cast<float>(value)));            \
       break;                                                            \
     case Double:                                                        \
-      exit(MakeImage<double,dim>(filename,x,y,z,t,                      \
+      return (MakeImage<double,dim>(filename,x,y,z,t,                   \
                                  static_cast<double>(value)));          \
       break;                                                            \
     case ThreeVectorComplex:                                            \
-      exit(MakeImage<ThreeVectorComplexPixelType,dim>                   \
+      return (MakeImage<ThreeVectorComplexPixelType,dim>                \
            (filename,x,y,z,t,                                           \
             static_cast<ThreeVectorComplexPixelType>(value)));          \
       break;                                                            \
     case Rgb:                                                           \
-      exit(MakeImage<RGBPixelType,dim>                                  \
+      return (MakeImage<RGBPixelType,dim>                               \
            (filename,x,y,z,t,                                           \
             static_cast<RGBPixelType>(                                  \
               static_cast<unsigned char>(value))));                     \
       break;                                                            \
     default:                                                            \
-      exit(1);                                                          \
+      return EXIT_FAILURE;                                              \
     }
   switch(numdims)
     {
