@@ -16,6 +16,7 @@ main(int argc, char * *argv)
               << std::endl;
     std::cerr << "downsample size of 1 will be the same size as the input images, "
               << "downsample size of 3 will throw 2/3 the vectors away."
+              << std::endl;
     return EXIT_FAILURE;
     }
   //
@@ -28,5 +29,5 @@ main(int argc, char * *argv)
   my_ShuffleVector->Shuffling();
   my_ShuffleVector->WriteHeader();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
