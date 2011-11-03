@@ -18,14 +18,13 @@ BRAINSCutPrimary
 ::SetNetConfiguration()
 {
   std::cout << __LINE__ << "::" << __FILE__ << std::endl;
-    std::list<XMLElementContainer *> elementList;
+  std::list<XMLElementContainer *> elementList;
 
-    elementList.push_front( &BRAINSCutNetConfiguration );
+  elementList.push_front( &BRAINSCutNetConfiguration );
 
-    NetConfigurationParser BRIANSCutNetConfigurationParser = NetConfigurationParser( NetConfigurationFilename );
-    BRIANSCutNetConfigurationParser.SetUserData( &elementList );
-    BRIANSCutNetConfigurationParser.Parse();
-    }
+  NetConfigurationParser BRIANSCutNetConfigurationParser = NetConfigurationParser( NetConfigurationFilename );
+  BRIANSCutNetConfigurationParser.SetUserData( &elementList );
+  BRIANSCutNetConfigurationParser.Parse();
 }
 
 void
