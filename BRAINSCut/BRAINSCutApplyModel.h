@@ -10,6 +10,7 @@ typedef BinaryImageType::Pointer             BinaryImagePointer;
 class BRAINSCutApplyModel : public BRAINSCutPrimary
 {
 public:
+  BRAINSCutApplyModel( ){};
   BRAINSCutApplyModel( std::string netConfigurationFilename);
 
   void SetApplyDataSetFromNetConfiguration();
@@ -22,7 +23,8 @@ public:
 
   void ReadANNModelFile();
 
-  BinaryImagePointer PostProcessingOfANNContinuousImage( std::string continuousFilname );
+  BinaryImagePointer PostProcessingOfANNContinuousImage( std::string continuousFilname, 
+                                                         scalarType threshold);
 
   void SetANNOutputThresholdFromNetConfiguration();
 

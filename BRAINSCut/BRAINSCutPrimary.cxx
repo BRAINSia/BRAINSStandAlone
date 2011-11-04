@@ -7,17 +7,14 @@
 BRAINSCutPrimary
 ::BRAINSCutPrimary( std::string netConfigurationFilename )
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   SetNetConfigurationFilename( netConfigurationFilename );
   SetNetConfiguration();
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 }
 
 void
 BRAINSCutPrimary
 ::SetNetConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   std::list<XMLElementContainer *> elementList;
 
   elementList.push_front( &BRAINSCutNetConfiguration );
@@ -31,7 +28,6 @@ void
 BRAINSCutPrimary
 ::SetAtlasDataSet()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   atlasDataSet = BRAINSCutNetConfiguration.GetAtlasDataSet();
 }
 
@@ -39,7 +35,6 @@ void
 BRAINSCutPrimary
 ::SetAtlasImage()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   atlasImage = ReadImageByFilename( atlasDataSet->GetImageFilenameByType( registrationImageTypeToUse) );
 }
 
@@ -47,7 +42,6 @@ void
 BRAINSCutPrimary
 ::SetRhoPhiThetaFromNetConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   rho = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("rho") );
   phi = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("phi") );
   theta = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("theta") );
@@ -58,7 +52,6 @@ void
 BRAINSCutPrimary
 ::SetNetConfigurationFilename(const std::string filename)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   NetConfigurationFilename = filename;
 }
 
@@ -66,7 +59,6 @@ std::string
 BRAINSCutPrimary
 ::GetNetConfigurationFilename()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   return NetConfigurationFilename;
 }
 
@@ -74,7 +66,6 @@ DataSet::StringVectorType
 BRAINSCutPrimary
 ::GetROIIDsInOrder()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   return roiIDsInOrder;
 }
 
@@ -82,20 +73,17 @@ void
 BRAINSCutPrimary
 ::SetRegionsOfInterestFromNetConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   roiDataList = BRAINSCutNetConfiguration.Get<ProbabilityMapList>("ProbabilityMapList");
   roiIDsInOrder = roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
 
   std::sort( roiIDsInOrder.begin(), roiIDsInOrder.end() ); // get l_caudate, l_globus, .. , r_caudate, r_globus..
   roiCount = roiDataList->size();
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 }
 
 void
 BRAINSCutPrimary
 ::SetRegistrationParametersFromNetConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 
   registrationParser =
     BRAINSCutNetConfiguration.Get<RegistrationConfigurationParser>("RegistrationConfiguration");
@@ -111,10 +99,8 @@ std::string
 BRAINSCutPrimary
 ::GetAtlasToSubjectRegistrationFilename( DataSet& subject)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename");
-  std::cout << __LINE__ << "::" << __FILE__ << "::" << filename << std::endl;
   return filename;
 }
 
@@ -123,7 +109,6 @@ BRAINSCutPrimary
 ::GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
                                     DataSet& subject)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
   DeformationFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
@@ -157,7 +142,6 @@ void
 BRAINSCutPrimary
 ::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
   std::sort( imageListFromAtlas.begin(), imageListFromAtlas.end() );            // SG, T1, T2, ... ascending order
   for( DataSet::StringVectorType::iterator imgTyIt = imageListFromAtlas.begin();
@@ -174,7 +158,6 @@ BRAINSCutPrimary
 ::GetDeformedROIs( std::map<std::string, WorkingImagePointer>& warpedROIs,
                    DataSet& subject)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
   DeformationFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
@@ -192,9 +175,6 @@ BRAINSCutPrimary
       ->GetAttribute<StringValue>("Filename");
     WorkingImagePointer currentROI = ReadImageByFilename( roiFilename );
 
-    std::cout << __LINE__ << "::" << __FILE__ << std::endl
-              << "Read :: " << roiFilename << std::endl;
-
     warpedROIs.insert( std::pair<std::string, WorkingImagePointer>(
                          (*roiTyIt), GenericTransformImage<WorkingImageType,
                                                            WorkingImageType,
@@ -209,7 +189,6 @@ void
 BRAINSCutPrimary
 ::SetANNModelConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   annModelConfiguration = BRAINSCutNetConfiguration.Get<NeuralParams>("NeuralNetParams");
 }
 
@@ -217,7 +196,6 @@ void
 BRAINSCutPrimary
 ::SetGradientSizeFromNetConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   gradientSize = annModelConfiguration->GetAttribute<IntValue>("GradientProfileSize");
 }
 
@@ -227,7 +205,6 @@ inline WorkingImagePointer
 BRAINSCutPrimary
 ::ReadImageByFilename( const std::string  filename )
 {
-  std::cout << __LINE__ << "::" << __FILE__ << "::" << filename << std::endl;
   WorkingImagePointer readInImage;
 
   ReadInImagePointer inputImage = itkUtil::ReadImage<ReadInImageType>(filename.c_str() );
@@ -243,7 +220,6 @@ DeformationFieldType::Pointer
 BRAINSCutPrimary
 ::GetDeformationField( std::string filename)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   const bool useTransform( filename.find(".mat") != std::string::npos );
   if( useTransform )
     {
@@ -262,7 +238,6 @@ GenericTransformType::Pointer
 BRAINSCutPrimary
 ::GetGenericTransform( std::string filename)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   const bool useDeformation( filename.find(".mat") == std::string::npos );
   if( useDeformation )
     {

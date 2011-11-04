@@ -72,6 +72,7 @@ const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
 class BRAINSCutPrimary
 {
 public:
+  BRAINSCutPrimary(){};
   BRAINSCutPrimary(std::string netConfigurationFilename);
 
   void SetNetConfiguration();
