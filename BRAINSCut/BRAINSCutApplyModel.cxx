@@ -187,7 +187,7 @@ BRAINSCutApplyModel
     openCVANN->predict( openCVInputFeature, openCVOutput );
 
     /* insert result to the result output vector */
-    resultOutputVector.insert( pair<int, scalarType>(  ( it->first ),  CV_MAT_ELEM( *openCVOutput,
+    resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),  CV_MAT_ELEM( *openCVOutput,
                                                                                     scalarType,
                                                                                     0,
                                                                                     roiNumber) ) );
