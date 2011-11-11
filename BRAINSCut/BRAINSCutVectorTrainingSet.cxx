@@ -212,11 +212,13 @@ BRAINSCutVectorTrainingSet
   scalarType * buffer = new scalarType[bufferRecordSize];
 
   fileStream.read( (char *)buffer, recordSize );
+  /*
   for( unsigned int i = 0; i < bufferRecordSize; i++ )
     {
     std::cout << buffer[i] << " ";
     }
   std::cout << std::endl;
+  */
 
   if( buffer[bufferRecordSize - 1] != LineGuard )
     {
@@ -248,7 +250,7 @@ BRAINSCutVectorTrainingSet
   scalarType * currentBuffer = new scalarType[bufferRecordSize];
   for( int i = 0; i < totalVectorSize; i++ )
     {
-    std::cout << "at " << i << " ::: ";
+    //std::cout << "at " << i << " ::: ";
     currentBuffer = ReadBufferFromFileStream( readInFile );
 
     if( shufflingOrder[i] < static_cast<std::ios::off_type>( totalVectorSize ) )
