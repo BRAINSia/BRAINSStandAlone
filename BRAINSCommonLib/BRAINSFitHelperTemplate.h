@@ -196,6 +196,9 @@ public:
   /** Method that initiates the registration. */
   void StartRegistration(void);
 
+  itkSetMacro(ForceMINumberOfThreads, int);
+  itkGetConstMacro(ForceMINumberOfThreads, int);
+
 protected:
   BRAINSFitHelperTemplate();
   virtual ~BRAINSFitHelperTemplate()
@@ -263,6 +266,8 @@ private:
   bool                                       m_ObserveIterations;
   typename MetricType::Pointer                 m_CostMetricObject;
   std::vector<int> m_PermitParameterVariation;
+  //DEBUG OPTION:
+  int                                        m_ForceMINumberOfThreads;
 };  // end BRAINSFitHelperTemplate class
 }   // end namespace itk
 
