@@ -467,7 +467,6 @@ VectorESMDemonsRegistrationFunction<TFixedImage, TMovingImage,
   std::vector<CovariantVectorType> usedGradientTimes2;
   usedGradientTimes2.reserve(10);
 
-#ifdef ITK_USE_ORIENTED_IMAGE_DIRECTION
   for( unsigned int i = 0; i < this->GetFixedImage()->GetVectorLength(); ++i )
     {
     CovariantVectorType tempGradientTimes2;
@@ -476,12 +475,6 @@ VectorESMDemonsRegistrationFunction<TFixedImage, TMovingImage,
       tempGradientTimes2);
     usedGradientTimes2.push_back(tempGradientTimes2);
     }
-#else
-  for( unsigned int i = 0; i < this->GetFixedImage()->GetVectorLength(); ++i )
-    {
-    usedGradientTimes2.push_back(usedOrientFreeGradientTimes2[i]);
-    }
-#endif
 
   /**
     * Compute Update.
