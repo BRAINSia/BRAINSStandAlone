@@ -317,7 +317,7 @@ int CreateTransformFile(const std::string & MovingImageFilename,
                         OutputRegName );
   //
   // Write out Transformed Output As Well
-  // - EX. from GenericTransformImage.txx
+  // - EX. from GenericTransformImage.hxx
   //
 
   InternalImageType::Pointer DeformedMovingImage;

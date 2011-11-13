@@ -82,7 +82,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDtiFreeTrackingFilter.txx"
+#include "itkDtiFreeTrackingFilter.hxx"
 #endif
 
 #endif

@@ -239,7 +239,7 @@ private:
 }   // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkHammerTissueAttributeVectorFromPartialVolumeImageFilter.txx"
+#include "itkHammerTissueAttributeVectorFromPartialVolumeImageFilter.hxx"
 #endif
 
 #endif

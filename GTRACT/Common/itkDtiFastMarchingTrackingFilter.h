@@ -143,7 +143,7 @@ private:
 } // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDtiFastMarchingTrackingFilter.txx"
+#include "itkDtiFastMarchingTrackingFilter.hxx"
 #endif
 
 #endif

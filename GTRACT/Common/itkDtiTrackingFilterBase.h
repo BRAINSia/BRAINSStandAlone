@@ -245,7 +245,7 @@ protected:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDtiTrackingFilterBase.txx"
+#include "itkDtiTrackingFilterBase.hxx"
 #endif
 
 #endif

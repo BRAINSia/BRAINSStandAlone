@@ -249,7 +249,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDiffeomorphicDemonsRegistrationWithMaskFilter.txx"
+#include "itkDiffeomorphicDemonsRegistrationWithMaskFilter.hxx"
 #endif
 
 #endif

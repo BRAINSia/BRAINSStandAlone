@@ -286,7 +286,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkVectorMultiResolutionPDEDeformableRegistration.txx"
+#include "itkVectorMultiResolutionPDEDeformableRegistration.hxx"
 #endif
 
 #endif

@@ -231,7 +231,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkVectorDiffeomorphicDemonsRegistrationFilter.txx"
+#include "itkVectorDiffeomorphicDemonsRegistrationFilter.hxx"
 #endif
 
 #endif
