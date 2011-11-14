@@ -111,7 +111,7 @@ BRAINSCutPrimary
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
-  DeformationFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
+  DisplacementFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
   GenericTransformType::Pointer genericTransform = GetGenericTransform( atlasSubjectRegistrationFilename );
 
   WorkingImagePointer referenceImage =
@@ -121,19 +121,19 @@ BRAINSCutPrimary
   warpedSpatialLocationImages.insert( std::pair<std::string, WorkingImagePointer>
                                         ("rho", GenericTransformImage<WorkingImageType,
                                                                       WorkingImageType,
-                                                                      DeformationFieldType>
+                                                                      DisplacementFieldType>
                                           ( rho, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
   warpedSpatialLocationImages.insert( std::pair<std::string, WorkingImagePointer>
                                         ("phi", GenericTransformImage<WorkingImageType,
                                                                       WorkingImageType,
-                                                                      DeformationFieldType>
+                                                                      DisplacementFieldType>
                                           ( phi, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
   warpedSpatialLocationImages.insert( std::pair<std::string, WorkingImagePointer>
                                         ("theta", GenericTransformImage<WorkingImageType,
                                                                         WorkingImageType,
-                                                                        DeformationFieldType>
+                                                                        DisplacementFieldType>
                                           ( theta, referenceImage, deformation, genericTransform,
                                           0.0, "Linear", transoformationPixelType == "binary") ) );
 }
@@ -160,7 +160,7 @@ BRAINSCutPrimary
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
-  DeformationFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
+  DisplacementFieldType::Pointer deformation = GetDeformationField( atlasSubjectRegistrationFilename );
   GenericTransformType::Pointer genericTransform = GetGenericTransform( atlasSubjectRegistrationFilename );
 
   WorkingImagePointer referenceImage =
@@ -178,7 +178,7 @@ BRAINSCutPrimary
     warpedROIs.insert( std::pair<std::string, WorkingImagePointer>(
                          (*roiTyIt), GenericTransformImage<WorkingImageType,
                                                            WorkingImageType,
-                                                           DeformationFieldType>
+                                                           DisplacementFieldType>
                            ( currentROI, referenceImage, deformation,
                            genericTransform, 0.0, "Linear",
                            transformationPixelType == "binary") ) );
@@ -216,7 +216,7 @@ BRAINSCutPrimary
 }
 
 inline
-DeformationFieldType::Pointer
+DisplacementFieldType::Pointer
 BRAINSCutPrimary
 ::GetDeformationField( std::string filename)
 {
@@ -225,7 +225,7 @@ BRAINSCutPrimary
     {
     return NULL;
     }
-  typedef itk::ImageFileReader<DeformationFieldType> DeformationReaderType;
+  typedef itk::ImageFileReader<DisplacementFieldType> DeformationReaderType;
   DeformationReaderType::Pointer deformationReader = DeformationReaderType::New();
   deformationReader->SetFileName( filename );
   deformationReader->Update();
