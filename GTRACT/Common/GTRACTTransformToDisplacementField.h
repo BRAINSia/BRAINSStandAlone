@@ -17,7 +17,7 @@
 =========================================================================*/
 
 // ##############HACK:  This sould use the version out of ITK
-// Review/itkTransformToDeformationFieldSource.h
+// Review/TransformToDisplacementField
 //
 //
 
@@ -32,7 +32,7 @@
  * Go from any subclass of Transform, to the corresponding deformation field
  */
 template <typename DisplacementFieldType, typename TransformType>
-typename DisplacementFieldType::Pointer TransformToDeformationField( typename DisplacementFieldType::SizeType size,
+typename DisplacementFieldType::Pointer TransformToDisplacementField( typename DisplacementFieldType::SizeType size,
                                                                     double *spacing,
                                                                     double *origin,
                                                                     typename DisplacementFieldType::DirectionType Dir,

@@ -175,11 +175,11 @@ VValidationInputParser<TImage>
       ITKAffineTransformType::New();
     InitialITKAffineTransform->GetInverse(InitialITKAffineTransformInverse);
     m_InitialDisplacementField =
-      TransformToDeformationField(m_TheFixedImage,
+      TransformToDisplacementField(m_TheFixedImage,
                                   InitialITKAffineTransformInverse);
 #else
     m_InitialDisplacementField =
-      TransformToDeformationField(m_TheFixedImage,
+      TransformToDisplacementField(m_TheFixedImage,
                                   InitialITKAffineTransform);
 #endif
     }
