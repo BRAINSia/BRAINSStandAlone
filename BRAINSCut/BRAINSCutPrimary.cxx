@@ -250,7 +250,16 @@ bool
 BRAINSCutPrimary
 ::GetNormalizationFromNetConfiguration()
 {
-  std::string normalizationString = annModelConfiguration->GetAttribute<StringValue>("Normalization");
+  std::string normalizationString;
+  try
+    { 
+    normalizationString = annModelConfiguration->GetAttribute<StringValue>("Normalization");
+    }catch( BRAINSCutExceptionStringHandler& e)
+    {
+      std::cout<<e.Error()<<std::endl;
+      exit(EXIT_FAILURE);
+    }
+
 
   if( normalizationString == "true" )
     {

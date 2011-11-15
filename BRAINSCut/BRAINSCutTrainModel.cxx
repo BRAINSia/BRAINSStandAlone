@@ -12,7 +12,6 @@ BRAINSCutTrainModel
   activationSlope(0),
   activationMinMax(0)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   ANNParameterNetConfiguration = BRAINSCutNetConfiguration.Get<ANNParams>("ANNParams");
   ANNLayerStructure = cvCreateMat( 1, 3, CV_32SC1);
 }
@@ -60,7 +59,6 @@ inline void
 BRAINSCutTrainModel
 ::TrainWithUpdate( neuralNetType& myTrainer, bool update, pairedTrainingSetType& currentTrainData )
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   int updateOption = 0;
   if( update )
     {
@@ -130,9 +128,6 @@ BRAINSCutTrainModel
                     activationSlope,
                     activationMinMax);
 
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
-  std::cout << trainner->get_MSE() << " > " << trainDesiredError << std::endl;
-  std::cout << trainIteration << "::" << std::endl;
   for( unsigned int currentIteration = 0;
        currentIteration < trainIteration;
        currentIteration++ )
