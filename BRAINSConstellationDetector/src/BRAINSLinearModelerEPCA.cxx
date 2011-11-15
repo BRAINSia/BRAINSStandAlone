@@ -10,7 +10,7 @@
 int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   LmkDBType baseLmkDB;     // in the format of [landmarkID][datasetID]
   LmkDBType EPCALmkDB;
   CreateLmkDB( inputTrainingList, baseLmkDB, EPCALmkDB );
