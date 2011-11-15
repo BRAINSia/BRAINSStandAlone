@@ -642,6 +642,16 @@ VectorMultiResolutionPDEDeformableRegistration<TFixedImage, TMovingImage,
     }
 }
 
+template <class TFixedImage, class TMovingImage, class TDisplacementField,
+          class TRealType>
+void
+VectorMultiResolutionPDEDeformableRegistration<TFixedImage, TMovingImage,
+                                               TDisplacementField, TRealType>
+::VerifyInputInformation()
+{
+  // Do nothing, since images to be registered will not be in the same space
+}
+
 } // end namespace itk
 
 #endif
