@@ -357,7 +357,7 @@ BRAINSCutApplyModel
 ::SetANNTestingSSEFilename()
 {
   ANNTestingSSEFilename = GetANNModelBaseName();
-  ANNTestingSSEFilename += "TrainSSE.txt";
+  ANNTestingSSEFilename += "ValidationSetSSE.txt";
 }
 void
 BRAINSCutApplyModel
