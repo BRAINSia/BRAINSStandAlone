@@ -57,9 +57,7 @@ int GenerateRegistrations(NetConfiguration & ANNXMLObject,
   InternalImageType::SizeType radius;
 
   radius[0] = 0; radius[1] = 0; radius[2] = 0;
-  InternalImageType::Pointer AtlasImage =
-    ReadMedianFilteredImage<InternalImageType>(AtlasImageFilename.c_str(
-                                                 ), radius);
+  //InternalImageType::Pointer AtlasImage = ReadMedianFilteredImage<InternalImageType>(AtlasImageFilename.c_str(), radius);
   std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 
   //

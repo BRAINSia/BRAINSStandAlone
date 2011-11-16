@@ -201,7 +201,7 @@ BRAINSCutPrimary
 
 /* inline functions */
 
-inline WorkingImagePointer
+WorkingImagePointer
 BRAINSCutPrimary
 ::ReadImageByFilename( const std::string  filename )
 {

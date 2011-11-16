@@ -741,7 +741,7 @@ SImageType::Pointer CreateTestCenteredRotatedImage2(const RigidTransformType::Po
                                                     /* const
                                                       SImageType::PointType
                                                       finalPoint_MSP, */
-                                                    const SImageType::PointType PreMSP_Point,
+                                                    const SImageType::PointType itkNotUsed( PreMSP_Point ),
                                                     /*const*/ SImageType::Pointer & image,
                                                     const RigidTransformType::Pointer & Point_Rotate)
 {
@@ -769,7 +769,7 @@ SImageType::Pointer CreateTestCenteredRotatedImage2(const RigidTransformType::Po
 
   RigidTransformType::Pointer invPoint_Centered_TestRotated = RigidTransformType::New();
   Point_Centered_TestRotated->GetInverse(invPoint_Centered_TestRotated);
-  const SImageType::PointType final_location = invPoint_Centered_TestRotated->TransformPoint(PreMSP_Point);
+  //const SImageType::PointType final_location = invPoint_Centered_TestRotated->TransformPoint(PreMSP_Point);
   return image_Point_TestRotated;
 }
 
