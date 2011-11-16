@@ -185,6 +185,9 @@ public:
   itkSetMacro(CostMetric, std::string);
   itkGetConstMacro(CostMetric, std::string);
 
+  itkSetMacro(ForceMINumberOfThreads, int);
+  itkGetConstMacro(ForceMINumberOfThreads, int);
+
   /** Method that initiates the registration. */
   void StartRegistration(void);
 
@@ -261,6 +264,8 @@ private:
   bool                                       m_ObserveIterations;
   std::string                                m_CostMetric;
   itk::Object::Pointer                       m_Helper;
+  //DEBUG OPTION:
+  int                                        m_ForceMINumberOfThreads;
 };  // end BRAINSFitHelper class
 
 template <class TLocalCostMetric>
@@ -376,6 +381,7 @@ BRAINSFitHelper::SetupRegistration()
   myHelper->SetPromptUserAfterDisplay(this->m_PromptUserAfterDisplay);
   myHelper->SetDebugLevel(this->m_DebugLevel);
   myHelper->SetCostMetricObject(localCostMetric);
+  myHelper->SetForceMINumberOfThreads(this->m_ForceMINumberOfThreads);
   if( this->m_DebugLevel > 7 )
     {
     this->PrintCommandLine(true, "BF");
@@ -397,7 +403,6 @@ BRAINSFitHelper::RunRegistration()
     {
     std::cout << "ERROR:  Invalid BRAINSFitHelper conversion" << __FILE__ << " " << __LINE__ << std::endl;
     }
-
   myHelper->StartRegistration();
   this->m_CurrentGenericTransform = myHelper->GetCurrentGenericTransform();
   this->m_ActualNumberOfIterations = myHelper->GetActualNumberOfIterations();

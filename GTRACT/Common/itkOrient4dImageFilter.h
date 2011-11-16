@@ -213,7 +213,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkOrient4dImageFilter.txx"
+#include "itkOrient4dImageFilter.hxx"
 #endif
 
 #endif

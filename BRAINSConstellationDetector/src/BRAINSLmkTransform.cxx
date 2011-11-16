@@ -72,7 +72,7 @@ int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
 
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   if( ( inputMovingLandmarks.compare( "" ) == 0 )
       && ( inputFixedLandmarks.compare( "" ) == 0 )
       && ( inputMovingVolume.compare( "" ) == 0 )
@@ -138,7 +138,7 @@ int main( int argc, char * argv[] )
     tps->ComputeWMatrix();
     itk::Matrix<double, ImageDimension, ImageDimension> aMatrix( tps->GetAMatrix() );
     itk::Vector<double, ImageDimension>                 bVector;
-    bVector.SetVnlVector( tps->GetBVector() );
+    bVector.SetVnlVector( vnl_vector<double>(tps->GetBVector()) );
     itk::Matrix<double, ImageDimension, ImageDimension> identity;
     identity.SetIdentity();
     affine->SetMatrix( aMatrix + identity );

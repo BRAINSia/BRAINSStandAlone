@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     {
     PARSE_ARGS;
-    BRAINSUtils::SetThreadCount(numberOfThreads);
+    const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
 #ifdef USE_DebugImageViewer
     DebugImageDisplaySender.SetEnabled(UseDebugImageViewer);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     command.movingVolume = movingVolume;
     command.fixedVolume = fixedVolume;
     command.outputVolume = outputVolume;
-    command.outputDeformationFieldVolume = outputDeformationFieldVolume;
+    command.outputDisplacementFieldVolume = outputDisplacementFieldVolume;
     command.inputPixelType = inputPixelType;
     command.outputPixelType = outputPixelType;
     command.outputDisplacementFieldPrefix = outputDisplacementFieldPrefix;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     //    command.movingLandmarks = movingLandmarks;
     //    command.fixedLandmarks = fixedLandmarks;
     //    command.initializeWithFourier = initializeWithFourier;
-    command.initializeWithDeformationField = initializeWithDeformationField;
+    command.initializeWithDisplacementField = initializeWithDisplacementField;
     command.initializeWithTransform = initializeWithTransform;
 
     command.histogramMatch = histogramMatch;
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     command.maxStepLength = maxStepLength;
     command.gradientType = gradientType;
-    command.smoothDeformationFieldSigma = smoothDeformationFieldSigma;
+    command.smoothDisplacementFieldSigma = smoothDisplacementFieldSigma;
     command.smoothingUp = smoothingUp;
     command.numberOfBCHApproximationTerms = numberOfBCHApproximationTerms;
     command.interpolationMode = interpolationMode;
@@ -100,8 +100,8 @@ int main(int argc, char *argv[])
     << std::endl
     << "                   outputVolume: " << command.outputVolume
     << std::endl
-    << "   outputDeformationFieldVolume: "
-    << command.outputDeformationFieldVolume << std::endl
+    << "   outputDisplacementFieldVolume: "
+    << command.outputDisplacementFieldVolume << std::endl
     << "                 inputPixelType: " << command.inputPixelType
     << std::endl
     << "                outputPixelType: " << command.outputPixelType
@@ -140,16 +140,16 @@ int main(int argc, char *argv[])
       *  << "     initializeWithFourier: " << command.initializeWithFourier
       *  << std::endl
       */
-    << "  initializeWithDeformationField: "
-    << command.initializeWithDeformationField  << std::endl
+    << "  initializeWithDisplacementField: "
+    << command.initializeWithDisplacementField  << std::endl
     << "       initializeWithTransform: "
     << command.initializeWithTransform << std::endl
     << "                    gradientType: " << command.gradientType
     << std::endl
     << "                   maxStepLength: " << command.maxStepLength
     << std::endl
-    << "     smoothDeformationFieldSigma: "
-    << command.smoothDeformationFieldSigma << std::endl
+    << "     smoothDisplacementFieldSigma: "
+    << command.smoothDisplacementFieldSigma << std::endl
     << "                     smoothingUp: " << command.smoothingUp
     << std::endl
     << "                   histogramMatch: " << command.histogramMatch

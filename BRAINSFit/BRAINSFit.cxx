@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   std::string localInitializeTransformMode = initializeTransformMode;
   // Intially set using the string enumeration
@@ -494,89 +494,90 @@ int main(int argc, char *argv[])
   HelperType::Pointer myHelper = HelperType::New();
   myHelper->SetTransformType(localTransformType);
   myHelper->SetFixedVolume(extractFixedVolume);
-    myHelper->SetMovingVolume(extractMovingVolume);
-    myHelper->SetHistogramMatch(histogramMatch);
-    myHelper->SetRemoveIntensityOutliers(removeIntensityOutliers);
-    myHelper->SetNumberOfMatchPoints(numberOfMatchPoints);
-    myHelper->SetFixedBinaryVolume(fixedMask);
-    myHelper->SetMovingBinaryVolume(movingMask);
-    myHelper->SetOutputFixedVolumeROI(outputFixedVolumeROI);
-    myHelper->SetOutputMovingVolumeROI(outputMovingVolumeROI);
-    myHelper->SetPermitParameterVariation(permitParameterVariation);
-    myHelper->SetNumberOfSamples(numberOfSamples);
-    myHelper->SetNumberOfHistogramBins(numberOfHistogramBins);
-    myHelper->SetNumberOfIterations(numberOfIterations);
-    myHelper->SetMaximumStepLength(maximumStepLength);
-    myHelper->SetMinimumStepLength(minimumStepLength);
-    myHelper->SetRelaxationFactor(relaxationFactor);
-    myHelper->SetTranslationScale(translationScale);
-    myHelper->SetReproportionScale(reproportionScale);
-    myHelper->SetSkewScale(skewScale);
-    myHelper->SetUseExplicitPDFDerivativesMode(useExplicitPDFDerivativesMode);
-    myHelper->SetUseCachingOfBSplineWeightsMode(useCachingOfBSplineWeightsMode);
-    myHelper->SetBackgroundFillValue(backgroundFillValue);
-    myHelper->SetInitializeTransformMode(localInitializeTransformMode);
-    myHelper->SetMaskInferiorCutOffFromCenter(maskInferiorCutOffFromCenter);
-    myHelper->SetCurrentGenericTransform(currentGenericTransform);
-    myHelper->SetSplineGridSize(splineGridSize);
-    myHelper->SetCostFunctionConvergenceFactor(costFunctionConvergenceFactor);
-    myHelper->SetProjectedGradientTolerance(projectedGradientTolerance);
-    myHelper->SetMaxBSplineDisplacement(maxBSplineDisplacement);
-    myHelper->SetDisplayDeformedImage(UseDebugImageViewer);
-    myHelper->SetPromptUserAfterDisplay(PromptAfterImageSend);
-    myHelper->SetDebugLevel(debugLevel);
-    myHelper->SetCostMetric(costMetric);
-    if( debugLevel > 7 )
-      {
-      myHelper->PrintCommandLine(true, "BF");
-      }
-    myHelper->StartRegistration();
-    currentGenericTransform = myHelper->GetCurrentGenericTransform();
-    MovingVolumeType::ConstPointer preprocessedMovingVolume = myHelper->GetPreprocessedMovingVolume();
+  myHelper->SetForceMINumberOfThreads(forceMINumberOfThreads);
+  myHelper->SetMovingVolume(extractMovingVolume);
+  myHelper->SetHistogramMatch(histogramMatch);
+  myHelper->SetRemoveIntensityOutliers(removeIntensityOutliers);
+  myHelper->SetNumberOfMatchPoints(numberOfMatchPoints);
+  myHelper->SetFixedBinaryVolume(fixedMask);
+  myHelper->SetMovingBinaryVolume(movingMask);
+  myHelper->SetOutputFixedVolumeROI(outputFixedVolumeROI);
+  myHelper->SetOutputMovingVolumeROI(outputMovingVolumeROI);
+  myHelper->SetPermitParameterVariation(permitParameterVariation);
+  myHelper->SetNumberOfSamples(numberOfSamples);
+  myHelper->SetNumberOfHistogramBins(numberOfHistogramBins);
+  myHelper->SetNumberOfIterations(numberOfIterations);
+  myHelper->SetMaximumStepLength(maximumStepLength);
+  myHelper->SetMinimumStepLength(minimumStepLength);
+  myHelper->SetRelaxationFactor(relaxationFactor);
+  myHelper->SetTranslationScale(translationScale);
+  myHelper->SetReproportionScale(reproportionScale);
+  myHelper->SetSkewScale(skewScale);
+  myHelper->SetUseExplicitPDFDerivativesMode(useExplicitPDFDerivativesMode);
+  myHelper->SetUseCachingOfBSplineWeightsMode(useCachingOfBSplineWeightsMode);
+  myHelper->SetBackgroundFillValue(backgroundFillValue);
+  myHelper->SetInitializeTransformMode(localInitializeTransformMode);
+  myHelper->SetMaskInferiorCutOffFromCenter(maskInferiorCutOffFromCenter);
+  myHelper->SetCurrentGenericTransform(currentGenericTransform);
+  myHelper->SetSplineGridSize(splineGridSize);
+  myHelper->SetCostFunctionConvergenceFactor(costFunctionConvergenceFactor);
+  myHelper->SetProjectedGradientTolerance(projectedGradientTolerance);
+  myHelper->SetMaxBSplineDisplacement(maxBSplineDisplacement);
+  myHelper->SetDisplayDeformedImage(UseDebugImageViewer);
+  myHelper->SetPromptUserAfterDisplay(PromptAfterImageSend);
+  myHelper->SetDebugLevel(debugLevel);
+  myHelper->SetCostMetric(costMetric);
+  if( debugLevel > 7 )
+    {
+    myHelper->PrintCommandLine(true, "BF");
+    }
+  myHelper->StartRegistration();
+  currentGenericTransform = myHelper->GetCurrentGenericTransform();
+  MovingVolumeType::ConstPointer preprocessedMovingVolume = myHelper->GetPreprocessedMovingVolume();
 #if 0
-    if( interpolationMode == "ResampleInPlace" )
-      {
-      % {
-        VersorRigid3DTransformType::ConstPointer versor3D =
-          dynamic_cast<const VersorRigid3DTransformType *>(currentGenericTransform.GetPointer() );
-        if( versor3D.IsNotNull() )
-          {
-          FixedVolumeType::Pointer tempInPlaceResample = itk::SetRigidTransformInPlace<FixedVolumeType>(
-              versor3D.GetPointer(), extractMovingVolume.GetPointer() );
-          resampledImage = itkUtil::TypeCast<FixedVolumeType, MovingVolumeType>(tempInPlaceResample);
-          }
-        else
-          {
-          // This should be an exception thow instead of exit.
-          std::cout << "could not convert to rigid versor type" << std::endl;
-          return EXIT_FAILURE;
-          }
+  if( interpolationMode == "ResampleInPlace" )
+    {
+    % {
+      VersorRigid3DTransformType::ConstPointer versor3D =
+        dynamic_cast<const VersorRigid3DTransformType *>(currentGenericTransform.GetPointer() );
+      if( versor3D.IsNotNull() )
+        {
+        FixedVolumeType::Pointer tempInPlaceResample = itk::SetRigidTransformInPlace<FixedVolumeType>(
+            versor3D.GetPointer(), extractMovingVolume.GetPointer() );
+        resampledImage = itkUtil::TypeCast<FixedVolumeType, MovingVolumeType>(tempInPlaceResample);
         }
       else
         {
-        // Remember:  the Data is Moving's, the shape is Fixed's.
-        resampledImage = TransformResample<MovingVolumeType, FixedVolumeType>(
-            preprocessedMovingVolume,
-            extractFixedVolume,
-            backgroundFillValue,
-            GetInterpolatorFromString<MovingVolumeType>(interpolationMode),
-            currentGenericTransform);
+        // This should be an exception thow instead of exit.
+        std::cout << "could not convert to rigid versor type" << std::endl;
+        return EXIT_FAILURE;
         }
       }
-#else
+    else
       {
-      typedef float                                                                     VectorComponentType;
-      typedef itk::Vector<VectorComponentType, GenericTransformImageNS::SpaceDimension> VectorPixelType;
-      typedef itk::Image<VectorPixelType,  GenericTransformImageNS::SpaceDimension>     DeformationFieldType;
-      resampledImage = GenericTransformImage<MovingVolumeType, FixedVolumeType, DeformationFieldType>(
+      // Remember:  the Data is Moving's, the shape is Fixed's.
+      resampledImage = TransformResample<MovingVolumeType, FixedVolumeType>(
           preprocessedMovingVolume,
           extractFixedVolume,
-          NULL,
-          currentGenericTransform,
           backgroundFillValue,
-          interpolationMode,
-          false);
+          GetInterpolatorFromString<MovingVolumeType>(interpolationMode),
+          currentGenericTransform);
       }
+    }
+#else
+  {
+  typedef float                                                                     VectorComponentType;
+  typedef itk::Vector<VectorComponentType, GenericTransformImageNS::SpaceDimension> VectorPixelType;
+  typedef itk::Image<VectorPixelType,  GenericTransformImageNS::SpaceDimension>     DisplacementFieldType;
+  resampledImage = GenericTransformImage<MovingVolumeType, FixedVolumeType, DisplacementFieldType>(
+      preprocessedMovingVolume,
+      extractFixedVolume,
+      NULL,
+      currentGenericTransform,
+      backgroundFillValue,
+      interpolationMode,
+      false);
+  }
 #endif
 //    actualIterations = myHelper->GetActualNumberOfIterations();
 //    permittedIterations = myHelper->GetPermittedNumberOfIterations();
