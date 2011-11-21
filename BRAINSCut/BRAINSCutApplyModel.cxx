@@ -88,6 +88,7 @@ BRAINSCutApplyModel
                                                          imagesOfInterest.front(),
                                                          deformedROIs.find( *roiTyIt )->second,
                                                          ANNContinuousOutputFilename );
+
         /* post processing
          * may include hole-filling(closing), thresholding, and more adjustment
          */
@@ -96,6 +97,8 @@ BRAINSCutApplyModel
 
         std::string roiOutputFilename = GetROIVolumeName( subject, *roiTyIt );
         itkUtil::WriteImage<BinaryImageType>( mask, roiOutputFilename );
+        itkUtil::WriteImage<WorkingImageType>( deformedROIs.find( *roiTyIt )->second,
+                                               roiOutputFilename+"def.nii.gz");
         }
       else /* testing phase */
         {
@@ -273,7 +276,6 @@ BRAINSCutApplyModel
   closingFilter->SetSafeBorder( true );
   closingFilter->Update();
 
-  itkUtil::WriteImage<BinaryImageType>(  closingFilter->GetOutput(), "DEBUGCloseed.nii.gz");
   return closingFilter->GetOutput();
 }
 inline void
