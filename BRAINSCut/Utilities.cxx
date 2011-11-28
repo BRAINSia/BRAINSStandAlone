@@ -63,7 +63,8 @@ int CreateMITransformFile(const std::string & MovingImageFilename,
     }
   catch( itk::ExceptionObject & e )
     {
-    throw;
+    std::cerr << e << std::endl;
+    throw e;
     }
   return 0;
 }
@@ -500,7 +501,8 @@ void ReadDisplacementField(TDisplacementField::Pointer & DisplacementField,
     }
   catch( itk::ExceptionObject & e )
     {
-    throw;
+    std::cerr << e << std::endl;
+    throw e;
     }
 
   // REGINA:: removed #if 0 //HACK:  For right now, everything must be in RIP
@@ -557,7 +559,7 @@ void FillGradProfile(std::vector<neural_scalar_type>::iterator & fi,
     // std::cout<<__LINE__<<" :: "<<__FILE__<<"::"<<imapi->second<<std::endl;
     Interpolator->SetInputImage( imapi->second );
     // std::cout<<__LINE__<<" :: "<<__FILE__<<std::endl;
-    const InternalImageType::SpacingType ImageSpacing = imapi->second->GetSpacing();
+    //const InternalImageType::SpacingType ImageSpacing = imapi->second->GetSpacing();
     const float                          deltax = ProbMapGradient->GetPixel(CurrentIndex)[0];
     const float                          deltay = ProbMapGradient->GetPixel(CurrentIndex)[1];
     const float                          deltaz = ProbMapGradient->GetPixel(CurrentIndex)[2];

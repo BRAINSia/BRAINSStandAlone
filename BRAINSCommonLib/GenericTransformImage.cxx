@@ -50,7 +50,7 @@ VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
       if( transformFileType == "VersorRigid3DTransform" )
         {
         const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-          dynamic_cast<VersorRigid3DTransformType const *const>( genericTransformToWrite.GetPointer() );
+          dynamic_cast<VersorRigid3DTransformType const *>( genericTransformToWrite.GetPointer() );
         if( tempInitializerITKTransform.IsNull() )
           {
           itkGenericExceptionMacro(<< "Error in type conversion");
@@ -60,7 +60,7 @@ VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
       else if( transformFileType == "ScaleVersor3DTransform" )
         {
         const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-          dynamic_cast<ScaleVersor3DTransformType const *const>( genericTransformToWrite.GetPointer() );
+          dynamic_cast<ScaleVersor3DTransformType const *>( genericTransformToWrite.GetPointer() );
         if( tempInitializerITKTransform.IsNull() )
           {
           itkGenericExceptionMacro(<< "Error in type conversion");
@@ -70,7 +70,7 @@ VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
       else if( transformFileType == "ScaleSkewVersor3DTransform" )
         {
         const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-          dynamic_cast<ScaleSkewVersor3DTransformType const *const>( genericTransformToWrite.GetPointer() );
+          dynamic_cast<ScaleSkewVersor3DTransformType const *>( genericTransformToWrite.GetPointer() );
         if( tempInitializerITKTransform.IsNull() )
           {
           itkGenericExceptionMacro(<< "Error in type conversion");
@@ -80,7 +80,7 @@ VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
       else if( transformFileType == "AffineTransform" )
         {
         const AffineTransformType::ConstPointer tempInitializerITKTransform =
-          dynamic_cast<AffineTransformType const *const>( genericTransformToWrite.GetPointer() );
+          dynamic_cast<AffineTransformType const *>( genericTransformToWrite.GetPointer() );
         if( tempInitializerITKTransform.IsNull() )
           {
           itkGenericExceptionMacro(<< "Error in type conversion");
@@ -173,7 +173,7 @@ int WriteBothTransformsToDisk(const GenericTransformType::ConstPointer genericTr
     else if( transformFileType == "BSplineDeformableTransform" )
       {
       const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<BSplineTransformType const *const>( genericTransformToWrite.GetPointer() );
+        dynamic_cast<BSplineTransformType  const *>( genericTransformToWrite.GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -209,7 +209,7 @@ int WriteBothTransformsToDisk(const GenericTransformType::ConstPointer genericTr
     }
   catch( itk::ExceptionObject & excp )
     {
-    throw; // rethrow exception, handle in some other scope.
+    throw excp; // rethrow exception, handle in some other scope.
     }
   return 0;
 }
@@ -262,7 +262,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     if( transformFileType == "VersorRigid3DTransform" )
       {
       const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<VersorRigid3DTransformType const *const>( ( *( currentTransformList.begin() ) ).GetPointer() );
+        dynamic_cast<VersorRigid3DTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -275,7 +275,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else if( transformFileType == "ScaleVersor3DTransform" )
       {
       const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<ScaleVersor3DTransformType const *const>( ( *( currentTransformList.begin() ) ).GetPointer() );
+        dynamic_cast<ScaleVersor3DTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -288,7 +288,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else if( transformFileType == "ScaleSkewVersor3DTransform" )
       {
       const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<ScaleSkewVersor3DTransformType const *const>( ( *( currentTransformList.begin() ) ).GetPointer() );
+        dynamic_cast<ScaleSkewVersor3DTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -301,7 +301,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else if( transformFileType == "AffineTransform" )
       {
       const AffineTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<AffineTransformType const *const>( ( *( currentTransformList.begin() ) ).GetPointer() );
+        dynamic_cast<AffineTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -314,7 +314,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else if( transformFileType == "ThinPlateR2LogRSplineKernelTransform" )
       {
       const ThinPlateSpline3DTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<ThinPlateSpline3DTransformType const *const>( ( *( currentTransformList.begin() ) ).GetPointer() );
+        dynamic_cast<ThinPlateSpline3DTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -351,7 +351,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     TransformListType::const_iterator initializeTransformsListIterator =
       currentTransformList.begin();
 
-    const GenericTransformType::ConstPointer FirstTransform = dynamic_cast<GenericTransformType const *const>
+    const GenericTransformType::ConstPointer FirstTransform = dynamic_cast<GenericTransformType const *>
       ( ( *( initializeTransformsListIterator ) ).GetPointer() );
     if( FirstTransform.IsNull() )
       {
@@ -361,7 +361,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
 
     ++initializeTransformsListIterator; // Increment to next iterator
 
-    const GenericTransformType::ConstPointer SecondTransform = dynamic_cast<GenericTransformType const *const>
+    const GenericTransformType::ConstPointer SecondTransform = dynamic_cast<GenericTransformType const *>
       ( ( *( initializeTransformsListIterator ) ).GetPointer() );
     if( SecondTransform.IsNull() )
       {
@@ -377,7 +377,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     if( FirstTransformFileType == "BSplineDeformableTransform" )
       {
       const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<BSplineTransformType const *const>
+        dynamic_cast<BSplineTransformType const *>
         ( FirstTransform.GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
@@ -390,7 +390,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else if( SecondTransformFileType == "BSplineDeformableTransform" )
       {
       const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<BSplineTransformType const *const>
+        dynamic_cast<BSplineTransformType const *>
         ( SecondTransform.GetPointer() );
       if( tempInitializerITKTransform.IsNull() )
         {
@@ -443,7 +443,7 @@ void WriteTransformToDisk(GenericTransformType const *const MyTransform, const s
     if( transformFileType == "BSplineDeformableTransform" )
       {
       const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-        dynamic_cast<BSplineTransformType const *const>( MyTransform );
+        dynamic_cast<BSplineTransformType const *>( MyTransform );
       if( tempInitializerITKTransform.IsNull() )
         {
         itkGenericExceptionMacro(<< "Error in type conversion");
@@ -466,7 +466,7 @@ void WriteTransformToDisk(GenericTransformType const *const MyTransform, const s
       }
     catch( itk::ExceptionObject & excp )
       {
-      throw;
+      throw excp;
       }
     // Test if the file exists.
     if( !itksys::SystemTools::FileExists( TransformFilename.c_str() ) )

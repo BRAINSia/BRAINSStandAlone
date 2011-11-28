@@ -254,7 +254,7 @@ void ANNTrain( // NetConfiguration & prob,
   if( start_iteration != 0 )
     {
     char num[32];
-    sprintf(num, "%09d", start_iteration);
+    sprintf(num, "%09u", start_iteration);
     Weights_Filename += num;
     if( !itksys::SystemTools::FileExists( Weights_Filename.c_str() ) )
       {
@@ -310,7 +310,7 @@ void ANNTrain( // NetConfiguration & prob,
 
   int                   lastSubSetNumber = -1;
   neural_data_set_type *TrainSetPtr = 0;
-  const std::string     ANNHeaderTestVectorFilename = ANNTestVectorFilename + ".hdr";
+  //const std::string     ANNHeaderTestVectorFilename = ANNTestVectorFilename + ".hdr";
   std::ifstream         testfilestr;
   //TODO: DELETE neural_data_set_type *TestSetPtr = 0;
   //TODO: DELETE int                   test_InputVectorSize = 0;
