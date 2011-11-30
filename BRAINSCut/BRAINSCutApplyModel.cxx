@@ -93,7 +93,7 @@ BRAINSCutApplyModel
          * may include hole-filling(closing), thresholding, and more adjustment
          */
         BinaryImagePointer mask = PostProcessingOfANNContinuousImage( ANNContinuousOutputFilename,
-                                                                 annOutputThreshold);
+                                                                      annOutputThreshold);
 
         std::string roiOutputFilename = GetROIVolumeName( subject, *roiTyIt );
         itkUtil::WriteImage<BinaryImageType>( mask, roiOutputFilename );
@@ -195,6 +195,7 @@ BRAINSCutApplyModel
   }
   thresholder->SetInput( image );
   thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue( 1 );
   thresholder->SetLowerThreshold( thresholdValue );
   thresholder->Update();
 
@@ -211,7 +212,7 @@ BRAINSCutApplyModel
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
   thresholder->SetInput( image );
-  thresholder->SetInsideValue( 255 );
+  thresholder->SetInsideValue( 1 );
   thresholder->SetOutsideValue( 0 );
   thresholder->SetUpperThreshold( thresholdValue );
   thresholder->SetLowerThreshold( thresholdValue );
