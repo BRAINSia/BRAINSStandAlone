@@ -96,7 +96,8 @@ extern template std::vector<ShortImageType::Pointer> DuplicateImageList<ShortIma
 extern template void ComputeLabels<FloatImageType>( std::vector<FloatImageType::Pointer> &, std::vector<bool> &,
                                                     vnl_vector<unsigned int> &, ByteImageType::Pointer &,
                                                     ByteImageType::Pointer &,
-                                                    ByteImageType::Pointer & );
+                                                    ByteImageType::Pointer &,
+                                                    FloatingPrecision );
 
 extern template void NormalizeProbListInPlace<FloatImageType>(std::vector<FloatImageType::Pointer> & );
 
