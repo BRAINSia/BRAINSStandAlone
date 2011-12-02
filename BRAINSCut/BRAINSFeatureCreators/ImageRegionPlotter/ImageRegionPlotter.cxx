@@ -92,7 +92,7 @@ MapHistogramToImage( typename TImageType::Pointer inputImage,
   if( (Image_MAXIMUM - Image_MINIMUM) > MAXIMUM_NUMBER_OF_INTENSITY )
     {
     itkGenericExceptionMacro( << "Range of Values are Too Large! "
-                       << Image_MINIMUM << " " << Image_MAXIMUM);
+                              << Image_MINIMUM << " " << Image_MAXIMUM);
     }
 
   //
