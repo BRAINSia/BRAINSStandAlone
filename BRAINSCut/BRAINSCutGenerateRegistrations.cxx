@@ -7,11 +7,8 @@ BRAINSCutGenerateRegistrations
 ::BRAINSCutGenerateRegistrations(  std::string netConfigurationFilename)
   :BRAINSCutPrimary( netConfigurationFilename )
 {
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   SetAtlasDataSet();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   SetAtlasFilename();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   SetRegistrationParametersFromNetConfiguration();
 }
@@ -82,8 +79,6 @@ BRAINSCutGenerateRegistrations
                                                          
     }
 }
-
-
 
 void 
 BRAINSCutGenerateRegistrations
@@ -186,7 +181,6 @@ BRAINSCutGenerateRegistrations
   fixedVolumeReader->SetFileName( FixedImageFilename );
 
   fixedVolumeReader->Update();
-
 
   WorkingImageType::Pointer fixedVolume = fixedVolumeReader->GetOutput();
 
