@@ -126,10 +126,18 @@ Parser::StartElement(void *userData,
         "SubjToAtlasRegistrationFilename",
         attribMap.Get("Registration",
                       "SubjToAtlasRegistrationFilename") );
+
       registration->SetAttribute<StringValue>(
         "AtlasToSubjRegistrationFilename",
         attribMap.Get("Registration",
                       "AtlasToSubjRegistrationFilename") );
+
+      std::string id( attribMap.Get("Registration", "ID") );
+      registration->SetAttribute<StringValue>("ID", id);
+      regList->Add(registration, id);
+
+      /** optional parameters */
+      // TODO: Move Atlas binary file name to the atlas 
       registration->SetAttribute<StringValue>(
         "AtlasBinaryFilename",
         attribMap.GetIfExist("Registration",
@@ -138,9 +146,12 @@ Parser::StartElement(void *userData,
         "SubjectBinaryFilename",
         attribMap.GetIfExist("Registration",
                              "SubjectBinaryFilename") );
-      std::string id( attribMap.Get("Registration", "ID") );
-      registration->SetAttribute<StringValue>("ID", id);
-      regList->Add(registration, id);
+      registration->SetAttribute<StringValue>(
+        "SubjectLandmarkFilename",
+        attribMap.GetIfExist("Registration",
+                             "SubjectLandmarkFilename") );
+
+
       }
     catch( ProcessObjectException& ex )
       {
