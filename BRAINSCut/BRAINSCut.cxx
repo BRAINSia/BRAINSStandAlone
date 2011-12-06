@@ -25,9 +25,7 @@ int main(int argc, char * *argv)
   // Call register default transforms
   itk::TransformFactoryBase::RegisterDefaultTransforms();
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   BRAINSCutGenerateRegistrations registrationGenerator( netConfiguration );
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   const bool applyDataSetOff=false;
   const bool applyDataSetOn=true;
 
@@ -71,7 +69,6 @@ int main(int argc, char * *argv)
     {
     try
       {
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
       registrationGenerator.SetSubjectDataSet( applyDataSetOn );
       registrationGenerator.GenerateRegistrations();

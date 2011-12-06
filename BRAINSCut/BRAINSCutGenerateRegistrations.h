@@ -18,7 +18,6 @@ public:
 private:
   //std::string atlasImage @ BRAINSCutPrimary.h;
   std::string atlasBinaryFilename;
-  std::string atlasLandmarkFilename;
 
   bool atlasToSubjectRegistraionOn;
 
