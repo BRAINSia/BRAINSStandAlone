@@ -136,22 +136,6 @@ Parser::StartElement(void *userData,
       registration->SetAttribute<StringValue>("ID", id);
       regList->Add(registration, id);
 
-      /** optional parameters */
-      // TODO: Move Atlas binary file name to the atlas 
-      registration->SetAttribute<StringValue>(
-        "AtlasBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "AtlasBinaryFilename") );
-      registration->SetAttribute<StringValue>(
-        "SubjectBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "SubjectBinaryFilename") );
-      registration->SetAttribute<StringValue>(
-        "SubjectLandmarkFilename",
-        attribMap.GetIfExist("Registration",
-                             "SubjectLandmarkFilename") );
-
-
       }
     catch( ProcessObjectException& ex )
       {

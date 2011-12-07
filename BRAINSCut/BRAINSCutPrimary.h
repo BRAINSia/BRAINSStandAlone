@@ -131,6 +131,7 @@ protected:
   /** atlas data set*/
   DataSet *           atlasDataSet;
   std::string         atlasFilename;
+  std::string         atlasBinaryFilename;
   WorkingImagePointer atlasImage;
 
   /**ProbabilityMaps*/
