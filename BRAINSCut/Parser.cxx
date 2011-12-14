@@ -126,21 +126,16 @@ Parser::StartElement(void *userData,
         "SubjToAtlasRegistrationFilename",
         attribMap.Get("Registration",
                       "SubjToAtlasRegistrationFilename") );
+
       registration->SetAttribute<StringValue>(
         "AtlasToSubjRegistrationFilename",
         attribMap.Get("Registration",
                       "AtlasToSubjRegistrationFilename") );
-      registration->SetAttribute<StringValue>(
-        "AtlasBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "AtlasBinaryFilename") );
-      registration->SetAttribute<StringValue>(
-        "SubjectBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "SubjectBinaryFilename") );
+
       std::string id( attribMap.Get("Registration", "ID") );
       registration->SetAttribute<StringValue>("ID", id);
       regList->Add(registration, id);
+
       }
     catch( ProcessObjectException& ex )
       {
