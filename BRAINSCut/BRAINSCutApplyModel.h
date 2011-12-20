@@ -32,7 +32,7 @@ public:
 
   void SetANNOutputThresholdFromNetConfiguration();
 
-  BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer image, scalarType thresholdValue );
+  BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue );
   BinaryImagePointer ExtractLabel( BinaryImagePointer image, unsigned char thresholdValue );
   BinaryImagePointer GetOneConnectedRegion( BinaryImagePointer image );
 
@@ -55,6 +55,7 @@ private:
   std::string GetANNModelBaseName();
   float ComputeSSE(const PredictValueMapType& predictedOutputVector,      
                    const std::string roiReferenceFilename );
+  WorkingImagePointer LaplacianLevelSetAdjustment( WorkingImagePointer& annOutput );
 
   /* inline functions */
 
