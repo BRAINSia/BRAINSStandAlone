@@ -80,7 +80,7 @@ BRAINSFitHelper::BRAINSFitHelper() :
   m_ObserveIterations(true),
   m_CostMetric("MMI"), // Default to Mattes Mutual Information Metric
   m_Helper(NULL),
-  m_ForceMINumberOfThreads(1)
+  m_ForceMINumberOfThreads(-1)
 {
   m_SplineGridSize[0] = 14;
   m_SplineGridSize[1] = 10;
