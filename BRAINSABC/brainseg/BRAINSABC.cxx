@@ -942,12 +942,12 @@ int main(int argc, char * *argv)
 
   if( atlasToSubjectInitialTransform != "")
     {
+    muLogMacro(<< "atlasToSubjectInitialTransform specified." << std::endl)
     if( atlasToSubjectTransformType.compare("Identity") == 0 )
       {
       // Error because we're applying an identity transform by an initial transform was supplied.
 
-      muLogMacro(
-        "ERROR:  atlasToSubjectTransformType is Identity by an initial transform supplied." << std::endl);
+      muLogMacro(<< "ERROR:  atlasToSubjectTransformType is Identity but an initial transform supplied." << std::endl);
       return EXIT_FAILURE;
       }
     try
@@ -964,7 +964,7 @@ int main(int argc, char * *argv)
               || ( atlasToSubjectTransformType.compare("BSpline") == 0 ) )
             )
             {
-            muLogMacro( "Error: initialAtlasToSubjectTransform is a VersorRigid3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
+            muLogMacro(<< "Error: initialAtlasToSubjectTransform is a VersorRigid3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
             return EXIT_FAILURE;
             }
           }
@@ -975,7 +975,7 @@ int main(int argc, char * *argv)
               || ( atlasToSubjectTransformType.compare("BSpline") == 0 ) )
             )
             {
-            muLogMacro( "Error: initialAtlasToSubjectTransform is a ScaleVersor3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
+            muLogMacro(<< "Error: initialAtlasToSubjectTransform is a ScaleVersor3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
             return EXIT_FAILURE;
             }
           }
@@ -986,7 +986,7 @@ int main(int argc, char * *argv)
               || ( atlasToSubjectTransformType.compare("BSpline") == 0 ) )
             )
             {
-            muLogMacro( "Error: initialAtlasToSubjectTransform is a ScaleSkewVersor3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
+            muLogMacro(<< "Error: initialAtlasToSubjectTransform is a ScaleSkewVersor3DTransform but atlasToSubhectTransfromType is not Rigid, Affine, or BSpline." << std::endl);
             return EXIT_FAILURE;
             }
           }
@@ -996,7 +996,7 @@ int main(int argc, char * *argv)
               || ( atlasToSubjectTransformType.compare("BSpline") == 0 ) )
             )
             {
-            muLogMacro( "Error: initialAtlasToSubjectTransform is a AffineTransform but atlasToSubhectTransfromType is not Affine, or BSpline." << std::endl);
+            muLogMacro(<< "Error: initialAtlasToSubjectTransform is a AffineTransform but atlasToSubhectTransfromType is not Affine, or BSpline." << std::endl);
             return EXIT_FAILURE;
             }
           }
@@ -1005,7 +1005,7 @@ int main(int argc, char * *argv)
           if( !( ( atlasToSubjectTransformType.compare("BSpline") == 0 ) )
             )
             {
-            muLogMacro( "Error: initialAtlasToSubjectTransform is a BSplineDeformableTransform but atlasToSubhectTransfromType is not BSpline." << std::endl);
+            muLogMacro(<< "Error: initialAtlasToSubjectTransform is a BSplineDeformableTransform but atlasToSubhectTransfromType is not BSpline." << std::endl);
             return EXIT_FAILURE;
             }
           }
@@ -1013,11 +1013,11 @@ int main(int argc, char * *argv)
           {
           itkGenericExceptionMacro( << "ERROR:  Invalid transform initializer type found:  "
             << initialTransformFileType );
-          }
+          } 
         }
       catch( itk::ExceptionObject & excp )
         {
-        muLogMacro("Error: error while reading the atlasToSubjectInitialTransform" << std::endl);
+        muLogMacro(<< "Error: error while reading the atlasToSubjectInitialTransform" << std::endl);
         return EXIT_FAILURE;
         }
 
