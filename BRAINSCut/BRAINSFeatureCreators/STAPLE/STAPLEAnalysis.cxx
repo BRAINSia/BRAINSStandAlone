@@ -1,13 +1,10 @@
+#include <string>
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkMultiLabelSTAPLEImageFilter.h"
-// #include "itkSTAPLEImageFilter.h"
 #include "itkTimeProbe.h"
-
-#include <string>
-#include <fstream.h>
-
 #include "STAPLEAnalysisCLP.h"
+
 template <unsigned int ImageDimension>
 int STAPLE(unsigned int argc, char *argv[] )
 {
@@ -28,8 +25,8 @@ int STAPLE(unsigned int argc, char *argv[] )
   typedef typename StringVectorType::const_iterator StringVectorIteratorType;
 
   StringVectorIteratorType currentLabel = inputLabelVolume.begin();
-  for ( unsigned int i = 0; 
-        i < inputLabelVolume.size(); 
+  for ( unsigned int i = 0;
+        i < inputLabelVolume.size();
         i++, ++currentLabel )
     {
     typedef itk::ImageFileReader<LabelImageType> ReaderType;
@@ -89,14 +86,14 @@ int main( int argc, char *argv[] )
 {
   PARSE_ARGS;
   if ( argc < 3 )
-    {
+  {
     std::cout << "Usage: " << argv[0] << " imageDimension outputImage "
-     << "segmentationImage1 ... segmentationImageN" << std::endl;
-    exit( 0 );
-    }
+      << "segmentationImage1 ... segmentationImageN" << std::endl;
+    return  EXIT_FAILURE;
+  }
 
-   switch( inputDimension )
-    {
+  switch( inputDimension )
+  {
     case 2:
       STAPLE<2>( argc, argv);
       break;
@@ -104,9 +101,8 @@ int main( int argc, char *argv[] )
       STAPLE<3>( argc, argv);
       break;
     default:
-       std::cerr << "Unsupported dimension" << std::endl;
-       exit( EXIT_FAILURE );
-   }
+      std::cerr << "Unsupported dimension" << std::endl;
+      return  EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
-
-
