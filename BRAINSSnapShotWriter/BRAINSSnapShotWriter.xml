@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Utilities.BRAINS</category>
+  <title>BRAINSSnapShotWriter</title>
+  <description>Create 2D snapshot of input images. Mask images are color-coded</description>
+  <version> 1.0</version>
+  <documentation-url></documentation-url>
+  <license>https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt </license>
+  <contributor>Eunyoung Regina Kim</contributor>
+  <acknowledgements></acknowledgements>
+ <parameters>
+
+   <image multiple="true">
+     <name>inputVolumes</name>
+     <longflag>inputVolumes</longflag>
+     <label>inputVolumes</label>
+     <channel>input</channel>
+     <description>Input image volume list to be extracted as 2D image. Multiple input is possible. Required.</description>
+     <default></default>
+   </image>
+   
+   <image multiple="true">
+     <name>inputBinaryVolumes</name>
+     <longflag>inputBinaryVolumes</longflag>
+     <label>inputBinaryVolumes</label>
+     <channel>input</channel>
+     <description>Input mask (binary) volume list to be extracted as 2D image. Multiple input is possible. Required.</description>
+     <default></default>
+   </image>
+
+   <integer>
+     <name>inputSliceNumber</name>
+     <longflag>inputSliceNumber</longflag>
+     <label>inputSliceNumber</label>
+     <channel>input</channel>
+     <description>2D file name of input images. For size of 256*256*256 image, 128 is usually used.</description>
+     <default>128</default>
+   </integer>
+
+   <integer multiple="true">
+     <name>inputPlaneDirection</name>
+     <longflag>inputPlaneDirection</longflag>
+     <label>inputPlaneDirection</label>
+     <channel>input</channel>
+     <description>1,2,3</description>
+     <default>1</default>
+   </integer>
+
+   <file>
+     <name>outputFilename</name>
+     <longflag>outputFilename</longflag>
+     <label>outputFilename</label>
+     <channel>output</channel>
+     <description>2D file name of input images. Required.</description>
+     <default></default>
+   </file>
+   
+</parameters>
+
+</executable>
