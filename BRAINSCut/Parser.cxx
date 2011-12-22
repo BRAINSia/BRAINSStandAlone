@@ -334,6 +334,9 @@ Parser::StartElement(void *userData,
       am->SetAttribute<FloatValue>( "MaskThresh",
                                     attribMap.Get("ApplyModel",
                                                   "MaskThresh") );
+      am->SetAttribute<StringValue>( "LevelSetImageType",
+                                    attribMap.Get("ApplyModel",
+                                                  "LevelSetImageType") );
       proc->Add(am, Name);
       }
     catch( ProcessObjectException& ex )
