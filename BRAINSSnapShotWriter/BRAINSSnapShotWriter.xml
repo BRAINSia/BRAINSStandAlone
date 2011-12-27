@@ -28,14 +28,14 @@
      <default></default>
    </image>
 
-   <integer>
+   <integer-vector>
      <name>inputSliceNumber</name>
      <longflag>inputSliceNumber</longflag>
      <label>inputSliceNumber</label>
      <channel>input</channel>
      <description>2D file name of input images. For size of 256*256*256 image, 128 is usually used.</description>
-     <default>128</default>
-   </integer>
+     <default>128,128,128</default>
+   </integer-vector>
 
    <integer multiple="true">
      <name>inputPlaneDirection</name>

@@ -55,6 +55,7 @@ template <class TInputImageType,
           class TOutputImageType>
 typename TOutputImageType::Pointer 
 ExtractSlice( typename TInputImageType::Pointer inputImage, 
+              int plane,
               int sliceNumber)
 {
   /* extract 2D plain */
@@ -66,10 +67,10 @@ ExtractSlice( typename TInputImageType::Pointer inputImage,
   typename TInputImageType::RegionType region=inputImage->GetLargestPossibleRegion();
   
   typename TInputImageType::SizeType size = region.GetSize();
-  size[2] = 0;
+  size[plane] = 0;
   
   typename TInputImageType::IndexType start = region.GetIndex();
-  start[2]=sliceNumber;
+  start[plane]=sliceNumber;
 
   typename TInputImageType::RegionType outputRegion;
   outputRegion.SetSize( size );
@@ -77,6 +78,7 @@ ExtractSlice( typename TInputImageType::Pointer inputImage,
 
   extractVolumeFilter->SetExtractionRegion( outputRegion );
   extractVolumeFilter->SetInput( inputImage );
+  extractVolumeFilter->SetDirectionCollapseToGuess();
   extractVolumeFilter->Update();
 
   typename TOutputImageType::Pointer outputImage = extractVolumeFilter->GetOutput();
@@ -164,93 +166,115 @@ main(int argc, char * *argv)
                                                              Image3DBinaryVectorType >
                                                                ( inputBinaryVolumes );
 
-  /* extract slices */
-  typedef std::vector< OutputGreyImageType::Pointer > OutputGreyImageVectorType;
+  /* combine binary images */
+  Image3DBinaryType::Pointer labelMap = Image3DBinaryType::New();
+  labelMap->CopyInformation( image3DBinaries[0] );
+  labelMap->SetRegions( image3DBinaries[0]->GetLargestPossibleRegion() );
+  labelMap->Allocate();
 
-  OutputGreyImageVectorType imageSlices;
+  itk::ImageRegionIterator< Image3DBinaryType > binaryIterator( 
+      labelMap,
+      labelMap->GetLargestPossibleRegion() );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
-  for( unsigned int i=0; i<numberOfImgs; i++)
+  while( !binaryIterator.IsAtEnd() )
     {
-    Image3DVolumeType::Pointer current3DImage=image3DVolumes.back();
-    Image2DVolumeType::Pointer imageSlice=
-      ExtractSlice< Image3DVolumeType, Image2DVolumeType > ( current3DImage, 
-                                                             inputSliceNumber );
-
-    OutputGreyImageType::Pointer outputGreyImage = 
-      Rescale< Image2DVolumeType,OutputGreyImageType>( imageSlice, 0, 255 );
-
-    imageSlices.push_back( outputGreyImage );
-
-    image3DVolumes.pop_back();
+    Image3DBinaryType::IndexType index=binaryIterator.GetIndex();
+    /** itereate one image */
+    binaryIterator.Set( 0 );
+    for( unsigned int i=0; i<image3DBinaries.size(); i++)
+      {
+      binaryIterator.Set( binaryIterator.Get() + image3DBinaries[i]->GetPixel( index ) );
+      }
+    /** add each binary values */
+    ++binaryIterator;
     }
-
-  OutputGreyImageVectorType binarySlices;
-
-  for( unsigned int i=0; i<numberOfBnrs; i++)
-    {
-    Image3DBinaryType::Pointer current3DBinary=image3DBinaries.back();
-    Image2DVolumeType::Pointer binarySlice=
-      ExtractSlice< Image3DBinaryType, Image2DVolumeType > ( current3DBinary, 
-                                                             inputSliceNumber );
-
-    OutputGreyImageType::Pointer outputGreyBinary= 
-      Rescale< Image2DVolumeType,OutputGreyImageType>( binarySlice, 0,200); 
-
-    binarySlices.push_back( outputGreyBinary );
-    image3DBinaries.pop_back();
-    }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   
+
   /* compose color image */
   typedef itk::ComposeRGBImageFilter< OutputGreyImageType,
                                       OutputRGBImageType > RGBComposeFilter;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   typedef std::vector< OutputRGBImageType::Pointer > OutputRGBImageVectorType;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   OutputRGBImageVectorType rgbSlices;
-  for( unsigned int i=0; i<numberOfImgs; i++)
-    {
-    RGBComposeFilter::Pointer rgbComposer = RGBComposeFilter::New();
-
-    rgbComposer->SetInput1( binarySlices[0] );
-    rgbComposer->SetInput3( imageSlices[i] );
-    rgbComposer->SetInput2( imageSlices[i] );
-
-
-    try
+  std::cout<<__LINE__<<"::"<<__FILE__<<"::"<<inputSliceNumber.size()<<std::endl;
+  for( unsigned int plane=0; plane<inputSliceNumber.size(); plane++)
+  {
+    std::cout<<"plane::"<<plane<<std::endl;
+    for( unsigned int i=0; i<numberOfImgs; i++)
       {
-      std::cout<<"before update"<<std::endl;
-      rgbComposer->Update();
-      std::cout<<"after update"<<std::endl;
-      }
-    catch( itk::ExceptionObject& e  )
-      {
-      std::cout<< "ERROR:  Could not update image." << std::endl ;
-      std::cout<< "ERROR:  "<<e.what()<<std::endl;
-      exit(EXIT_FAILURE);
-      }
+      std::cout<<"i::"<<i<<std::endl;
+      /** get slicer */
+      Image3DVolumeType::Pointer current3DImage=image3DVolumes[i];
+      Image2DVolumeType::Pointer imageSlice=
+        ExtractSlice< Image3DVolumeType, Image2DVolumeType > ( current3DImage, 
+                                                               plane,
+                                                               inputSliceNumber[plane] );
 
-    std::cout<<"before assigning"<<std::endl;
-    rgbSlices.push_back( rgbComposer->GetOutput() );
-    std::cout<<"after assigning"<<std::endl;
+      OutputGreyImageType::Pointer greyScaleSlice = 
+        Rescale< Image2DVolumeType,OutputGreyImageType>( imageSlice, 0, 255 );
 
-    }
+      /** binaries */
+      Image3DBinaryType::Pointer current3DBinary=labelMap;
+      std::cout<<inputSliceNumber[0]<<std::endl;
+      Image2DVolumeType::Pointer binarySlice=
+        ExtractSlice< Image3DBinaryType, Image2DVolumeType > ( labelMap, 
+                                                               plane,
+                                                               inputSliceNumber[0] );
+      OutputGreyImageType::Pointer outputGreyBinary= 
+        Rescale< Image2DVolumeType,OutputGreyImageType>( binarySlice, 0,255); 
+
+      /** rgb creator */
+      RGBComposeFilter::Pointer rgbComposer = RGBComposeFilter::New();
+
+      rgbComposer->SetInput1( outputGreyBinary);
+      rgbComposer->SetInput3( greyScaleSlice );
+      rgbComposer->SetInput2( greyScaleSlice );
+
+      try
+        {
+        rgbComposer->Update();
+        }
+      catch( itk::ExceptionObject& e  )
+        {
+        std::cout<< "ERROR:  Could not update image." << std::endl ;
+        std::cout<< "ERROR:  "<<e.what()<<std::endl;
+        exit(EXIT_FAILURE);
+        }
+
+      rgbSlices.push_back( rgbComposer->GetOutput() );
+      }
+      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  }
 
   /* tile the images */
   typedef itk::TileImageFilter< OutputRGBImageType, OutputRGBImageType> TileFilterType;
 
   TileFilterType::Pointer tileFilter = TileFilterType::New();
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   itk::FixedArray< unsigned int, 2 > layout;
 
   layout[0]=numberOfImgs;
   layout[1]=0;//inputPlaneDirection.size();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   tileFilter->SetLayout( layout );
   tileFilter->SetDefaultPixelValue( 128 );
-  for( unsigned int i=0; i<numberOfImgs; i++)
-    {
-    OutputRGBImageType::Pointer img = rgbSlices[i];
-    tileFilter->SetInput( i, img );
-    }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  for( unsigned int plane=0; plane<inputSliceNumber.size(); plane++)
+  {
+    for( unsigned int i=0; i<numberOfImgs; i++)
+      {
+      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+      std::cout<<"setInput("<<i+plane*3<<")"<<std::endl;
+      OutputRGBImageType::Pointer img = rgbSlices[i];
+      tileFilter->SetInput( i+plane*3, rgbSlices[i+plane*3] );
+      }
+  }
 
   /* write out 2D image */
   typedef itk::ImageFileWriter< OutputRGBImageType > RGBFileWriterType;
