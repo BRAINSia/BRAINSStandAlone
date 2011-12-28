@@ -397,13 +397,13 @@ main(int argc, char * *argv)
   tileFilter->SetLayout( layout );
   tileFilter->SetDefaultPixelValue( 128 );
   for( unsigned int plane=0; plane<extractingSlices.size(); plane++)
-  {
+    {
     for( unsigned int i=0; i<numberOfImgs; i++)
       {
-      OutputRGBImageType::Pointer img = rgbSlices[i];
-      tileFilter->SetInput( i+plane*3, rgbSlices[i+plane*3] );
+      OutputRGBImageType::Pointer img = rgbSlices[i+plane*numberOfImgs];
+      tileFilter->SetInput( i+plane*numberOfImgs, rgbSlices[i+plane*numberOfImgs] );
       }
-  }
+    }
 
   /* write out 2D image */
   typedef itk::ImageFileWriter< OutputRGBImageType > RGBFileWriterType;
@@ -415,7 +415,7 @@ main(int argc, char * *argv)
 
   try
     {
-      rgbFileWriter->Update();
+    rgbFileWriter->Update();
     }
   catch( itk::ExceptionObject& e  )
     {
