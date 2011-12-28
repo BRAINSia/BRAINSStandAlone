@@ -9,8 +9,36 @@
 #include "itkScalarToRGBColormapImageFilter.h"
 #include "itkTileImageFilter.h"
 #include "itkComposeRGBImageFilter.h"
+#include "itkFlipImageFilter.h"
 
 #include "BRAINSSnapShotWriterCLP.h"
+/* 
+ * change orientation 
+ */
+template <class TImageType > // input parameter type
+typename TImageType::Pointer ChangeOrientOfImage( typename TImageType::Pointer imageVolume,
+                                itk::FixedArray<bool,3> flipAxes )
+{
+  typedef itk::FlipImageFilter< TImageType > FlipImageFilterType;
+
+  typename FlipImageFilterType::Pointer flipFilter =
+    FlipImageFilterType::New();
+
+  flipFilter->SetInput( imageVolume );
+  flipFilter->SetFlipAxes( flipAxes );
+  try
+    {
+    flipFilter->Update();
+    }
+  catch( ... )
+    {
+    std::cout<< "ERROR: Fail to flip the image "
+             << std::endl;
+    }
+
+  return  flipFilter->GetOutput() ;
+}
+
 /* 
  * template reading function 
  */
@@ -43,7 +71,15 @@ TImageVectorType ReadImageVolumes( TStringVectorType filenameVector )
 
     OutputImagePointerType image = reader->GetOutput();
 
-    imageVector.push_back( image );
+    itk::FixedArray<bool, 3 > flipAxes;
+    flipAxes[0]=0;
+    flipAxes[1]=0;
+    flipAxes[2]=1;
+
+    OutputImagePointerType orientedImage = 
+      ChangeOrientOfImage<typename TReaderType::OutputImageType>( image, flipAxes );
+
+    imageVector.push_back( orientedImage );
     }
 
   return TImageVectorType( imageVector );
@@ -58,6 +94,11 @@ ExtractSlice( typename TInputImageType::Pointer inputImage,
               int plane,
               int sliceNumber)
 {
+  if( plane <0 || plane >3 )
+    {
+    std::cout<< "ERROR: Extracting plane should be between 0 and 2(0,1,or 2)"<<std::endl;
+    exit(EXIT_FAILURE);
+    }
   /* extract 2D plain */
   typedef itk::Testing::ExtractSliceImageFilter< TInputImageType, 
                                                  TOutputImageType> ExtractVolumeFilterType;
@@ -127,8 +168,14 @@ main(int argc, char * *argv)
              <<std::endl;
     exit(EXIT_FAILURE);
     }
+
+  if( inputSliceNumber.size() != inputPlaneDirection.size() )
+  {
+    std::cout<<"Number of input slice number should be equal input plane direction."
+             <<std::endl;
+    exit(EXIT_FAILURE);
+  }
   const unsigned int numberOfImgs = inputVolumes.size();
-  const unsigned int numberOfBnrs = inputBinaryVolumes.size();
 
   /* type definition */
   typedef itk::Image< double, 3 >        Image3DVolumeType;
@@ -175,7 +222,6 @@ main(int argc, char * *argv)
   itk::ImageRegionIterator< Image3DBinaryType > binaryIterator( 
       labelMap,
       labelMap->GetLargestPossibleRegion() );
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   while( !binaryIterator.IsAtEnd() )
     {
@@ -189,19 +235,14 @@ main(int argc, char * *argv)
     /** add each binary values */
     ++binaryIterator;
     }
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  
 
   /* compose color image */
   typedef itk::ComposeRGBImageFilter< OutputGreyImageType,
                                       OutputRGBImageType > RGBComposeFilter;
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   typedef std::vector< OutputRGBImageType::Pointer > OutputRGBImageVectorType;
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   OutputRGBImageVectorType rgbSlices;
-  std::cout<<__LINE__<<"::"<<__FILE__<<"::"<<inputSliceNumber.size()<<std::endl;
-  for( unsigned int plane=0; plane<inputSliceNumber.size(); plane++)
+  for( unsigned int plane=0; plane<inputPlaneDirection.size(); plane++)
   {
     std::cout<<"plane::"<<plane<<std::endl;
     for( unsigned int i=0; i<numberOfImgs; i++)
@@ -211,7 +252,7 @@ main(int argc, char * *argv)
       Image3DVolumeType::Pointer current3DImage=image3DVolumes[i];
       Image2DVolumeType::Pointer imageSlice=
         ExtractSlice< Image3DVolumeType, Image2DVolumeType > ( current3DImage, 
-                                                               plane,
+                                                               inputPlaneDirection[plane],
                                                                inputSliceNumber[plane] );
 
       OutputGreyImageType::Pointer greyScaleSlice = 
@@ -222,8 +263,8 @@ main(int argc, char * *argv)
       std::cout<<inputSliceNumber[0]<<std::endl;
       Image2DVolumeType::Pointer binarySlice=
         ExtractSlice< Image3DBinaryType, Image2DVolumeType > ( labelMap, 
-                                                               plane,
-                                                               inputSliceNumber[0] );
+                                                               inputPlaneDirection[plane],
+                                                               inputSliceNumber[plane] );
       OutputGreyImageType::Pointer outputGreyBinary= 
         Rescale< Image2DVolumeType,OutputGreyImageType>( binarySlice, 0,255); 
 

@@ -15,7 +15,7 @@
      <longflag>inputVolumes</longflag>
      <label>inputVolumes</label>
      <channel>input</channel>
-     <description>Input image volume list to be extracted as 2D image. Multiple input is possible. Required.</description>
+     <description>Input image volume list to be extracted as 2D image. Multiple input is possible. At least one input is required.</description>
      <default></default>
    </image>
    
@@ -24,7 +24,7 @@
      <longflag>inputBinaryVolumes</longflag>
      <label>inputBinaryVolumes</label>
      <channel>input</channel>
-     <description>Input mask (binary) volume list to be extracted as 2D image. Multiple input is possible. Required.</description>
+     <description>Input mask (binary) volume list to be extracted as 2D image. Multiple input is possible.</description>
      <default></default>
    </image>
 
@@ -37,14 +37,14 @@
      <default>128,128,128</default>
    </integer-vector>
 
-   <integer multiple="true">
+   <integer-vector>
      <name>inputPlaneDirection</name>
      <longflag>inputPlaneDirection</longflag>
      <label>inputPlaneDirection</label>
      <channel>input</channel>
-     <description>1,2,3</description>
-     <default>1</default>
-   </integer>
+     <description>Plane to display. In general, 0=saggital, 1=coronal, and 2=axial plane.</description>
+     <default>0,1,2</default>
+   </integer-vector>
 
    <file>
      <name>outputFilename</name>
