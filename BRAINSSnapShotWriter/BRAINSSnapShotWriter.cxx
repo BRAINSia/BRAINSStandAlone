@@ -6,10 +6,10 @@
 #include "itkTestingExtractSliceImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
-#include "itkScalarToRGBColormapImageFilter.h"
 #include "itkTileImageFilter.h"
-#include "itkComposeRGBImageFilter.h"
 #include "itkFlipImageFilter.h"
+#include "itkLabelOverlayImageFilter.h"
+#include "itkRGBPixel.h"
 
 #include "BRAINSSnapShotWriterCLP.h"
 
@@ -284,8 +284,6 @@ main(int argc, char * *argv)
   typedef itk::RGBPixel< unsigned char> RGBPixelType;
   typedef itk::Image< RGBPixelType, 2> OutputRGBImageType;
 
-  typedef itk::ScalarToRGBColormapImageFilter< OutputGreyImageType,
-                                               OutputRGBImageType > RGBFilterType;
   /* read in image volumes */
   Image3DVolumeVectorType image3DVolumes = ReadImageVolumes< ImageFilenameVectorType,
                                                              Image3DVolumeReaderType,
@@ -312,12 +310,12 @@ main(int argc, char * *argv)
   
 
   /* combine binary images */
-  Image3DBinaryType::Pointer labelMap = Image3DBinaryType::New();
+  Image3DVolumeType::Pointer labelMap = Image3DVolumeType::New();
   labelMap->CopyInformation( image3DBinaries[0] );
-  labelMap->SetRegions( image3DBinaries[0]->GetLargestPossibleRegion() );
+  labelMap->SetRegions( image3DVolumes[0]->GetLargestPossibleRegion() );
   labelMap->Allocate();
 
-  itk::ImageRegionIterator< Image3DBinaryType > binaryIterator( 
+  itk::ImageRegionIterator< Image3DVolumeType > binaryIterator( 
       labelMap,
       labelMap->GetLargestPossibleRegion() );
 
@@ -328,17 +326,22 @@ main(int argc, char * *argv)
     binaryIterator.Set( 0 );
     for( unsigned int i=0; i<image3DBinaries.size(); i++)
       {
-      binaryIterator.Set( binaryIterator.Get() + image3DBinaries[i]->GetPixel( index ) );
+      if( image3DBinaries[i]->GetPixel( index ) >0 )
+        {
+        binaryIterator.Set( i+1 ) ; // label color zero is grey
+        } 
       }
     /** add each binary values */
     ++binaryIterator;
     }
 
   /* compose color image */
-  typedef itk::ComposeRGBImageFilter< OutputGreyImageType,
-                                      OutputRGBImageType > RGBComposeFilter;
+  typedef itk::LabelOverlayImageFilter< OutputGreyImageType,
+                                        OutputGreyImageType,
+                                        OutputRGBImageType > RGBComposeFilter;
 
   typedef std::vector< OutputRGBImageType::Pointer > OutputRGBImageVectorType;
+
   OutputRGBImageVectorType rgbSlices;
   for( unsigned int plane=0; plane<inputPlaneDirection.size(); plane++)
   {
@@ -355,20 +358,16 @@ main(int argc, char * *argv)
         Rescale< Image2DVolumeType,OutputGreyImageType>( imageSlice, 0, 255 );
 
       /** binaries */
-      Image3DBinaryType::Pointer current3DBinary=labelMap;
-      Image2DVolumeType::Pointer binarySlice=
-        ExtractSlice< Image3DBinaryType, Image2DVolumeType > ( labelMap, 
-                                                               inputPlaneDirection[plane],
-                                                               extractingSlices[plane] );
-      OutputGreyImageType::Pointer outputGreyBinary= 
-        Rescale< Image2DVolumeType,OutputGreyImageType>( binarySlice, 0,255); 
-
+      OutputGreyImageType::Pointer labelSlice=
+        ExtractSlice< Image3DVolumeType, OutputGreyImageType> ( labelMap,
+                                                                inputPlaneDirection[plane],
+                                                                extractingSlices[plane] );
       /** rgb creator */
       RGBComposeFilter::Pointer rgbComposer = RGBComposeFilter::New();
 
-      rgbComposer->SetInput1( outputGreyBinary);
-      rgbComposer->SetInput3( greyScaleSlice );
-      rgbComposer->SetInput2( greyScaleSlice );
+      rgbComposer->SetInput( greyScaleSlice );
+      rgbComposer->SetLabelImage( labelSlice);
+      rgbComposer->SetOpacity(.5F);
 
       try
         {
