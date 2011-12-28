@@ -12,6 +12,88 @@
 #include "itkFlipImageFilter.h"
 
 #include "BRAINSSnapShotWriterCLP.h"
+
+/* 
+ * extracting slice numbers in index 
+ */
+
+typedef std::vector< unsigned int> ExtractIndexType;
+
+typedef std::vector< int >    IndexType;
+typedef std::vector< int>     PercentIndexType;
+typedef std::vector< float >  PhysicalPointIndexType;
+
+template <class TImageType>
+ExtractIndexType  GetSliceIndexToExtract( 
+   typename TImageType::Pointer   referenceImage,
+   std::vector<int>      planes,   
+   IndexType                      inputSliceToExtractInIndex,
+   PercentIndexType               inputSliceToExtractInPercent,
+   PhysicalPointIndexType          inputSliceToExtractInPhysicalPoint)
+{
+  if( inputSliceToExtractInIndex.size() == 0 &&
+      inputSliceToExtractInPercent.size() == 0 &&
+      inputSliceToExtractInPhysicalPoint.size() ==0  )
+    {
+    std::cout<<"ERROR:: one of input index has to be entered "
+             <<std::endl;
+    exit(EXIT_FAILURE);
+    }
+
+  ExtractIndexType sliceIndexToExtract;
+  if( inputSliceToExtractInIndex.size() >0 )
+    {
+    for( unsigned int i=0; i<inputSliceToExtractInIndex.size(); i++)
+      {
+      sliceIndexToExtract.push_back( inputSliceToExtractInIndex[i] );
+      }
+    }
+  else if( inputSliceToExtractInPhysicalPoint.size() >0 )
+    {
+    for( unsigned int i=0; i<inputSliceToExtractInPhysicalPoint.size(); i++)
+      {
+      typename TImageType::PointType physicalPoints;
+      typename TImageType::IndexType dummyIndex;
+      for( unsigned int p=0; p< physicalPoints.Size(); p++)
+        {
+        //fill the same value
+        physicalPoints[p]=inputSliceToExtractInPhysicalPoint[i]; 
+        }
+      referenceImage->TransformPhysicalPointToIndex( physicalPoints,
+                                                     dummyIndex );
+
+      std::cout<<inputSliceToExtractInPhysicalPoint[i]
+               <<"-->"
+               <<dummyIndex[ planes[i]] 
+               <<std::endl;
+      sliceIndexToExtract.push_back( dummyIndex[ planes[i]] );
+      }
+    }
+  else if( inputSliceToExtractInPercent.size() >0 )
+    {
+    for( unsigned int i=0; i<inputSliceToExtractInPercent.size(); i++)
+      {
+      if( inputSliceToExtractInPercent[i] < 0.0F ||
+          inputSliceToExtractInPercent[i] > 100.0F )
+        {
+        std::cout<< "ERROR: Percent has to be between 0 and 100 "
+                 << std::endl;
+        exit( EXIT_FAILURE );
+        }
+      unsigned int size = (referenceImage->GetLargestPossibleRegion()).GetSize()[ planes[i] ] ;
+      unsigned int index = 
+        ( (float)inputSliceToExtractInPercent[i] / 100.0F ) * size ;
+
+      std::cout<<inputSliceToExtractInPercent[i]
+               <<"-->"
+               <<index
+               <<std::endl;
+      sliceIndexToExtract.push_back( index );
+      }
+    }
+
+  return sliceIndexToExtract;
+}
 /* 
  * change orientation 
  */
@@ -169,12 +251,15 @@ main(int argc, char * *argv)
     exit(EXIT_FAILURE);
     }
 
-  if( inputSliceNumber.size() != inputPlaneDirection.size() )
-  {
+  if( inputPlaneDirection.size() != inputSliceToExtractInIndex.size() && 
+      inputPlaneDirection.size() != inputSliceToExtractInPercent.size() &&
+      inputPlaneDirection.size() != inputSliceToExtractInPhysicalPoint.size() )
+    {
     std::cout<<"Number of input slice number should be equal input plane direction."
              <<std::endl;
     exit(EXIT_FAILURE);
-  }
+    }
+
   const unsigned int numberOfImgs = inputVolumes.size();
 
   /* type definition */
@@ -213,6 +298,19 @@ main(int argc, char * *argv)
                                                              Image3DBinaryVectorType >
                                                                ( inputBinaryVolumes );
 
+  /** index to extract */
+  IndexType              inputIndex         = inputSliceToExtractInIndex;
+  PercentIndexType       inputPercentIndex  = inputSliceToExtractInPercent;
+  PhysicalPointIndexType inputPhysicalIndex = inputSliceToExtractInPhysicalPoint;
+
+  ExtractIndexType  extractingSlices = 
+    GetSliceIndexToExtract<Image3DVolumeType>( image3DVolumes[0],
+                            inputPlaneDirection,
+                            inputSliceToExtractInIndex,
+                            inputSliceToExtractInPercent,
+                            inputSliceToExtractInPhysicalPoint);
+  
+
   /* combine binary images */
   Image3DBinaryType::Pointer labelMap = Image3DBinaryType::New();
   labelMap->CopyInformation( image3DBinaries[0] );
@@ -244,27 +342,24 @@ main(int argc, char * *argv)
   OutputRGBImageVectorType rgbSlices;
   for( unsigned int plane=0; plane<inputPlaneDirection.size(); plane++)
   {
-    std::cout<<"plane::"<<plane<<std::endl;
     for( unsigned int i=0; i<numberOfImgs; i++)
       {
-      std::cout<<"i::"<<i<<std::endl;
       /** get slicer */
       Image3DVolumeType::Pointer current3DImage=image3DVolumes[i];
       Image2DVolumeType::Pointer imageSlice=
         ExtractSlice< Image3DVolumeType, Image2DVolumeType > ( current3DImage, 
                                                                inputPlaneDirection[plane],
-                                                               inputSliceNumber[plane] );
+                                                               extractingSlices[plane] );
 
       OutputGreyImageType::Pointer greyScaleSlice = 
         Rescale< Image2DVolumeType,OutputGreyImageType>( imageSlice, 0, 255 );
 
       /** binaries */
       Image3DBinaryType::Pointer current3DBinary=labelMap;
-      std::cout<<inputSliceNumber[0]<<std::endl;
       Image2DVolumeType::Pointer binarySlice=
         ExtractSlice< Image3DBinaryType, Image2DVolumeType > ( labelMap, 
                                                                inputPlaneDirection[plane],
-                                                               inputSliceNumber[plane] );
+                                                               extractingSlices[plane] );
       OutputGreyImageType::Pointer outputGreyBinary= 
         Rescale< Image2DVolumeType,OutputGreyImageType>( binarySlice, 0,255); 
 
@@ -288,7 +383,6 @@ main(int argc, char * *argv)
 
       rgbSlices.push_back( rgbComposer->GetOutput() );
       }
-      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   }
 
   /* tile the images */
@@ -296,22 +390,17 @@ main(int argc, char * *argv)
 
   TileFilterType::Pointer tileFilter = TileFilterType::New();
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   itk::FixedArray< unsigned int, 2 > layout;
 
   layout[0]=numberOfImgs;
   layout[1]=0;//inputPlaneDirection.size();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   tileFilter->SetLayout( layout );
   tileFilter->SetDefaultPixelValue( 128 );
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  for( unsigned int plane=0; plane<inputSliceNumber.size(); plane++)
+  for( unsigned int plane=0; plane<extractingSlices.size(); plane++)
   {
     for( unsigned int i=0; i<numberOfImgs; i++)
       {
-      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-      std::cout<<"setInput("<<i+plane*3<<")"<<std::endl;
       OutputRGBImageType::Pointer img = rgbSlices[i];
       tileFilter->SetInput( i+plane*3, rgbSlices[i+plane*3] );
       }
@@ -327,9 +416,7 @@ main(int argc, char * *argv)
 
   try
     {
-      std::cout<<"before writer update"<<std::endl;
       rgbFileWriter->Update();
-      std::cout<<"after writer update"<<std::endl;
     }
   catch( itk::ExceptionObject& e  )
     {
