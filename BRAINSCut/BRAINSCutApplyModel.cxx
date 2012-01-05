@@ -7,12 +7,14 @@
 #include <itkRelabelComponentImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
 #include <itkBinaryMorphologicalClosingImageFilter.h>
+#include <itkSigmoidImageFilter.h>
 
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
 
 BRAINSCutApplyModel
 ::BRAINSCutApplyModel( std::string netConfigurationFilename)
-  : BRAINSCutPrimary( netConfigurationFilename )
+  : 
+    BRAINSCutPrimary( netConfigurationFilename )
   // ANNModelFilename(NULL)
 {
   // TODO Take this apart to generate registration one by one!
@@ -76,7 +78,6 @@ BRAINSCutApplyModel
   inputVectorGenerator.SetROIInOrder( roiIDsInOrder);
   inputVectorGenerator.SetInputVectorSize();
   inputVectorGenerator.SetNormalization( normalization );
-
 
   /* now iterate through the roi */
 
@@ -177,13 +178,14 @@ BRAINSCutApplyModel
 
 BinaryImagePointer
 BRAINSCutApplyModel
-::PostProcessingOfANNContinuousImage( std::string continuousFilename, scalarType threshold )
+::PostProcessingOfANNContinuousImage( std::string continuousFilename, 
+                                      scalarType threshold )
 {
   WorkingImagePointer continuousImage = ReadImageByFilename( continuousFilename );
 
-  /* threshold */
   BinaryImagePointer maskVolume;
 
+  /* threshold */
   maskVolume = ThresholdImageAtLower( continuousImage, threshold);
 
   /* Get One label */
@@ -196,12 +198,34 @@ BRAINSCutApplyModel
 
 BinaryImagePointer
 BRAINSCutApplyModel
-::ThresholdImageAtLower( WorkingImagePointer image, scalarType thresholdValue  )
+::ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue  )
 {
   typedef itk::BinaryThresholdImageFilter<WorkingImageType,WorkingImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
-  std::cout<<"Treshold at "<< thresholdValue <<std::endl;
+  if( thresholdValue < 0.0F )
+  {
+    std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
+    throw BRAINSCutExceptionStringHandler( msg );
+  }
+  thresholder->SetInput( image );
+  thresholder->SetOutsideValue( 0 );
+  thresholder->SetInsideValue( 1 );
+  thresholder->SetUpperThreshold( thresholdValue );
+  thresholder->SetLowerThreshold( -1e+10F);
+  thresholder->Update();
+
+  BinaryImagePointer mask = itkUtil::TypeCast<WorkingImageType, BinaryImageType>( thresholder->GetOutput() );
+  return mask;
+}
+
+BinaryImagePointer
+BRAINSCutApplyModel
+::ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue  )
+{
+  typedef itk::BinaryThresholdImageFilter<WorkingImageType,WorkingImageType> ThresholdFilterType;
+  ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
+
   if( thresholdValue < 0.0F )
   {
     std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
@@ -273,6 +297,7 @@ BRAINSCutApplyModel
     throw BRAINSCutExceptionStringHandler( msg );
     }
 }
+
 
 BinaryImagePointer
 BRAINSCutApplyModel
