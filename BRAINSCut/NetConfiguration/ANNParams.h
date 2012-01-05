@@ -1,3 +1,9 @@
+/**
+ * TODO
+ * Change to ANNPrams --> TrainingParameters
+ * */
+
+
 #ifndef ANNParams_h
 #define ANNParams_h
 #include "StringValue.h"

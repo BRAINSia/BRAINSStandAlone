@@ -14,21 +14,28 @@ public:
   BRAINSCutApplyModel( std::string netConfigurationFilename);
 
   void SetApplyDataSetFromNetConfiguration();
+  void SetANNModelFilenameFromNetConfiguration();
 
   void Apply();
 
   void ApplyOnSubject( DataSet& subject);
 
-  void SetANNModelFilenameFromNetConfiguration();
-  void SetANNModelFilenameAtIteration( const int iteration);
+
   void SetTrainIterationFromNetConfiguration();
   void SetComputeSSE( const bool sse );
   void SetANNTestingSSEFilename();
+  void SetMethod( std::string inputMethod);
 
   void ReadANNModelFile();
+  void ReadRandomForestModelFile();
+  void SetRandomForestModelFilenameFromNetConfiguration();
+  void SetRandomForestModelFilename( int depth, int nTree);
 
-  BinaryImagePointer PostProcessingOfANNContinuousImage( std::string continuousFilename, 
-                                                         scalarType threshold );
+
+  BinaryImagePointer PostProcessingANN( std::string continuousFilename, 
+                                        scalarType threshold );
+
+  BinaryImagePointer PostProcessingRF( std::string labelImageFilename );
 
   void SetANNOutputThresholdFromNetConfiguration();
   void SetGaussianSmoothingSigmaFromNetConfiguration();
@@ -36,7 +43,8 @@ public:
   BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue );
   BinaryImagePointer ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue );
 
-  BinaryImagePointer ExtractLabel( BinaryImagePointer image, unsigned char thresholdValue );
+  BinaryImagePointer ExtractLabel( BinaryImagePointer image, 
+                                   unsigned char thresholdValue );
   BinaryImagePointer GetOneConnectedRegion( BinaryImagePointer image );
 
   BinaryImagePointer FillHole( BinaryImagePointer mask);
@@ -44,16 +52,18 @@ public:
 private:
   NetConfiguration::ApplyDataSetListType applyDataSetList;
 
+  std::string method;
   bool        normalization;
   bool        computeSSE;
   int         trainIteration;
-  std::string ANNModelFilename;
   std::string ANNTestingSSEFilename;
   std::fstream ANNTestingSSEFileStream;
 
   scalarType annOutputThreshold;
   scalarType gaussianSmoothingSigma;
   OpenCVMLPType * openCVANN;
+
+  CvRTrees    openCVRandomForest;
 
   /* private functions  */
   std::string GetANNModelBaseName();
@@ -70,7 +80,8 @@ private:
   inline void WritePredictROIProbabilityBasedOnReferenceImage( const PredictValueMapType& predictedOutput,
                                                                const WorkingImagePointer& referenceImage,
                                                                const WorkingImagePointer& roi,
-                                                               const std::string imageFIlename );
+                                                               const std::string imageFilename,
+                                                               const WorkingPixelType labelValue = HundredPercentValue);
 
   inline std::string GetSubjectOutputDirectory( DataSet& subject);
 
