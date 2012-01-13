@@ -298,9 +298,6 @@ NetConfigurationParser::StartElement(void *userData,
                                     attribMap.Get("ApplyModel",
                                                   "MaskThresh") );
 
-      am->SetAttribute<StringValue>( "LevelSetImageType",
-                                    attribMap.Get("ApplyModel",
-                                                  "LevelSetImageType") );
       Local_netConfiguration->Add(am, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
