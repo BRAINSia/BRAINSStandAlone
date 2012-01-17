@@ -100,7 +100,7 @@ MakeBrandeddebugImage(SImageType::ConstPointer in,
     SImageType::PointType pt = RP;
     SImageType::PointType pt2 = RP2;
     double                radius = 0.0;
-    // HACK:  Ali:  Why is height hard-coded to a value of 4 here?  
+    // HACK:  Ali:  Why is height hard-coded to a value of 4 here?
     // HACK:  Ali:  BRAINSConstellationDetector/src/landmarkIO.cxx:102: warning #593: variable "height" was set but never used
 
     double                height = 0.0;
@@ -144,7 +144,7 @@ MakeBrandeddebugImage(SImageType::ConstPointer in,
       SImageType::IndexType index = rgbIt.GetIndex();
       SImageType::PointType p;
       orientedImage->TransformIndexToPhysicalPoint(index, p);
-      // HACK:  Ali:  Why is height hard-coded to a value of 4 here?  
+      // HACK:  Ali:  Why is height hard-coded to a value of 4 here?
       if( IsOnCylinder(p, pt, pt2, radius, /* height, */ 4) )
         {
         RGBPixelType pixel = rgbIt.Value();
@@ -811,4 +811,4 @@ writeVerificationScript(std::string outputVerificationScriptFilename,
   ScriptFile << std::endl;
   ScriptFile.close();
 }
-
+*/
