@@ -14,8 +14,9 @@ if(DEFINED SlicerExecutionModel_DIR AND NOT EXISTS ${SlicerExecutionModel_DIR})
   message(FATAL_ERROR "SlicerExecutionModel_DIR variable is defined but corresponds to non-existing directory")
 endif()
 
-# Set dependency list
-set(SlicerExecutionModel_DEPENDENCIES ${ITK_EXTERNAL_NAME})
+if(NOT SlicerExecutionModel_DEPENDENCIES)
+  set(SlicerExecutionModel_DEPENDENCIES ${ITK_EXTERNAL_NAME})
+endif(NOT SlicerExecutionModel_DEPENDENCIES)
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(SlicerExecutionModel)
@@ -44,6 +45,11 @@ if(NOT DEFINED SlicerExecutionModel_DIR AND NOT ${USE_SYSTEM_SlicerExecutionMode
     CMAKE_ARGS
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
+      -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+      -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+      -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+      -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DBUILD_TESTING:BOOL=OFF
       -DITK_DIR:PATH=${ITK_DIR}

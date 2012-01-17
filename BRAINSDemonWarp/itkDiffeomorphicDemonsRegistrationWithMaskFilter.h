@@ -202,6 +202,10 @@ protected:
    */
   virtual void VerifyInputInformation();
 
+  /** override to do nothing since by definition input image spaces
+   *  won't match
+  */
+  virtual void VerifyInputInformation();
 private:
   DiffeomorphicDemonsRegistrationWithMaskFilter(const Self &); //purposely not
                                                        // implemented
