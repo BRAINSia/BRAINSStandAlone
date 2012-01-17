@@ -15,6 +15,8 @@
 #ifndef __genericRegistrationHelper_h
 #define __genericRegistrationHelper_h
 
+#include "BRAINSCommonLib.h"
+
 #if (ITK_VERSION_MAJOR < 4)
 #include "itkOptImageToImageMetric.h"
 #include "itkOptMattesMutualInformationImageToImageMetric.h"
@@ -40,7 +42,8 @@
 
 #include "itkMultiThreader.h"
 #include "itkResampleImageFilter.h"
-#ifdef USE_DEBUG_IMAGE_VIEWER
+
+#ifdef USE_DebugImageViewer
 #include "DebugImageViewerClient.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "Imgmath.h"
@@ -63,6 +66,94 @@ enum
 
 namespace BRAINSFit
 {
+template <class JointPDFType>
+void MakeDebugJointHistogram(const std::string debugOutputDirectory, const typename JointPDFType::Pointer myHistogram,
+                             const int globalIteration,
+                             const int currentIteration)
+  {
+  std::stringstream fn("");
+
+  fn << debugOutputDirectory << "/DEBUGHistogram_"
+    << std::setw( 4 ) << std::setfill( '0' ) << globalIteration
+    << "_"
+    << std::setw( 4 ) << std::setfill( '0' ) << currentIteration
+    << ".png";
+  // typename JOINTPDFType::ConstPointer =
+  // typedef itk::CastImageFilter<JointPDFType, itk::Image< unsigned short, 2 >
+  // > CasterType;
+  //typedef itk::RescaleIntensityImageFilter<JointPDFType, itk::Image<unsigned short, 2> > CasterType;
+  // typedef itk::ShiftScaleImageFilter<JointPDFType, itk::Image< unsigned char,
+  // 2 > > CasterType;
+  //typename CasterType::Pointer myCaster = CasterType::New();
+  //myCaster->SetInput(myHistogram);
+  // myCaster->SetShift(0);
+  // myCaster->SetScale(255);
+  //myCaster->Update();
+  //
+#if 0
+  typedef itk::StatisticsImageFilter<JointPDFType> StatisticsImageFilterType;
+  typename StatisticsImageFilterType::Pointer statisticsImageFilter = StatisticsImageFilterType::New ();
+  statisticsImageFilter->SetInput(myHistogram);
+  statisticsImageFilter->Update();
+
+  const float histMean=statisticsImageFilter->GetMean();
+  std::cout << "Mean: " << histMean << std::endl;
+  std::cout << "Std.: " << statisticsImageFilter->GetSigma() << std::endl;
+  std::cout << "Min: " << statisticsImageFilter->GetMinimum() << std::endl;
+  std::cout << "Max: " << statisticsImageFilter->GetMaximum() << std::endl;
+#endif
+
+  itk::ImageRegionConstIterator<JointPDFType> origIter(myHistogram,myHistogram->GetLargestPossibleRegion());
+  origIter.GoToBegin();
+  unsigned int nonZeroCount   = 0;
+  float nonZeroAverage = 0;
+
+  while( ! origIter.IsAtEnd() )
+  {
+  const float currValue = origIter.Get();
+  if( currValue > 0 )
+  {
+   nonZeroAverage += currValue;
+   ++nonZeroCount;
+  }
+  ++origIter;
+  }
+  nonZeroAverage /= static_cast<float>(nonZeroCount);
+
+  typedef itk::Image< unsigned short, 2> PNGImageType;
+  typename PNGImageType::Pointer myOut = PNGImageType::New();
+  myOut->CopyInformation(myHistogram);
+  myOut->SetRegions(myHistogram->GetLargestPossibleRegion());
+  myOut->Allocate();
+  myOut->FillBuffer(0U);
+  itk::ImageRegionIterator<PNGImageType> pngIter(myOut,myOut->GetLargestPossibleRegion());
+  pngIter.GoToBegin();
+  origIter.GoToBegin();
+  while( ! pngIter.IsAtEnd())
+  {
+  const float MAX_VALUE=vcl_numeric_limits<unsigned short>::max();
+  const float scaleFactor = 0.66*MAX_VALUE/nonZeroAverage;
+  const float currValue = (origIter.Get() ) * scaleFactor;
+  if( currValue < 0 )
+  {
+  pngIter.Set( 0 );
+  }
+  else if( currValue > MAX_VALUE )
+  {
+  pngIter.Set( MAX_VALUE );
+  }
+  else
+  {
+  pngIter.Set( currValue );
+  }
+  ++pngIter;
+  ++origIter;
+  }
+
+
+  itkUtil::WriteImage<PNGImageType >( myOut, fn.str() );
+  std::cout << "Writing jointPDF: " << fn.str() << std::endl;
+  }
 template <typename TOptimizer, typename TTransform, typename TImage>
 class CommandIterationUpdate : public itk::Command
 {
@@ -73,10 +164,12 @@ public:
   itkNewMacro(Self);
   typedef          TOptimizer  OptimizerType;
   typedef const OptimizerType *OptimizerPointer;
+
+  typedef typename COMMON_MMI_METRIC_TYPE<TImage, TImage> MattesMutualInformationMetricType;
   void SetDisplayDeformedImage(bool x)
   {
     m_DisplayDeformedImage = x;
-#if USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
     m_DebugImageDisplaySender.SetEnabled(x);
 #endif
   }
@@ -84,7 +177,7 @@ public:
   void SetPromptUserAfterDisplay(bool x)
   {
     m_PromptUserAfterDisplay = x;
-#if USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
     m_DebugImageDisplaySender.SetPromptUser(x);
 #endif
   }
@@ -140,8 +233,7 @@ public:
 
     if( optimizer == NULL )
       {
-      std::cout << "ERROR::" << __FILE__ << " " << __LINE__ << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro("fail to convert to Optimizer Pointer");
       }
     if( !itk::IterationEvent().CheckEvent(&event) )
       {
@@ -171,8 +263,48 @@ public:
         }
       std::cout << std::endl;
       }
+#if ITK_VERSION_MAJOR >=4  //GetJointPDF only available in ITKv4
+    //
+    // GenerateHistogram
+    // TODO: KENT:  BRAINSFit tools need to define a common output directory for
+    // all debug images to be written.
+    //             by default the it should be the same as the outputImage, and
+    // if that does not exists, then it
+    //             should default to the same directory as the outputTransform,
+    // or it should be specified by the
+    //             user on the command line.
+    //             The following function should only be called when BRAINSFit
+    // command line tool is called with
+    //             --debugLevel 7 or greater, and it should write the 3D
+    // JointPDF image to the debugOutputDirectory
+    //             location.
+    std::string debugOutputDirectory("");
+    if( optimizer->GetCurrentIteration() < 5 //Only do first 4 of each iteration
+      &&
+      itksys::SystemTools::GetEnv("DEBUG_JOINTHISTOGRAM_DIR", debugOutputDirectory) && debugOutputDirectory != "")
+      {
+      // Special BUG work around for MMI metric
+      // that does not work in multi-threaded mode
+      //typedef COMMON_MMI_METRIC_TYPE<TImage,TImage> MattesMutualInformationMetricType;
+      static int TransformIterationCounter = 0;
+      typename MattesMutualInformationMetricType::Pointer test_MMICostMetric =
+        dynamic_cast<MattesMutualInformationMetricType *>(this->m_CostMetricObject.GetPointer() );
+      if( test_MMICostMetric.IsNotNull() )
+        {
+        typedef typename MattesMutualInformationMetricType::PDFValueType PDFValueType;
+        typedef itk::Image<PDFValueType, 2> JointPDFType;
+        const typename JointPDFType::Pointer myHistogram = test_MMICostMetric->GetJointPDF();
+        MakeDebugJointHistogram<JointPDFType>(debugOutputDirectory, myHistogram, TransformIterationCounter,
+                                              optimizer->GetCurrentIteration() );
+        if ( optimizer->GetCurrentIteration()  == 0 )
+          {
+          TransformIterationCounter += 10000;
+          }
+        }
+      }
+#endif
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
     if( m_DisplayDeformedImage )
       {
       if( parmsNonEmpty )
@@ -195,7 +327,6 @@ public:
 #endif
   }
 
-  typedef typename COMMON_MMI_METRIC_TYPE<TImage, TImage> MattesMutualInformationMetricType;
   void SetMetricObject(typename MattesMutualInformationMetricType::Pointer metric_Object)
   {
     // NOTE:  Returns NULL if not MattesMutualInformationImageToImageMetric
@@ -225,7 +356,7 @@ private:
 
   typename MattesMutualInformationMetricType::Pointer m_CostMetricObject;
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
   DebugImageViewerClient m_DebugImageDisplaySender;
 #endif
 };
@@ -341,11 +472,20 @@ public:
   itkGetConstMacro(ActualNumberOfIterations, unsigned int);
   itkSetMacro(ObserveIterations,        bool);
   itkGetConstMacro(ObserveIterations,        bool);
+  //Debug option for MI metric
+  itkSetMacro(ForceMINumberOfThreads, int);
+  itkGetConstMacro(ForceMINumberOfThreads, int);
+
   /** Returns the transform resulting from the registration process  */
   const TransformOutputType * GetOutput() const;
 
   /** Make a DataObject of the correct type to be used as the specified
     * output. */
+#if (ITK_VERSION_MAJOR < 4)
+  //Nothing to add for ITKv3
+#else
+  using Superclass::MakeOutput;
+#endif
   virtual DataObjectPointer MakeOutput(unsigned int idx);
 
   /** Method to return the latest modified time of this object or
@@ -415,6 +555,8 @@ private:
   bool         m_PromptUserAfterDisplay;
   double       m_FinalMetricValue;
   bool         m_ObserveIterations;
+  //DEBUG OPTION:
+  int                                        m_ForceMINumberOfThreads;
 };
 } // end namespace itk
 

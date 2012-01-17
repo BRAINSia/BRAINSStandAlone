@@ -1,16 +1,15 @@
-cmake_minimum_required(VERSION 2.8)
-cmake_policy(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.3)
+cmake_policy(VERSION 2.8.3)
 
 ## NOTE THERE SHOULD BE NO PROJECT STATEMENT HERE!
 ## This file acts as a simple switch to initiate
 ## two completely independant CMake build environments.
-## or the actual build
 
 #-----------------------------------------------------------------------------
 # Superbuild Option - Enabled by default
 #                   Phase I:  BRAINSTools_SUPERBUILD is set to ON, and the
-#                             supporting packages defined in "SuperBuild.camke"
-#                             are built.  The last package in "SuperBuild.camke"
+#                             supporting packages defined in "SuperBuild.cmake"
+#                             are built.  The last package in "SuperBuild.cmake"
 #                             to be built is a recursive call to this
 #                             file with BRAINSTools_SUPERBUILD explicitly
 #                             set to "OFF" to initiate Phase II
@@ -24,18 +23,21 @@ mark_as_advanced(BRAINSTools_SUPERBUILD)
 option(BRAINSTools_USE_QT "Find and use Qt with VTK to build GUI Tools" OFF)
 mark_as_advanced(BRAINSTools_USE_QT)
 
+option(BRAINSTools_INSTALL_DEVELOPMENT "Install development support include and libraries for external packages." OFF)
+mark_as_advanced(BRAINSTools_INSTALL_DEVELOPMENT)
+
 #-----------------------------------------------------------------------------
 # Superbuild script
 #-----------------------------------------------------------------------------
 if(BRAINSTools_SUPERBUILD)
   project(SuperBuild_BRAINSTools)
   include("${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild.cmake")
-  return() #NOTE: This terminiates the CMake script
+  return()
 else()
   project(BRAINSTools)
-  #The project state
   include("${CMAKE_CURRENT_SOURCE_DIR}/BRAINSTools.cmake")
-  return() #NOTE: This terminiates the CMake script
+  return()
 endif()
 
-## NOTE:  You never reach this point.
+message(FATAL_ERROR "You should never reach this point !")
+

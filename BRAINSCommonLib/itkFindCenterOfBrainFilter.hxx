@@ -368,16 +368,15 @@ FindCenterOfBrainFilter<TInputImage, TMaskImage>
     moments->SetImage(this->m_TrimmedImage);
       {
       // convert mask image to mask
-      typedef typename itk::ImageMaskSpatialObject<TInputImage::ImageDimension> ImageMaskSpatialObjectType;
-      typename ImageMaskSpatialObjectType::Pointer mask = ImageMaskSpatialObjectType::New();
+      typedef typename itk::ImageMaskSpatialObject<TInputImage::ImageDimension> LFFImageMaskSpatialObjectType;
+      typename LFFImageMaskSpatialObjectType::Pointer mask = LFFImageMaskSpatialObjectType::New();
       mask->SetImage(this->m_ClippedImageMask);
       mask->ComputeObjectToWorldTransform();
       typename itk::SpatialObject<TInputImage::ImageDimension>::Pointer test =
         dynamic_cast<itk::SpatialObject<TInputImage::ImageDimension> *>( mask.GetPointer() );
       if( test.IsNull() )
         {
-        std::cout << "Invalid converstion attempted." << __FILE__ << " " << __LINE__ << std::endl;
-        exit(-1);
+        itkGenericExceptionMacro(<< "Failed conversion to Image");
         }
 
       moments->SetSpatialObjectMask( test.GetPointer() );

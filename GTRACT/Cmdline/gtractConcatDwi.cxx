@@ -37,7 +37,7 @@
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   const int numberOfImages = inputVolume.size();
   bool      debug = true;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef signed short                   PixelType;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
       char tmpValue[64];
       char tokStr[64];
 
-      sprintf(tmpStr, "DWMRI_gradient_%04d", j);
+      sprintf(tmpStr, "DWMRI_gradient_%04u", j);
       itk::ExposeMetaData<std::string>(currentMetaData, tmpStr, NrrdValue);
       strcpy( tokStr, NrrdValue.c_str() );
       double x = atof( strtok( tokStr, " " ) );

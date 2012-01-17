@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 {
 
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   itk::AddExtraTransformRegister();
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef signed short                        PixelType;
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
               << inputTransform
               << " wasn't of the expected type itk::VersorRigid3DTransform<double"
               << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
   resampleImage = SetVectorImageRigidTransformInPlace<NrrdImageType>(rigidTransform.GetPointer(), resampleImage);
   for( unsigned int i = 0; i < resampleImage->GetVectorLength(); i++ )
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     // Get Current Gradient Direction
     vnl_vector<double> curGradientDirection(3);
     char               tmpStr[64];
-    sprintf(tmpStr, "DWMRI_gradient_%04d", i);
+    sprintf(tmpStr, "DWMRI_gradient_%04u", i);
     std::string KeyString(tmpStr);
     std::string NrrdValue;
 

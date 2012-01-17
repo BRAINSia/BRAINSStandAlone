@@ -17,6 +17,7 @@ PURPOSE.  See the above copyright notices for more information.
 #include <sstream>
 #include "itkMedianImageFilter.h"
 #include "itkExtractImageFilter.h"
+#include "BRAINSCommonLib.h"
 #include "BRAINSThreadControl.h"
 #include "BRAINSFitHelper.h"
 #include "BRAINSFitCLP.h"
@@ -25,15 +26,15 @@ PURPOSE.  See the above copyright notices for more information.
 // Insight/Examples/Registration/ImageRegistration8.cxx
 // and is an improved replacement for the old (and defective)
 
-typedef float                            PixelType;
-typedef itk::Image<PixelType, Dimension> FixedVolumeType;
-typedef itk::Image<PixelType, Dimension> MovingVolumeType;
+typedef float                            BRAINSFitPixelType;
+typedef itk::Image<BRAINSFitPixelType, Dimension> FixedVolumeType;
+typedef itk::Image<BRAINSFitPixelType, Dimension> MovingVolumeType;
 
-typedef itk::Image<PixelType, MaxInputDimension> InputImageType;
+typedef itk::Image<BRAINSFitPixelType, MaxInputDimension> InputImageType;
 typedef itk::ImageFileReader<InputImageType>     FixedVolumeReaderType;
 typedef itk::ImageFileReader<InputImageType>     MovingVolumeReaderType;
 typedef AffineTransformType::Pointer             AffineTransformPointer;
-typedef itk::Vector<double, Dimension>           VectorType;
+//typedef itk::Vector<double, Dimension>           BRAINSFitVectorType;
 
 // This function deciphers the BackgroundFillValueString and returns a double
 // precision number based on the requested value
@@ -134,7 +135,7 @@ typename ImageType::Pointer DoMedian(typename ImageType::Pointer & input,
   return result;
 }
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
 /*************************
  * Have a global variable to
  * add debugging information.
@@ -156,14 +157,14 @@ int main(int argc, char *argv[])
   itk::TransformFactory<AffineTransformType>::RegisterTransform();
   itk::TransformFactory<BSplineTransformType>::RegisterTransform();
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
   if( UseDebugImageViewer )
     {
     DebugImageDisplaySender.SetEnabled(UseDebugImageViewer);
     }
 #endif
 
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   std::string localInitializeTransformMode = initializeTransformMode;
   // Intially set using the string enumeration
@@ -182,7 +183,7 @@ int main(int argc, char *argv[])
       <<
       "ERROR:  Can only specify one of [initialTransform | useCenterOfHeadAlign | useGeometryAlign | useMomentsAlign | initializeTransformMode ]"
       << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     if( useCenterOfHeadAlign == true )
       {
@@ -210,7 +211,7 @@ int main(int argc, char *argv[])
 //        validGridSize = false;
         std::cout << "splineGridSize[" << sgs << "]= " << splineGridSize[sgs]
                   << " is invalid.  There must be at lest 3 divisions in each dimension of the image." << std::endl;
-        exit(-1);
+        return EXIT_FAILURE;
         }
       }
     }
@@ -241,6 +242,10 @@ int main(int argc, char *argv[])
       {
       localTransformType.push_back("BSpline");
       }
+    if( useComposite )
+      {
+      localTransformType.push_back("Composite3D");
+      }
     }
   else if( transformType.size() > 0 )
     {
@@ -253,7 +258,7 @@ int main(int argc, char *argv[])
   else
     {
     std::cerr << "ERROR: No registration phases specified to perform!" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
 
   // In order to make the Slicer interface work, a few alternate command line
@@ -264,7 +269,7 @@ int main(int argc, char *argv[])
       || ( outputTransform.size() > 0 && bsplineTransform.size() > 0 ) )
     {
     std::cout << "Error:  user can only specify one output transform type." << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
   if( linearTransform.size() > 0 )
     {
@@ -272,7 +277,7 @@ int main(int argc, char *argv[])
     if( ( !localTransformType.empty() ) && ( localTransformType[localTransformType.size() - 1] == "BSpline" ) )
       {
       std::cout << "Error:  Linear transforms can not be used for BSpline registration!" << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
   else if( !bsplineTransform.empty() )
@@ -281,12 +286,12 @@ int main(int argc, char *argv[])
     if( ( !localTransformType.empty() ) && ( localTransformType[localTransformType.size() - 1] != "BSpline" ) )
       {
       std::cout << "Error:  BSpline registrations require output transform to be of type BSpline!" << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     else if( localTransformType.empty() )
       {
       std::cout << "Error:  Initializer only registrations require output transform to be of type Linear!" << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
   else if( !outputTransform.empty() )
@@ -310,7 +315,7 @@ int main(int argc, char *argv[])
       {
       std::cerr << "The numberOfIterations array must match the length of the transformType"
                 << "length, or have a single value that is used for all registration phases." << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     else
       {
@@ -328,7 +333,7 @@ int main(int argc, char *argv[])
     if( minimumStepLength.size() != 1 )
       {
       std::cerr << "The minimumStepLength array must match the localTransformType length" << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     else
       {
@@ -351,7 +356,7 @@ int main(int argc, char *argv[])
   InputImageType::Pointer
   OriginalFixedVolume( itkUtil::ReadImage<InputImageType>(fixedVolume) );
 
-  std::cerr << "Original Fixed image origin"
+  std::cout << "Original Fixed image origin"
             << OriginalFixedVolume->GetOrigin() << std::endl;
   // fixedVolumeTimeIndex lets lets us treat 3D as 4D.
   /***********************
@@ -372,7 +377,7 @@ int main(int argc, char *argv[])
   extractMovingVolume = ExtractImage<MovingVolumeType>(OriginalMovingVolume,
                                                        movingVolumeTimeIndex);
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
   if( DebugImageDisplaySender.Enabled() )
     {
     DebugImageDisplaySender.SendImage<itk::Image<float, 3> >(extractFixedVolume, 0);
@@ -418,7 +423,7 @@ int main(int argc, char *argv[])
       std::cout
         << "ERROR:  Can not specify mask file names when the default of NOMASK is used for the maskProcessingMode"
         << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
   else if( maskProcessingMode == "ROIAUTO" )
@@ -428,7 +433,7 @@ int main(int argc, char *argv[])
       std::cout
         << "ERROR:  Can not specify mask file names when ROIAUTO is used for the maskProcessingMode"
         << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     {
     typedef itk::BRAINSROIAutoImageFilter<FixedVolumeType, itk::Image<unsigned char, 3> > ROIAutoType;
@@ -457,7 +462,7 @@ int main(int argc, char *argv[])
         <<
         "ERROR:  Must specify mask file names when ROI is used for the maskProcessingMode"
         << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
     fixedMask = ReadImageMask<SpatialObjectType, Dimension>(
       fixedBinaryVolume,
@@ -489,89 +494,90 @@ int main(int argc, char *argv[])
   HelperType::Pointer myHelper = HelperType::New();
   myHelper->SetTransformType(localTransformType);
   myHelper->SetFixedVolume(extractFixedVolume);
-    myHelper->SetMovingVolume(extractMovingVolume);
-    myHelper->SetHistogramMatch(histogramMatch);
-    myHelper->SetRemoveIntensityOutliers(removeIntensityOutliers);
-    myHelper->SetNumberOfMatchPoints(numberOfMatchPoints);
-    myHelper->SetFixedBinaryVolume(fixedMask);
-    myHelper->SetMovingBinaryVolume(movingMask);
-    myHelper->SetOutputFixedVolumeROI(outputFixedVolumeROI);
-    myHelper->SetOutputMovingVolumeROI(outputMovingVolumeROI);
-    myHelper->SetPermitParameterVariation(permitParameterVariation);
-    myHelper->SetNumberOfSamples(numberOfSamples);
-    myHelper->SetNumberOfHistogramBins(numberOfHistogramBins);
-    myHelper->SetNumberOfIterations(numberOfIterations);
-    myHelper->SetMaximumStepLength(maximumStepLength);
-    myHelper->SetMinimumStepLength(minimumStepLength);
-    myHelper->SetRelaxationFactor(relaxationFactor);
-    myHelper->SetTranslationScale(translationScale);
-    myHelper->SetReproportionScale(reproportionScale);
-    myHelper->SetSkewScale(skewScale);
-    myHelper->SetUseExplicitPDFDerivativesMode(useExplicitPDFDerivativesMode);
-    myHelper->SetUseCachingOfBSplineWeightsMode(useCachingOfBSplineWeightsMode);
-    myHelper->SetBackgroundFillValue(backgroundFillValue);
-    myHelper->SetInitializeTransformMode(localInitializeTransformMode);
-    myHelper->SetMaskInferiorCutOffFromCenter(maskInferiorCutOffFromCenter);
-    myHelper->SetCurrentGenericTransform(currentGenericTransform);
-    myHelper->SetSplineGridSize(splineGridSize);
-    myHelper->SetCostFunctionConvergenceFactor(costFunctionConvergenceFactor);
-    myHelper->SetProjectedGradientTolerance(projectedGradientTolerance);
-    myHelper->SetMaxBSplineDisplacement(maxBSplineDisplacement);
-    myHelper->SetDisplayDeformedImage(UseDebugImageViewer);
-    myHelper->SetPromptUserAfterDisplay(PromptAfterImageSend);
-    myHelper->SetDebugLevel(debugLevel);
-    myHelper->SetCostMetric(costMetric);
-    if( debugLevel > 7 )
-      {
-      myHelper->PrintCommandLine(true, "BF");
-      }
-    myHelper->StartRegistration();
-    currentGenericTransform = myHelper->GetCurrentGenericTransform();
-    MovingVolumeType::ConstPointer preprocessedMovingVolume = myHelper->GetPreprocessedMovingVolume();
+  myHelper->SetForceMINumberOfThreads(forceMINumberOfThreads);
+  myHelper->SetMovingVolume(extractMovingVolume);
+  myHelper->SetHistogramMatch(histogramMatch);
+  myHelper->SetRemoveIntensityOutliers(removeIntensityOutliers);
+  myHelper->SetNumberOfMatchPoints(numberOfMatchPoints);
+  myHelper->SetFixedBinaryVolume(fixedMask);
+  myHelper->SetMovingBinaryVolume(movingMask);
+  myHelper->SetOutputFixedVolumeROI(outputFixedVolumeROI);
+  myHelper->SetOutputMovingVolumeROI(outputMovingVolumeROI);
+  myHelper->SetPermitParameterVariation(permitParameterVariation);
+  myHelper->SetNumberOfSamples(numberOfSamples);
+  myHelper->SetNumberOfHistogramBins(numberOfHistogramBins);
+  myHelper->SetNumberOfIterations(numberOfIterations);
+  myHelper->SetMaximumStepLength(maximumStepLength);
+  myHelper->SetMinimumStepLength(minimumStepLength);
+  myHelper->SetRelaxationFactor(relaxationFactor);
+  myHelper->SetTranslationScale(translationScale);
+  myHelper->SetReproportionScale(reproportionScale);
+  myHelper->SetSkewScale(skewScale);
+  myHelper->SetUseExplicitPDFDerivativesMode(useExplicitPDFDerivativesMode);
+  myHelper->SetUseCachingOfBSplineWeightsMode(useCachingOfBSplineWeightsMode);
+  myHelper->SetBackgroundFillValue(backgroundFillValue);
+  myHelper->SetInitializeTransformMode(localInitializeTransformMode);
+  myHelper->SetMaskInferiorCutOffFromCenter(maskInferiorCutOffFromCenter);
+  myHelper->SetCurrentGenericTransform(currentGenericTransform);
+  myHelper->SetSplineGridSize(splineGridSize);
+  myHelper->SetCostFunctionConvergenceFactor(costFunctionConvergenceFactor);
+  myHelper->SetProjectedGradientTolerance(projectedGradientTolerance);
+  myHelper->SetMaxBSplineDisplacement(maxBSplineDisplacement);
+  myHelper->SetDisplayDeformedImage(UseDebugImageViewer);
+  myHelper->SetPromptUserAfterDisplay(PromptAfterImageSend);
+  myHelper->SetDebugLevel(debugLevel);
+  myHelper->SetCostMetric(costMetric);
+  if( debugLevel > 7 )
+    {
+    myHelper->PrintCommandLine(true, "BF");
+    }
+  myHelper->StartRegistration();
+  currentGenericTransform = myHelper->GetCurrentGenericTransform();
+  MovingVolumeType::ConstPointer preprocessedMovingVolume = myHelper->GetPreprocessedMovingVolume();
 #if 0
-    if( interpolationMode == "ResampleInPlace" )
-      {
-      % {
-        VersorRigid3DTransformType::ConstPointer versor3D =
-          dynamic_cast<const VersorRigid3DTransformType *>(currentGenericTransform.GetPointer() );
-        if( versor3D.IsNotNull() )
-          {
-          FixedVolumeType::Pointer tempInPlaceResample = itk::SetRigidTransformInPlace<FixedVolumeType>(
-              versor3D.GetPointer(), extractMovingVolume.GetPointer() );
-          resampledImage = itkUtil::TypeCast<FixedVolumeType, MovingVolumeType>(tempInPlaceResample);
-          }
-        else
-          {
-          // This should be an exception thow instead of exit.
-          std::cout << "could not convert to rigid versor type" << std::endl;
-          exit(-1);
-          }
+  if( interpolationMode == "ResampleInPlace" )
+    {
+    % {
+      VersorRigid3DTransformType::ConstPointer versor3D =
+        dynamic_cast<const VersorRigid3DTransformType *>(currentGenericTransform.GetPointer() );
+      if( versor3D.IsNotNull() )
+        {
+        FixedVolumeType::Pointer tempInPlaceResample = itk::SetRigidTransformInPlace<FixedVolumeType>(
+            versor3D.GetPointer(), extractMovingVolume.GetPointer() );
+        resampledImage = itkUtil::TypeCast<FixedVolumeType, MovingVolumeType>(tempInPlaceResample);
         }
       else
         {
-        // Remember:  the Data is Moving's, the shape is Fixed's.
-        resampledImage = TransformResample<MovingVolumeType, FixedVolumeType>(
-            preprocessedMovingVolume,
-            extractFixedVolume,
-            backgroundFillValue,
-            GetInterpolatorFromString<MovingVolumeType>(interpolationMode),
-            currentGenericTransform);
+        // This should be an exception thow instead of exit.
+        std::cout << "could not convert to rigid versor type" << std::endl;
+        return EXIT_FAILURE;
         }
       }
-#else
+    else
       {
-      typedef float                                                                     VectorComponentType;
-      typedef itk::Vector<VectorComponentType, GenericTransformImageNS::SpaceDimension> VectorPixelType;
-      typedef itk::Image<VectorPixelType,  GenericTransformImageNS::SpaceDimension>     DeformationFieldType;
-      resampledImage = GenericTransformImage<MovingVolumeType, FixedVolumeType, DeformationFieldType>(
+      // Remember:  the Data is Moving's, the shape is Fixed's.
+      resampledImage = TransformResample<MovingVolumeType, FixedVolumeType>(
           preprocessedMovingVolume,
           extractFixedVolume,
-          NULL,
-          currentGenericTransform,
           backgroundFillValue,
-          interpolationMode,
-          false);
+          GetInterpolatorFromString<MovingVolumeType>(interpolationMode),
+          currentGenericTransform);
       }
+    }
+#else
+  {
+  typedef float                                                                     VectorComponentType;
+  typedef itk::Vector<VectorComponentType, GenericTransformImageNS::SpaceDimension> VectorPixelType;
+  typedef itk::Image<VectorPixelType,  GenericTransformImageNS::SpaceDimension>     DisplacementFieldType;
+  resampledImage = GenericTransformImage<MovingVolumeType, FixedVolumeType, DisplacementFieldType>(
+      preprocessedMovingVolume,
+      extractFixedVolume,
+      NULL,
+      currentGenericTransform,
+      backgroundFillValue,
+      interpolationMode,
+      false);
+  }
 #endif
 //    actualIterations = myHelper->GetActualNumberOfIterations();
 //    permittedIterations = myHelper->GetPermittedNumberOfIterations();

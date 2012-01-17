@@ -10,6 +10,18 @@
 #include "itkIndex.h"
 #include "itkSize.h"
 #include "itkExceptionObject.h"
+#include "itkPDEDeformableRegistrationFilter.h"
+#include "itkDemonsRegistrationFilter.h"
+#include "itkSymmetricForcesDemonsRegistrationFilter.h"
+#include "itkFastSymmetricForcesDemonsRegistrationFilter.h"
+#include "itkDiffeomorphicDemonsRegistrationFilter.h"
+#include "itkDiffeomorphicDemonsRegistrationWithMaskFilter.h"
+#include "itkVectorDiffeomorphicDemonsRegistrationFilter.h"
+#include "itkESMDemonsRegistrationWithMaskFunction.h"
+#include "itkArray.h"
+
+#include "BRAINSCommonLib.h"
+
 #include "BRAINSDemonWarpCommonLibWin32Header.h"
 #include "GenericTransformImage.h"
 #include "VBRAINSDemonWarp.h"
@@ -18,20 +30,8 @@
 #include "itkSymmetricForcesDemonsRegistrationFunction.h"
 #include "itkFastSymmetricForcesDemonsRegistrationFunction.h"
 
-#include "itkPDEDeformableRegistrationFilter.h"
-#include "itkDemonsRegistrationFilter.h"
-#include "itkSymmetricForcesDemonsRegistrationFilter.h"
-#include "itkLogDomainDeformableRegistrationFilter.h"
-#include "itkLogDomainDemonsRegistrationFilter.h"
-#include "itkFastSymmetricForcesDemonsRegistrationFilter.h"
-#include "itkDiffeomorphicDemonsRegistrationFilter.h"
-#include "itkDiffeomorphicDemonsRegistrationWithMaskFilter.h"
-#include "itkVectorDiffeomorphicDemonsRegistrationFilter.h"
-#include "itkSymmetricLogDomainDemonsRegistrationFilter.h"
-#include "itkESMDemonsRegistrationWithMaskFunction.h"
-#include "itkArray.h"
 #include "itkIO.h"
-#if defined( USE_DEBUG_IMAGE_VIEWER )
+#if defined( USE_DebugImageViewer )
 #include "DebugImageViewerClient.h"
 extern DebugImageViewerClient DebugImageDisplaySender;
 #endif
@@ -83,7 +83,7 @@ struct BRAINSDemonWarpAppParameters
   std::string movingVolume;
   std::string fixedVolume;
   std::string outputVolume;
-  std::string outputDeformationFieldVolume;
+  std::string outputDisplacementFieldVolume;
   std::string inputPixelType;
   std::string outputPixelType;
   std::string outputDisplacementFieldPrefix;
@@ -107,12 +107,12 @@ struct BRAINSDemonWarpAppParameters
     std::string fixedLandmarks;
     std::string initializeWithFourier;
     */
-  std::string initializeWithDeformationField;
+  std::string initializeWithDisplacementField;
   std::string initializeWithTransform;
   unsigned int numberOfBCHApproximationTerms;
 
   /** Smoothing sigma for the deformation field at each iteration.*/
-  float smoothDeformationFieldSigma;
+  float smoothDisplacementFieldSigma;
 
   /** Maximum lengthof an update vector. */
   float maxStepLength;
@@ -156,7 +156,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
   typedef itk::Image<InPixelType, dims>              ImageType;
   typedef itk::Image<float, dims>                    TRealImage;
   typedef itk::Image<OutPixelType, dims>             OutputImageType;
-  typedef itk::Image<itk::Vector<float, dims>, dims> TDeformationField;
+  typedef itk::Image<itk::Vector<float, dims>, dims> TDisplacementField;
   typedef itk::Image<itk::Vector<float, dims>, dims> TVelocityField;
 
   typedef unsigned char                                   MaskPixelType;
@@ -192,78 +192,10 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     {
     observer = CommandIterationUpdate<float, 3>::New();
     }
-  if( command.registrationFilterType == "SymmetricLogDemons" || command.registrationFilterType == "LogDemons" )
-    {
-    app->SetLogDomain(true);
-    typedef typename itk::LogDomainDeformableRegistrationFilter<TRealImage, TRealImage, TVelocityField>
-    BaseRegistrationFilterType;
-    typename BaseRegistrationFilterType::Pointer filter;
-
-    if( command.registrationFilterType == "LogDemons" )
-      {
-      typedef typename itk::LogDomainDemonsRegistrationFilter<TRealImage, TRealImage, TVelocityField>
-      ActualRegistrationFilterType;
-      typedef typename ActualRegistrationFilterType::GradientType GradientType;
-
-      typename ActualRegistrationFilterType::Pointer actualfilter =
-        ActualRegistrationFilterType::New();
-
-      actualfilter->SetMaximumUpdateStepLength(command.maxStepLength);
-      actualfilter->SetUseGradientType( static_cast<GradientType>( command.gradientType ) );
-      actualfilter->SetNumberOfBCHApproximationTerms(command.numberOfBCHApproximationTerms);
-      filter = actualfilter;
-      }
-    if( command.registrationFilterType == "SymmetricLogDemons" )
-      {
-      typedef typename itk::SymmetricLogDomainDemonsRegistrationFilter<TRealImage, TRealImage, TVelocityField>
-      ActualRegistrationFilterType;
-      typename ActualRegistrationFilterType::Pointer actualfilter = ActualRegistrationFilterType::New();
-      typedef  typename ActualRegistrationFilterType::GradientType GradientType;
-
-      actualfilter->SetMaximumUpdateStepLength(command.maxStepLength);
-      actualfilter->SetUseGradientType( static_cast<GradientType>( command.gradientType ) );
-      actualfilter->SetNumberOfBCHApproximationTerms(command.numberOfBCHApproximationTerms);
-      filter = actualfilter;
-      }
-    if( command.smoothDeformationFieldSigma > 0.1 )
-      {
-      if( command.outputDebug )
-        {
-        std::cout << " Smoothing is on ....." << std::endl;
-        }
-      filter->SmoothVelocityFieldOn();
-      filter->SetStandardDeviations(command.smoothDeformationFieldSigma);
-      }
-    else
-      {
-      filter->SmoothVelocityFieldOff();
-      }
-    if( command.smoothingUp > 0.1 )
-      {
-      if( command.outputDebug )
-        {
-        std::cout << " Smoothing at update....." << std::endl;
-        }
-      filter->SmoothUpdateFieldOn();
-      filter->SetUpdateFieldStandardDeviations(command.smoothingUp);
-      }
-    else
-      {
-      filter->SmoothUpdateFieldOff();
-      }
-    if( command.outputDebug )
-      {
-      filter->AddObserver(itk::IterationEvent(), observer);
-      }
-
-    app->SetLDDRegistrationFilter(filter);
-    }
-
-  else
     {
     // Set up the demons filter
     typedef typename itk::PDEDeformableRegistrationFilter<TRealImage, TRealImage,
-                                                          TDeformationField>
+                                                          TDisplacementField>
     BaseRegistrationFilterType;
     // BaseRegistrationFilterType::Pointer filter =
     //   BaseRegistrationFilterType::New();
@@ -272,7 +204,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     if( command.registrationFilterType == "Demons" )
       {
       typedef typename itk::DemonsRegistrationFilter<TRealImage, TRealImage,
-                                                     TDeformationField>
+                                                     TDisplacementField>
       ActualRegistrationFilterType;
       ActualRegistrationFilterType::Pointer actualfilter =
         ActualRegistrationFilterType::New();
@@ -290,7 +222,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       {
       typedef typename itk::DiffeomorphicDemonsRegistrationWithMaskFilter<
         TRealImage, TRealImage,
-        TDeformationField>   ActualRegistrationFilterType;
+        TDisplacementField>   ActualRegistrationFilterType;
       typename ActualRegistrationFilterType::Pointer actualfilter =
         ActualRegistrationFilterType::New();
 
@@ -305,11 +237,10 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
         if( ( command.fixedBinaryVolume != "" )
             || ( command.movingBinaryVolume != "" ) )
           {
-          std::cout
-          <<
-          "ERROR:  Can not specify mask file names when ROIAUTO is used for the maskProcessingMode"
-          << std::endl;
-          exit(-1);
+          
+          itkGenericExceptionMacro(<< "ERROR:  Can not specify mask file names when ROIAUTO "
+                                   << "is used for the maskProcessingMode")
+
           }
         std::cout << "Diffeomorphic with autogenerated Mask!!!!!!!"
                   << std::endl;
@@ -338,10 +269,8 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
         castFixedMaskImage->SetInput(fixedBinaryVolumeImage);
         castFixedMaskImage->Update();
 
-        //      typename MaskImageType::Pointer fm =
-        // castFixedMaskImage->GetOutput();
-        //      itkUtil::WriteImage<MaskImageType>(fm,
-        // "fixedMaskImage.nii.gz");
+        typename MaskImageType::Pointer fm = castFixedMaskImage->GetOutput();
+        DebugOutput(MaskImageType,fm);
 
         // convert mask image to mask
         typename ImageMaskSpatialObjectType::Pointer fixedMask = ImageMaskSpatialObjectType::New();
@@ -350,11 +279,6 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
 
         typename  TRealImage::Pointer movingVolume =
           itkUtil::ReadImage<TRealImage>( command.movingVolume.c_str() );
-        //         movingBinaryVolumeImage =
-        // FindLargestForgroundFilledMask<TRealImage>(
-        //         movingVolume,
-        //         otsuPercentileThreshold,
-        //         closingSize);
         LFF->SetInput(movingVolume);
         LFF->SetOtsuPercentileThreshold(otsuPercentileThreshold);
         LFF->SetClosingSize(closingSize);
@@ -364,11 +288,8 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
         typename CastImageFilter::Pointer castMovingMaskImage = CastImageFilter::New();
         castMovingMaskImage->SetInput(movingBinaryVolumeImage);
         castMovingMaskImage->Update();
-
-        //      typename MaskImageType::Pointer mm =
-        // castMovingMaskImage->GetOutput();
-        //      itkUtil::WriteImage<MaskImageType>(mm,
-        // "movingMaskImage.nii.gz");
+        typename MaskImageType::Pointer mm = castMovingMaskImage->GetOutput();
+        DebugOutput(MaskImageType,mm);
 
         // convert mask image to mask
         typename ImageMaskSpatialObjectType::Pointer movingMask = ImageMaskSpatialObjectType::New();
@@ -383,11 +304,8 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
         if( ( command.fixedBinaryVolume == "" )
             || ( command.movingBinaryVolume == "" ) )
           {
-          std::cout
-          <<
-          "ERROR:  Must specify mask file names when ROI is used for the maskProcessingMode"
-          << std::endl;
-          exit(-1);
+          itkGenericExceptionMacro(<< "ERROR:  Must specify mask file names"
+                                   " when ROI is used for the maskProcessingMode");
           }
         std::cout << "Diffeomorphic with Mask!!!!!!!" << std::endl;
         typename  TRealImage::Pointer fixedVolume =
@@ -410,7 +328,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       {
       // s <- s + u (ITK basic implementation)
       typedef typename itk::FastSymmetricForcesDemonsRegistrationFilter<
-        TRealImage, TRealImage, TDeformationField> ActualRegistrationFilterType;
+        TRealImage, TRealImage, TDisplacementField> ActualRegistrationFilterType;
       typedef typename ActualRegistrationFilterType::GradientType GradientType;
       typename ActualRegistrationFilterType::Pointer actualfilter =
         ActualRegistrationFilterType::New();
@@ -427,7 +345,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     // s <- s o (Id + u) (Diffeomorphic demons)
     // This is simply a crude diffeomorphic demons
     // where the exponential is computed in 0 iteration
-    typedef typename itk::DiffeomorphicDemonsRegistrationFilter  < TRealImage, TRealImage, TDeformationField>
+    typedef typename itk::DiffeomorphicDemonsRegistrationFilter  < TRealImage, TRealImage, TDisplacementField>
     ActualRegistrationFilterType;
     typedef typename ActualRegistrationFilterType::GradientType GradientType;
     ActualRegistrationFilterType::Pointer actualfilter = ActualRegistrationFilterType::New();
@@ -448,18 +366,26 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
 
     // TODO:  Review this value setting with Insight Journal Diffeomorphic
     // implementation.
-    if( command.smoothDeformationFieldSigma > 0.1 )
+    if( command.smoothDisplacementFieldSigma > 0.1 )
       {
       if( command.outputDebug )
         {
         std::cout << " Smoothing is on ....." << std::endl;
         }
+#if (ITK_VERSION_MAJOR < 4)
       filter->SmoothDeformationFieldOn();
-      filter->SetStandardDeviations(command.smoothDeformationFieldSigma);
+#else
+      filter->SmoothDisplacementFieldOn();
+#endif
+      filter->SetStandardDeviations(command.smoothDisplacementFieldSigma);
       }
     else
       {
+#if (ITK_VERSION_MAJOR < 4)
       filter->SmoothDeformationFieldOff();
+#else
+      filter->SmoothDisplacementFieldOff();
+#endif
       }
     if( command.smoothingUp > 0.1 )
       {
@@ -495,10 +421,10 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       }
       }
       */
-  if( command.initializeWithDeformationField != "" )
+  if( command.initializeWithDisplacementField != "" )
     {
-    app->SetInitialDeformationFieldFilename(
-      command.initializeWithDeformationField.c_str() );
+    app->SetInitialDisplacementFieldFilename(
+      command.initializeWithDisplacementField.c_str() );
     }
   if( command.initializeWithTransform != "" )
     {
@@ -524,10 +450,10 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     {
     app->SetDisplacementBaseName( command.outputDisplacementFieldPrefix.c_str() );
     }
-  if( command.outputDeformationFieldVolume != "" )
+  if( command.outputDisplacementFieldVolume != "" )
     {
-    app->SetDeformationFieldOutputName(
-      command.outputDeformationFieldVolume.c_str() );
+    app->SetDisplacementFieldOutputName(
+      command.outputDisplacementFieldVolume.c_str() );
     }
 
   if( command.outputCheckerboardVolume != "" )
@@ -579,11 +505,8 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       && ( ( command.fixedBinaryVolume != "" )
            || ( command.movingBinaryVolume != "" ) ) )
     {
-    std::cout
-    <<
-    "ERROR:  Can not specify mask file names when the default of NOMASK is used for the maskProcessingMode"
-    << std::endl;
-    exit(-1);
+    itkGenericExceptionMacro(<< "ERROR:  Can not specify mask file names when "
+                             << "the default of NOMASK is used for the maskProcessingMode");
     }
   // If making BOBF option is specified Initialize its parameters
   if( command.maskProcessingMode == "BOBF" )
@@ -591,10 +514,9 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     if( ( command.fixedBinaryVolume == "" )
         || ( command.movingBinaryVolume == "" ) )
       {
-      std::cout
-      <<
-      "Error: If BOBF option is set for maskProcessingMode then the fixed mask name and moving mask file name should be specified. \n";
-      exit(-1);
+      itkGenericExceptionMacro(<< "Error: If BOBF option is set for maskProcessingMode"
+                               << " then the fixed mask name and moving mask file "
+                               << "name should be specified");
       }
 
     app->SetFixedBinaryVolume( command.fixedBinaryVolume.c_str() );
@@ -698,11 +620,10 @@ ProcessOutputType(struct BRAINSDemonWarpAppParameters & command)
 #endif
     else
       {
-      std::cout
-      << "Error. Invalid data type for -outtype!  Use one of these:"
-      << std::endl;
+      std::cout << "Error. Invalid data type for -outtype!  Use one of these:"
+                << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      throw;
       }
     }
   else
@@ -720,7 +641,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
   typedef itk::Image<float, dims>                    TRealImage;
   typedef itk::VectorImage<float, dims>              TVectorImage;
   typedef itk::Image<OutPixelType, dims>             OutputImageType;
-  typedef itk::Image<itk::Vector<float, dims>, dims> TDeformationField;
+  typedef itk::Image<itk::Vector<float, dims>, dims> TDisplacementField;
   //
   // If optional landmark files given, will use landmark registration to
   // generate
@@ -735,7 +656,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
 
   // Set up the demons filter
   typedef typename itk::PDEDeformableRegistrationFilter<TRealImage, TRealImage,
-                                                        TDeformationField>
+                                                        TDisplacementField>
   BaseRegistrationFilterType;
   // BaseRegistrationFilterType::Pointer filter =
   //   BaseRegistrationFilterType::New();
@@ -752,7 +673,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     if( command.vectorMovingVolume.size() == 1 )
       {
       typedef typename itk::DemonsRegistrationFilter<TRealImage, TRealImage,
-                                                     TDeformationField>
+                                                     TDisplacementField>
       ActualRegistrationFilterType;
       ActualRegistrationFilterType::Pointer actualfilter =
         ActualRegistrationFilterType::New();
@@ -762,7 +683,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       {
       std::cout << "Thirion demons does not support multi-input images!"
                 << std::endl;
-      exit(-1);
+      throw;
       }
     }
 
@@ -773,7 +694,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       {
       typedef typename itk::DiffeomorphicDemonsRegistrationFilter<TRealImage,
                                                                   TRealImage,
-                                                                  TDeformationField>
+                                                                  TDisplacementField>
       ActualRegistrationFilterType;
       typedef  typename ActualRegistrationFilterType::GradientType GradientType;
       typename ActualRegistrationFilterType::Pointer actualfilter =
@@ -788,7 +709,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     else
       {
       typedef typename itk::VectorDiffeomorphicDemonsRegistrationFilter<
-        TVectorImage, TVectorImage, TDeformationField>
+        TVectorImage, TVectorImage, TDisplacementField>
       ActualRegistrationFilterType;
       typedef  typename ActualRegistrationFilterType::GradientType GradientType;
       typename ActualRegistrationFilterType::Pointer VDDfilter =
@@ -798,18 +719,26 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       VDDfilter->SetMaximumUpdateStepLength(command.maxStepLength);
       VDDfilter->SetUseGradientType( static_cast<GradientType>( command.
                                                                 gradientType ) );
-      if( command.smoothDeformationFieldSigma > 0.1 )
+      if( command.smoothDisplacementFieldSigma > 0.1 )
         {
         if( command.outputDebug )
           {
           std::cout << " Smoothing is on ....." << std::endl;
           }
+#if (ITK_VERSION_MAJOR < 4)
         VDDfilter->SmoothDeformationFieldOn();
-        VDDfilter->SetStandardDeviations(command.smoothDeformationFieldSigma);
+#else
+        VDDfilter->SmoothDisplacementFieldOn();
+#endif
+        VDDfilter->SetStandardDeviations(command.smoothDisplacementFieldSigma);
         }
       else
         {
+#if (ITK_VERSION_MAJOR < 4)
         VDDfilter->SmoothDeformationFieldOff();
+#else
+        VDDfilter->SmoothDisplacementFieldOff();
+#endif
         }
       if( command.smoothingUp > 0.1 )
         {
@@ -841,7 +770,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     if( command.vectorMovingVolume.size() == 1 )
       {
       typedef typename itk::FastSymmetricForcesDemonsRegistrationFilter<
-        TRealImage, TRealImage, TDeformationField> ActualRegistrationFilterType;
+        TRealImage, TRealImage, TDisplacementField> ActualRegistrationFilterType;
       typedef typename ActualRegistrationFilterType::GradientType GradientType;
       typename ActualRegistrationFilterType::Pointer actualfilter =
         ActualRegistrationFilterType::New();
@@ -856,7 +785,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       std::cout
       << "FastSymmetricForces demons does not support multi-input images!"
       << std::endl;
-      exit(-1);
+      throw;
       }
     }
   else
@@ -871,18 +800,26 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
   // implementation.
   if( command.vectorMovingVolume.size() == 1 )
     {
-    if( command.smoothDeformationFieldSigma > 0.1 )
+    if( command.smoothDisplacementFieldSigma > 0.1 )
       {
       if( command.outputDebug )
         {
         std::cout << " Smoothing is on ....." << std::endl;
         }
+#if (ITK_VERSION_MAJOR < 4)
       filter->SmoothDeformationFieldOn();
-      filter->SetStandardDeviations(command.smoothDeformationFieldSigma);
+#else
+      filter->SmoothDisplacementFieldOn();
+#endif
+      filter->SetStandardDeviations(command.smoothDisplacementFieldSigma);
       }
     else
       {
+#if (ITK_VERSION_MAJOR < 4)
       filter->SmoothDeformationFieldOff();
+#else
+      filter->SmoothDisplacementFieldOff();
+#endif
       }
     if( command.smoothingUp > 0.1 )
       {
@@ -923,10 +860,10 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     }
    app->SetForceCoronalZeroOrigin (command.forceCoronalZeroOrigin);
 */
-  if( command.initializeWithDeformationField != "" )
+  if( command.initializeWithDisplacementField != "" )
     {
-    app->SetInitialDeformationFieldFilename(
-      command.initializeWithDeformationField.c_str() );
+    app->SetInitialDisplacementFieldFilename(
+      command.initializeWithDisplacementField.c_str() );
     }
   if( command.initializeWithTransform != "" )
     {
@@ -947,10 +884,10 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     {
     app->SetDisplacementBaseName( command.outputDisplacementFieldPrefix.c_str() );
     }
-  if( command.outputDeformationFieldVolume != "" )
+  if( command.outputDisplacementFieldVolume != "" )
     {
-    app->SetDeformationFieldOutputName(
-      command.outputDeformationFieldVolume.c_str() );
+    app->SetDisplacementFieldOutputName(
+      command.outputDisplacementFieldVolume.c_str() );
     }
 
   if( command.outputCheckerboardVolume != "" )
@@ -1009,7 +946,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
       std::cout
       <<
       "Error: If BOBF option is set then the fixed mask name and moving mask file name should be specified. \n";
-      exit(-1);
+      throw;
       }
 
     app->SetFixedBinaryVolume( command.fixedBinaryVolume.c_str() );
@@ -1110,7 +1047,7 @@ VectorProcssOutputType(struct BRAINSDemonWarpAppParameters & command)
       << "Error. Invalid data type for -outtype!  Use one of these:"
       << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      throw;
       }
     }
   else
@@ -1171,7 +1108,7 @@ VectorProcessOutputType(struct BRAINSDemonWarpAppParameters & command)
       << "Error. Invalid data type for -outtype!  Use one of these:"
       << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      throw;
       }
     }
   else

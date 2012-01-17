@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   //
   // /////////////////////////////////////////////////////////////////////////////////////////////
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   std::cout << "================================================================" << std::endl;
   std::cout << "Processing: " << inputVolume << std::endl;
 
@@ -52,8 +52,9 @@ int main(int argc, char *argv[])
   SImageType::Pointer volOrig = itkUtil::ReadImage<SImageType>(inputVolume);
   if( volOrig.IsNull() )
     {
-    printf( "\nCould not open image %s, aborting ...\n\n", inputVolume.c_str() );
-    exit(1);
+    std::cerr << "Could not open image "
+              << inputVolume.c_str() << std::endl;
+    return EXIT_FAILURE;
     }
 
   //

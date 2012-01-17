@@ -40,7 +40,7 @@ typedef itk::Image<short, 3> SImageType;
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   bool verbose = true;
 
   std::cout << "================================================================" << std::endl;
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   if( image.IsNull() )
     {
     printf( "\nCould not open image %s, aborting ...\n\n", inputVolume.c_str() );
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   // we need a DOUBLE constant, not a FLOAT constant, for exact switch

@@ -72,15 +72,14 @@ int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
 
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   if( ( inputMovingLandmarks.compare( "" ) == 0 )
       && ( inputFixedLandmarks.compare( "" ) == 0 )
       && ( inputMovingVolume.compare( "" ) == 0 )
       && ( inputReferenceVolume.compare( "" ) == 0 ) )
     {
-    std::cerr << "Please set inputMovingLandmarks, inputFixedLandmarks, "
-              << "inputMovingVolume, and inputReferenceVolume." << std::endl;
-    exit( -1 );
+    itkGenericExceptionMacro(<< "Please set inputMovingLandmarks, inputFixedLandmarks, "
+                             << "inputMovingVolume, and inputReferenceVolume.");
     }
 
   // typedefs
@@ -139,7 +138,7 @@ int main( int argc, char * argv[] )
     tps->ComputeWMatrix();
     itk::Matrix<double, ImageDimension, ImageDimension> aMatrix( tps->GetAMatrix() );
     itk::Vector<double, ImageDimension>                 bVector;
-    bVector.SetVnlVector( tps->GetBVector() );
+    bVector.SetVnlVector( vnl_vector<double>(tps->GetBVector()) );
     itk::Matrix<double, ImageDimension, ImageDimension> identity;
     identity.SetIdentity();
     affine->SetMatrix( aMatrix + identity );
@@ -240,8 +239,7 @@ LoadLandmarks( std::string filename )
 
   if( !myfile.is_open() )
     {
-    std::cerr << "Fatal error: Failed to load landmarks file. Program abort!" << std::endl;
-    exit( -1 );
+    itkGenericExceptionMacro(<< "Fatal error: Failed to load landmarks file. Program abort!");
     }
   while( getline(myfile, line) )
     {

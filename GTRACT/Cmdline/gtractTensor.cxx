@@ -48,7 +48,7 @@
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   itk::AddExtraTransformRegister();
 
   typedef signed short                   PixelType;
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef itk::ImageFileReader<VectorImageType,
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     catch( itk::ExceptionObject e )
       {
       std::cerr << e << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
       }
     ;
     IndexImageType::Pointer b0Image(SelectIndexImageFilter->GetOutput() );
@@ -144,14 +144,14 @@ int main(int argc, char *argv[])
       {
       std::cerr << "Error: missing mask Volume needed for ROI mask Processing"
                 << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
       }
     maskImage = itkUtil::ReadImage<MaskImageType>(maskVolume);
     if( maskImage.IsNull() )
       {
       std::cerr << "Error: can't read mask volume "
                 << maskVolume << std::endl;
-      exit(1);
+      return EXIT_FAILURE;
       }
     }
   /* Extract Diffusion Information from the Header */
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
       }
     char        tmpStr[64];
     std::string NrrdValue;
-    sprintf(tmpStr, "DWMRI_gradient_%04d", i);
+    sprintf(tmpStr, "DWMRI_gradient_%04u", i);
     itk::ExposeMetaData<std::string>(vectorImageReader->GetOutput()->GetMetaDataDictionary(), tmpStr, NrrdValue);
     char tokTmStr[64];
     strcpy( tokTmStr, NrrdValue.c_str() );

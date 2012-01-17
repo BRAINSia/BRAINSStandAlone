@@ -1,7 +1,4 @@
 project(BRAINSConstellationDetectorTool)
-set(LOCAL_PROJECT_NAME BRAINSConstellationDetectorTool)
-cmake_minimum_required(VERSION 2.8)
-
 
 ## Build landmarksConstellationCOMMONLIB library
 ##
@@ -22,10 +19,11 @@ set(ALL_PROGS_LIST
   BRAINSClipInferior
   BRAINSTrimForegroundInDirection
   BRAINSLmkTransform
-  TransformFromFiducials
+  BRAINSTransformFromFiducials
   BRAINSEyeDetector
+  insertMidACPCpoint
+  fcsv_to_hdf5
   )
 foreach(prog ${ALL_PROGS_LIST})
   StandardBRAINSBuildMacro(NAME ${prog} TARGET_LIBRARIES landmarksConstellationCOMMONLIB )
 endforeach()
-

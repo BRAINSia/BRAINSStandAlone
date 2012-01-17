@@ -14,7 +14,12 @@ configure_file(${BRAINSFit_SOURCE_DIR}/CTestCustom.ctest ${BRAINSFit_BINARY_DIR}
 
 # Test the CenterOfROI Test
 add_executable(CenterOfROIInitTest CenterOfROIInitTest.cxx )
-target_link_libraries(CenterOfROIInitTest BRAINSCommonLib ${ITK_LIBRARIES} ${OPTIONAL_DEBUG_LINK_LIBRARIES} )
+set(CenterOfROIInitTestLibraries BRAINSCommonLib ${ITK_LIBRARIES} ${OPTIONAL_DEBUG_LINK_LIBRARIES} )
+
+DebugImageViewerLibAdditions(CenterOfROIInitTestLibraries)
+
+target_link_libraries(CenterOfROIInitTest ${CenterOfROIInitTestLibraries} )
+
 set_target_properties(CenterOfROIInitTest PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BRAINSFit_BINARY_DIR})
 ExternalData_add_test(${PROJECT_NAME}FetchData NAME CenterOfROIInitTest
   COMMAND ${LAUNCH_EXE}  $<TARGET_FILE:CenterOfROIInitTest>)
@@ -187,8 +192,8 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
   --compare DATA{${TestData_DIR}/${BRAINSFitTestName}.result.nii.gz}
             ${CMAKE_CURRENT_BINARY_DIR}/${BRAINSFitTestName}.test.nii.gz
   --compareIntensityTolerance 9
-  --compareRadiusTolerance 0
-  --compareNumberOfPixelsTolerance 1000
+  --compareRadiusTolerance 1
+  --compareNumberOfPixelsTolerance 300
   BRAINSFitTest
   --costMetric MMI
   --failureExitCode -1 --writeTransformOnFailure
@@ -215,8 +220,8 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
   --compare DATA{${TestData_DIR}/${BRAINSFitTestName}.result.nii.gz}
             ${CMAKE_CURRENT_BINARY_DIR}/${BRAINSFitTestName}.test.nii.gz
   --compareIntensityTolerance 9
-  --compareRadiusTolerance 0
-  --compareNumberOfPixelsTolerance 1000
+  --compareRadiusTolerance 1
+  --compareNumberOfPixelsTolerance 300
   BRAINSFitTest
   --costMetric MMI
   --failureExitCode -1 --writeTransformOnFailure
@@ -275,7 +280,7 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
   --compare DATA{${TestData_DIR}/${BRAINSFitTestName}.result.nii.gz}
             ${CMAKE_CURRENT_BINARY_DIR}/${BRAINSFitTestName}.test.nii.gz
   --compareIntensityTolerance 9
-  --compareRadiusTolerance 0
+  --compareRadiusTolerance 1
   --compareNumberOfPixelsTolerance 1000
   BRAINSFitTest
   --costMetric MMI
@@ -394,7 +399,7 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME ${BRAINSFitTestName}
   --minimumStepLength 0.05,0.0050
   --outputVolumePixelType short
   --transformType Rigid,Rigid
-  --initializeTransformMode useGeometryAlign
+  --initializeTransformMode useMomentsAlign
   --fixedVolume DATA{${TestData_DIR}/test.nii.gz}
   --movingVolume DATA{${TestData_DIR}/rotation.geom.test.nii.gz}
   --outputVolume ${CMAKE_CURRENT_BINARY_DIR}/${BRAINSFitTestName}.test.nii.gz

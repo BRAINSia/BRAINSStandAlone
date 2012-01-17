@@ -35,7 +35,7 @@
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
   itk::AddExtraTransformRegister();
 
   typedef double                                                          BSplineCoordinateRepType;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef signed short PixelType;
@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
   VectorImageType::Pointer     dwiImage = vectorImageReader->GetOutput();
   VectorImageType::RegionType  fixedRegion = dwiImage->GetLargestPossibleRegion();
   VectorImageType::SizeType    fixedSize = fixedRegion.GetSize();
-  VectorImageType::SpacingType fixedSpacing = dwiImage->GetSpacing();
-  VectorImageType::PointType   fixedOrigin = dwiImage->GetOrigin();
+  //const VectorImageType::SpacingType fixedSpacing = dwiImage->GetSpacing();
+  //const VectorImageType::PointType   fixedOrigin = dwiImage->GetOrigin();
 
   fixedSize[3] = 0;
   fixedRegion.SetSize(fixedSize);

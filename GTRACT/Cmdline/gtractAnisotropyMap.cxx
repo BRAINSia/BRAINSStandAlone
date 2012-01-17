@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   typedef itk::Image<float, 3>                              AnisotropyImageType;
 
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   bool debug = true;
   if( debug )
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef itk::ImageFileReader<TensorImageType> TensorImageReaderType;

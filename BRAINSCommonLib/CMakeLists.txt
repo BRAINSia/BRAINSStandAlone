@@ -1,11 +1,4 @@
 project(BRAINSCommonLibProject)
-set(LOCAL_PROJECT_NAME BRAINSCommonLib)
-cmake_minimum_required(VERSION 2.8)
-cmake_policy(VERSION 2.8)
-
-enable_testing()
-include(CPack)
-
 #-----------------------------------------------------------------------------
 # Output directories.
 #
@@ -20,7 +13,7 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   )
 
-set(BRAINSCommonLib_SRCS GenericTransformImage.cxx BRAINSFitHelper.cxx Slicer3LandmarkWeightIO.cxx Slicer3LandmarkIO.cxx)
+set(BRAINSCommonLib_SRCS GenericTransformImage.cxx BRAINSFitHelper.cxx Slicer3LandmarkWeightIO.cxx Slicer3LandmarkIO.cxx itkOrthogonalize3DRotationMatrix.cxx BRAINSThreadControl.cxx)
 
 ## Always build BRAINSCommonLib as static
 add_library(BRAINSCommonLib STATIC ${BRAINSCommonLib_SRCS})

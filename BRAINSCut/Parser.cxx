@@ -126,21 +126,16 @@ Parser::StartElement(void *userData,
         "SubjToAtlasRegistrationFilename",
         attribMap.Get("Registration",
                       "SubjToAtlasRegistrationFilename") );
+
       registration->SetAttribute<StringValue>(
         "AtlasToSubjRegistrationFilename",
         attribMap.Get("Registration",
                       "AtlasToSubjRegistrationFilename") );
-      registration->SetAttribute<StringValue>(
-        "AtlasBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "AtlasBinaryFilename") );
-      registration->SetAttribute<StringValue>(
-        "SubjectBinaryFilename",
-        attribMap.GetIfExist("Registration",
-                             "SubjectBinaryFilename") );
+
       std::string id( attribMap.Get("Registration", "ID") );
       registration->SetAttribute<StringValue>("ID", id);
       regList->Add(registration, id);
+
       }
     catch( ProcessObjectException& ex )
       {
@@ -336,17 +331,9 @@ Parser::StartElement(void *userData,
     try
       {
       ApplyModelType *am = new ApplyModelType;
-      am->SetAttribute<FloatValue>( "CutOutThresh",
-                                    attribMap.Get("ApplyModel",
-                                                  "CutOutThresh") );
       am->SetAttribute<FloatValue>( "MaskThresh",
                                     attribMap.Get("ApplyModel",
                                                   "MaskThresh") );
-      // am->SetAttribute<StringValue>( "DefDir",
-      //                              attribMap.Get("ApplyModel", "DefDir") );
-      // am->SetAttribute<StringValue>( "OutputDir",
-      //                              attribMap.Get("ApplyModel", "OutputDir")
-      // );
       proc->Add(am, Name);
       }
     catch( ProcessObjectException& ex )
@@ -389,4 +376,3 @@ bool ReadXML(const char *filename, ProcessDescription & prob)
   parser.SetUserData(&stack);
   return parser.Parse();
 }
-

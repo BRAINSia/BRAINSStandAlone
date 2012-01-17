@@ -50,7 +50,7 @@ namespace itk
  */
 
 template <class TTensorImageType, class TAnisotropyImageType, class TCostImageType, class TMaskImageType>
-GTRACT_COMMON_EXPORT class DtiFastMarchingTrackingFilter : public itk::DtiTrackingFilterBase<TTensorImageType,
+class GTRACT_COMMON_EXPORT DtiFastMarchingTrackingFilter : public itk::DtiTrackingFilterBase<TTensorImageType,
                                                                                              TAnisotropyImageType,
                                                                                              TMaskImageType>
 {
@@ -143,7 +143,7 @@ private:
 } // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDtiFastMarchingTrackingFilter.txx"
+#include "itkDtiFastMarchingTrackingFilter.hxx"
 #endif
 
 #endif

@@ -96,7 +96,7 @@ vtkMatrix4x4 * CreateIjkToRasMatrix( typename TImageType::Pointer image )
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   const bool debug = true;
   if( debug )
@@ -135,6 +135,11 @@ int main(int argc, char *argv[])
   typedef itk::DiffusionTensor3D<TensorElementType> TensorPixelType;
   typedef itk::Image<TensorPixelType, 3>            TensorImageType;
   typedef itk::ImageFileReader<TensorImageType>     TensorImageReaderType;
+  if(inputTensorVolume == "")
+    {
+    std::cerr << "Missing Filename for input Tensor Volume (--inputTensorVolume)" << std::endl;
+    return EXIT_FAILURE;
+    }
   TensorImageReaderType::Pointer tensorImageReader = TensorImageReaderType::New();
   tensorImageReader->SetFileName( inputTensorVolume );
 
@@ -153,7 +158,12 @@ int main(int argc, char *argv[])
   AdaptOriginAndDirection<TensorImageType>( tensorImage );
 
   // std::cout <<  "Tensor Image : " << tensorImage << std::endl;
-
+  if(inputAnisotropyVolume == "")
+    {
+    std::cerr << "Missing filename for input Anisotropy Volume (--inputAnisotropyVolume)"
+              << std::endl;
+    return EXIT_FAILURE;
+    }
   typedef float                                     AnisotropyPixelType;
   typedef itk::Image<AnisotropyPixelType, 3>        AnisotropyImageType;
   typedef itk::ImageFileReader<AnisotropyImageType> AnisotropyImageReaderType;
@@ -175,6 +185,11 @@ int main(int argc, char *argv[])
   AdaptOriginAndDirection<AnisotropyImageType>( anisotropyImage );
   // std::cout << "Anisotropy Image Updated: " << anisotropyImage << std::endl;
 
+  if(inputStartingSeedsLabelMapVolume == "")
+    {
+    std::cerr << "Missing filename for input Starting Seeds Label Map Volume (--inputStartingSeedsLabelMapVolume)"
+              << std::cerr;
+    }
   typedef unsigned char                       MaskPixelType;
   typedef itk::Image<MaskPixelType, 3>        MaskImageType;
   typedef itk::ImageFileReader<MaskImageType> MaskImageReaderType;
@@ -207,6 +222,12 @@ int main(int argc, char *argv[])
 
   if( trackingMethod != "Free" )
     {
+    if(inputEndingSeedsLabelMapVolume == "")
+      {
+      std::cerr << "Missing filename for input Ending Seeds Label Map (--inputEndingSeedsLabelMapVolume)"
+                << std::endl;
+      return EXIT_FAILURE;
+      }
     MaskImageReaderType::Pointer endingSeedImageReader = MaskImageReaderType::New();
     endingSeedImageReader->SetFileName( inputEndingSeedsLabelMapVolume );
 
@@ -235,21 +256,28 @@ int main(int argc, char *argv[])
   if( trackingMethod == "Guided" )
     {
     vtkPolyData *guideFiber;
-    if( writeXMLPolyDataFile )
+    if(inputTract == "")
       {
-      vtkXMLPolyDataReader *guideFiberReader = vtkXMLPolyDataReader::New();
-      guideFiberReader->SetFileName( inputTract.c_str() );
-      guideFiberReader->Update();
-      guideFiber = guideFiberReader->GetOutput();
+      std::cerr << "Missing Input Guide Tract (--inputTract)" << std::endl;
+      return EXIT_FAILURE;
       }
     else
       {
-      vtkPolyDataReader *guideFiberReader = vtkPolyDataReader::New();
-      guideFiberReader->SetFileName( inputTract.c_str() );
-      guideFiberReader->Update();
-      guideFiber = guideFiberReader->GetOutput();
+      if( writeXMLPolyDataFile )
+        {
+        vtkXMLPolyDataReader *guideFiberReader = vtkXMLPolyDataReader::New();
+        guideFiberReader->SetFileName( inputTract.c_str() );
+        guideFiberReader->Update();
+        guideFiber = guideFiberReader->GetOutput();
+        }
+      else
+        {
+        vtkPolyDataReader *guideFiberReader = vtkPolyDataReader::New();
+        guideFiberReader->SetFileName( inputTract.c_str() );
+        guideFiberReader->Update();
+        guideFiber = guideFiberReader->GetOutput();
+        }
       }
-
     /* Put the guide fiber into IJK space for Tracking */
     vtkMatrix4x4* RasToIjkMatrix = vtkMatrix4x4::New();
     RasToIjkMatrix->DeepCopy(IjkToRasMatrix);
@@ -364,7 +392,7 @@ int main(int argc, char *argv[])
   else
     {
     std::cout << "No correct tracking method!" << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
 
   //   vtkPolyData *fibers = acturalTrackingFilter->GetOutput();

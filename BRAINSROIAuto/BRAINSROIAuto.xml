@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Segmentation</category>
+  <category>Segmentation.Specialized</category>
   <title>Foreground masking (BRAINS)</title>
-  <description>This tool uses a combination of otsu thresholding and a closing operations to identify the most prominant foreground region in an image.
+  <description>This program is used to create a mask over the most prominant forground region in an image.  This is accomplished via a combination of otsu thresholding and a closing operation.  More documentation is available here: http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.0/Modules/ForegroundMasking.
   </description>
   <version>2.4.1</version>
   <documentation-url></documentation-url>
@@ -27,12 +27,26 @@
       <channel>output</channel>
     </image>
     <image>
-      <name>outputClippedVolumeROI</name>
-      <longflag>outputClippedVolumeROI</longflag>
-      <label>Output Image Clipped by ROI</label>
-      <description>The inputVolume clipped to the region of the brain mask.</description>
+      <name>outputVolume</name>
+      <longflag>outputVolume</longflag>
+      <label>Output Image</label>
+      <description>The inputVolume with optional [maskOutput|cropOutput] to the region of the brain mask.</description>
       <channel>output</channel>
     </image>
+    <boolean>
+      <name>maskOutput</name>
+      <longflag>maskOutput</longflag>
+      <label>Mask Output</label>
+      <description>The inputVolume multiplied by the ROI mask.</description>
+      <default>true</default>
+    </boolean>
+    <boolean>
+      <name>cropOutput</name>
+      <longflag>cropOutput</longflag>
+      <label>Output Image Clipped by ROI</label>
+      <description>The inputVolume cropped to the region of the ROI mask.</description>
+      <default>false</default>
+    </boolean>
   </parameters>
 
   <parameters advanced="false">

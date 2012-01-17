@@ -19,18 +19,6 @@
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkNormalizedMutualInformationHistogramImageToImageMetric.h"
 
-#if ( ITK_VERSION_MAJOR < 4  ) // These are all defaults in ITKv4
-// Check that ITK was compiled with correct flags set:
-#ifndef ITK_IMAGE_BEHAVES_AS_ORIENTED_IMAGE
-#error \
-  "Results will not be correct if ITK_IMAGE_BEHAVES_AS_ORIENTED_IMAGE is turned off"
-#endif
-#ifndef ITK_USE_ORIENTED_IMAGE_DIRECTION
-#error \
-  "Results will not be correct if ITK_USE_ORIENTED_IMAGE_DIRECTION is turned off"
-#endif
-#endif
-
 MaskImageType::ConstPointer ExtractConstPointerToImageMaskFromImageSpatialObject(
   SpatialObjectType::ConstPointer inputSpatialObject)
 {
@@ -39,8 +27,7 @@ MaskImageType::ConstPointer ExtractConstPointerToImageMaskFromImageSpatialObject
 
   if( temp == NULL )
     {
-    std::cout << "Invalid mask converstion attempted." << __FILE__ << " " << __LINE__ << std::endl;
-    exit(-1);
+    itkGenericExceptionMacro(<< "Invalid mask converstion attempted.");
     }
   ImageMaskSpatialObjectType::ConstPointer ImageMask( temp );
   const MaskImageType::ConstPointer        tempOutputVolumeROI = ImageMask->GetImage();
@@ -92,7 +79,8 @@ BRAINSFitHelper::BRAINSFitHelper() :
   m_FinalMetricValue(0.0),
   m_ObserveIterations(true),
   m_CostMetric("MMI"), // Default to Mattes Mutual Information Metric
-  m_Helper(NULL)
+  m_Helper(NULL),
+  m_ForceMINumberOfThreads(-1)
 {
   m_SplineGridSize[0] = 14;
   m_SplineGridSize[1] = 10;
@@ -161,13 +149,6 @@ BRAINSFitHelper::StartRegistration(void)
   // Do Histogram equalization on moving image if requested.
   if( m_HistogramMatch )
     {
-#if 0
-    std::cerr << " ********* ERROR ************"
-              << " Histogram Equalization Option for BRAINSFit does not work"
-              << " for now. Please do not use --histogramMatch"
-              << std::endl;
-    exit(-1);
-#else
 
     typedef itk::OtsuHistogramMatchingImageFilter<FixedVolumeType, MovingVolumeType> HistogramMatchingFilterType;
     HistogramMatchingFilterType::Pointer histogramfilter = HistogramMatchingFilterType::New();
@@ -187,15 +168,13 @@ BRAINSFitHelper::StartRegistration(void)
     histogramfilter->SetReferenceImage(this->m_FixedVolume);
     if( this->m_FixedBinaryVolume.IsNull() )
       {
-      std::cout << "ERROR:  Histogram matching requires a fixed mask." << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "ERROR:  Histogram matching requires a fixed mask.");
       }
     histogramfilter->SetReferenceMask( m_FixedBinaryVolume.GetPointer() );
     histogramfilter->SetInput(this->m_PreprocessedMovingVolume);
     if( this->m_MovingBinaryVolume.IsNull() )
       {
-      std::cout << "ERROR:  Histogram matching requires a moving mask." << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "ERROR:  Histogram matching requires a moving mask.");
       }
     histogramfilter->SetSourceMask( m_MovingBinaryVolume.GetPointer() );
     histogramfilter->SetNumberOfHistogramLevels(this->m_NumberOfHistogramBins);
@@ -220,7 +199,6 @@ BRAINSFitHelper::StartRegistration(void)
         throw;
         }
       }
-#endif
     }
   else
     {

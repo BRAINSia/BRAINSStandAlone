@@ -26,7 +26,7 @@ set(BRAINSABCCOMMONLIB_SRCS
   EMSParameters.h
   EMSParameters.cxx
   EMSegmentationFilter.h
-  EMSegmentationFilter.txx
+  EMSegmentationFilter.hxx
   EMSegmentationFilter_float+float.cxx
   AtlasRegistrationMethod_float+float.cxx
   AtlasDefinition.cxx
@@ -40,7 +40,12 @@ set(BRAINSABCCOMMONLIB_SRCS
 ## Build BRAINSABCCOMMONLIB library
 ##
 add_library(BRAINSABCCOMMONLIB STATIC ${BRAINSABCCOMMONLIB_SRCS})
-target_link_libraries(BRAINSABCCOMMONLIB BRAINSCommonLib ${ITK_LIBRARIES})
+
+set(BRAINSABCCOMMONLIBLibraries BRAINSCommonLib ${ITK_LIBRARIES})
+
+DebugImageViewerLibAdditions(BRAINSABCCOMMONLIBLibraries)
+
+target_link_libraries(BRAINSABCCOMMONLIB ${BRAINSABCCOMMONLIBLibraries} )
 
 ## Build all the programs
 ##

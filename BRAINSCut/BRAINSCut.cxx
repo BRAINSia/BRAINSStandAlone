@@ -4,87 +4,86 @@
 #include "itkScaleVersor3DTransform.h"
 #include "itkVersorRigid3DTransform.h"
 #include "itkTransformFactory.h"
+
 #include "BRAINSThreadControl.h"
+#include "BRAINSCutGenerateProbability.h"
+#include "BRAINSCutCreateVector.h"
+#include "BRAINSCutVectorTrainingSet.h"
+#include "BRAINSCutTrainModel.h"
+#include "BRAINSCutApplyModel.h"
+#include "BRAINSCutGenerateRegistrations.h"
 
 #include "BRAINSCutCLP.h"
 
 int main(int argc, char * *argv)
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
 
-  // Apparently when you register one transform, you need to register all your
-  // transforms.
-  //
-  itk::AddExtraTransformRegister();
+  /* Solution from Kent
+   * ITK4 resigration initilization 
+   */
+  // Call register default transforms
+  itk::TransformFactoryBase::RegisterDefaultTransforms();
 
-  int status = 0;
-  if( netConfiguration == "" )
-    {
-    std::cerr << "No XML Configuration file given" << std::endl;
-    std::cerr.flush();
-    }
+  BRAINSCutGenerateRegistrations registrationGenerator( netConfiguration );
+  const bool applyDataSetOff=false;
+  const bool applyDataSetOn=true;
+
   if( generateProbability )
     {
-    extern int GenerateProbability(const std::string & xmlFile,
-                                   int verbose,
-                                   bool validate);
-    status = GenerateProbability(netConfiguration, verbose, validate);
-    if( verbose > 9 )
-      {
-      std::cout << " Status Returned from GenerateProbability is "
-                << status
-                << std::endl;
-      }
-    }
-  if( status == 0 && createVectors )
-    {
-    extern int CreateVectors(const std::string & xmlFile,
-                             bool histogramEqualization,
-                             bool doTest,
-                             int verbose);
-    status = CreateVectors(netConfiguration,
-                           histogramEqualization,
-                           doTest,
-                           verbose);
-    if( verbose > 9 )
-      {
-      std::cout << " Status Returned from CreateVectors is "
-                << status
-                << std::endl;
-      }
-    }
-  if( status == 0 && trainModel )
-    {
-    extern int TrainModel(const std::string & xmlFile,
-                          int verbose,
-                          int start_iteration,
-                          bool doTest
-                          );
-    status = TrainModel(netConfiguration,
-                        verbose,
-                        trainModelStartIndex,
-                        doTest);
-    if( verbose > 9 )
-      {
-      std::cout << " Status Returned from CreateVectors is "
-                << status
-                << std::endl;
-      }
-    }
-  if( status == 0 && applyModel )
-    {
-    extern int ApplyModel(const std::string & xmlFile,
-                          int verbose,
-                          bool histogramEqualization,
-                          bool multiStructureThreshold,
-                          bool doTest);
-    status = ApplyModel(netConfiguration,
-                        verbose,
-                        histogramEqualization,
-                        multiStructureThreshold,
-                        doTest);
-    }
-  exit(status);
-}
+    registrationGenerator.SetAtlasToSubjectRegistrationOn( false );
+    registrationGenerator.SetSubjectDataSet( applyDataSetOff );
+    registrationGenerator.GenerateRegistrations();
 
+    BRAINSCutGenerateProbability testBRAINSCutClass( netConfiguration );
+    testBRAINSCutClass.GenerateProbabilityMaps();
+    }
+  if( createVectors )
+    {
+    registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
+    registrationGenerator.SetSubjectDataSet( applyDataSetOff );
+    registrationGenerator.GenerateRegistrations();
+
+    BRAINSCutCreateVector testCreateVector( netConfiguration );
+    testCreateVector.SetTrainingDataSetFromNetConfiguration();
+    testCreateVector.CreateVectors();
+
+    }
+  if( trainModel )
+    {
+    try
+      {
+      BRAINSCutTrainModel testTrain( netConfiguration);
+      testTrain.InitializeNeuralNetwork();
+      testTrain.InitializeTrainDataSet();
+      testTrain.Train();
+
+      }
+    catch( BRAINSCutExceptionStringHandler& e )
+      {
+      std::cout << e.Error();
+      }
+
+    }
+  if( applyModel )
+    {
+    try
+      {
+      registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
+      registrationGenerator.SetSubjectDataSet( applyDataSetOn );
+      registrationGenerator.GenerateRegistrations();
+
+      BRAINSCutApplyModel applyTest( netConfiguration );
+
+      applyTest.SetComputeSSE( computeSSEOn );
+      applyTest.Apply();
+      }
+    catch( BRAINSCutExceptionStringHandler& e )
+      {
+      std::cout << e.Error();
+      }
+
+    }
+
+    return EXIT_SUCCESS;
+}

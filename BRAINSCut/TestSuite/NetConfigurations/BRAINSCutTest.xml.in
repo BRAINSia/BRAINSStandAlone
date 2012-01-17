@@ -19,15 +19,20 @@
         Registration Description
         TODO:: Change BRAINSCut Registration Script to Python
        ========================================================================== -->
-  <RegistrationParams
+  <RegistrationConfiguration
     ImageTypeToUse="T1"
-    ID="BSpline"/>
+    ID="BSpline"
+    BRAINSROIAutoDilateSize="10"
+    />
   <!-- ========================================================================== 
         Template Data Scan Description
        ========================================================================== -->
   <DataSet Name="template"  Type="Atlas" >
     <Image Type="T1" Filename="@BRAINSCut_SOURCE_DIR@/TestSuite/TestData/Input/template_t1.nii.gz"/>
     <Image Type="T2" Filename="na" />
+    <SpatialLocation Type="rho" Filename="@CMAKE_CURRENT_BINARY_DIR@/TestSuite/TestOutput/rho.nii.gz" />
+    <SpatialLocation Type="phi" Filename="@CMAKE_CURRENT_BINARY_DIR@/TestSuite/TestOutput/phi.nii.gz" />
+    <SpatialLocation Type="theta" Filename="@CMAKE_CURRENT_BINARY_DIR@/TestSuite/TestOutput/theta.nii.gz" />
   </DataSet>
 
   <!-- ========================================================================== 
@@ -38,15 +43,13 @@
          Gaussian="1.0"
          GenerateVector="true"
          Filename="@CMAKE_CURRENT_BINARY_DIR@/Mask1ProbabilityMap.nii.gz"
-         rho="@CMAKE_CURRENT_BINARY_DIR@/rho.nii.gz"
-         phi="@CMAKE_CURRENT_BINARY_DIR@/phi.nii.gz"
-         theta="@CMAKE_CURRENT_BINARY_DIR@/theta.nii.gz"
+
   />
 
   <!-- ========================================================================== 
         ANN Description
        ========================================================================== -->
-  <ANNParams        Iterations             = "10"
+  <ANNParams Iterations             = "10"
                     MaximumVectorsPerEpoch = "10000"
                     EpochIterations        = "100"
                     ErrorInterval          = "1"
@@ -64,6 +67,7 @@
                     TrainingVectorFilename = "@CMAKE_CURRENT_BINARY_DIR@/trainVectorHE.txt"
                     TrainingModelFilename  = "@CMAKE_CURRENT_BINARY_DIR@/trainModel.txt"
                     TestVectorFilename     = "na" 
+                    Normalization          = "true"
    />
 
   <!-- ========================================================================== 

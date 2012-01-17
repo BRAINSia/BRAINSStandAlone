@@ -1,5 +1,7 @@
 #include "itkIO.h"
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#include "BRAINSCommonLib.h"
+
+#ifdef USE_DebugImageViewer
 #include "DebugImageViewerClient.h"
 #endif
 
@@ -13,6 +15,7 @@
 #include "itkLabelObject.h"
 #include "itkStatisticsLabelObject.h"
 #include "itkLabelImageToStatisticsLabelMapFilter.h"
+#include "itkMacro.h"
 
 namespace itk
 {
@@ -28,6 +31,11 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
   // transform types.
   // Rigid=1, ScaleVersor3D=2, ScaleSkewVersor3D=3, Affine=4, and (BSpline or
   // ROIBspline)=5
+#define VTROExceptionMacroMacro()                                       \
+  itkGenericExceptionMacro(<< "Ordering of transforms does not proceed from\n" \
+                           << "smallest to largest.  Please review settings for transformType.\n" \
+                           << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpine)")
+
   unsigned int CurrentTransformRank = 0;
   for( unsigned int l = 0; l < transformType.size(); ++l )
     {
@@ -39,10 +47,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpine)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
     else if( transformType[l] == "ScaleVersor3D" )
@@ -53,10 +58,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpline)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
     else if( transformType[l] == "ScaleSkewVersor3D" )
@@ -67,10 +69,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpline)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
     else if( transformType[l] == "Affine" )
@@ -81,10 +80,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpline)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
     else if( transformType[l] == "BSpline" )
@@ -95,10 +91,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpline)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
     else if( transformType[l] == "ROIBSpline" )
@@ -109,10 +102,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         }
       else
         {
-        std::cerr << "Ordering of transforms does not proceed from\n"
-                  << "smallest to largest.  Please review settings for transformType.\n"
-                  << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | ROIBSpline)" << std::endl;
-        exit(-1);
+        VTROExceptionMacroMacro();
         }
       }
 
@@ -120,10 +110,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
       {
       std::cerr << " ERROR:  Invalid transform type specified for element " << l << " of --transformType: "
                 << transformType[l] << std::endl;
-      std::cerr << "Ordering of transforms must proceed from\n"
-                << "smallest to largest.  Please review settings for transformType.\n"
-                << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < BSpline" << std::endl;
-      exit(-1);
+      VTROExceptionMacroMacro();
       }
     }
 }
@@ -162,22 +149,22 @@ typename TransformType::Pointer DoCenteredInitialization(
     }
   else if( initializeTransformMode == "useCenterOfROIAlign" )
     {
-    typedef typename itk::ImageMaskSpatialObject<FixedImageType::ImageDimension> ImageMaskSpatialObjectType;
-    typedef itk::Image<unsigned char, 3>                                         MaskImageType;
+    typedef typename itk::ImageMaskSpatialObject<FixedImageType::ImageDimension> CROIImageMaskSpatialObjectType;
+    typedef itk::Image<unsigned char, 3>                                         CROIMaskImageType;
     typename MovingImageType::PointType movingCenter;
     typename FixedImageType::PointType fixedCenter;
 
-    typename ImageMaskSpatialObjectType::Pointer movingImageMask(
-      dynamic_cast<ImageMaskSpatialObjectType *>( movingMask.GetPointer() ) );
-    typename MaskImageType::Pointer tempOutputMovingVolumeROI =
-      const_cast<MaskImageType *>( movingImageMask->GetImage() );
+    typename CROIImageMaskSpatialObjectType::Pointer movingImageMask(
+      dynamic_cast<CROIImageMaskSpatialObjectType *>( movingMask.GetPointer() ) );
+    typename CROIMaskImageType::Pointer tempOutputMovingVolumeROI =
+      const_cast<CROIMaskImageType *>( movingImageMask->GetImage() );
 
-    typename ImageMaskSpatialObjectType::Pointer fixedImageMask(
-      dynamic_cast<ImageMaskSpatialObjectType *>( fixedMask.GetPointer() ) );
-    typename MaskImageType::Pointer tempOutputFixedVolumeROI =
-      const_cast<MaskImageType *>( fixedImageMask->GetImage() );
-    typedef itk::CastImageFilter<MaskImageType, FixedImageType>  MaskToFixedCastType;
-    typedef itk::CastImageFilter<MaskImageType, MovingImageType> MaskToMovingCastType;
+    typename CROIImageMaskSpatialObjectType::Pointer fixedImageMask(
+      dynamic_cast<CROIImageMaskSpatialObjectType *>( fixedMask.GetPointer() ) );
+    typename CROIMaskImageType::Pointer tempOutputFixedVolumeROI =
+      const_cast<CROIMaskImageType *>( fixedImageMask->GetImage() );
+    typedef itk::CastImageFilter<CROIMaskImageType, FixedImageType>  MaskToFixedCastType;
+    typedef itk::CastImageFilter<CROIMaskImageType, MovingImageType> MaskToMovingCastType;
 
     typename MaskToFixedCastType::Pointer mask2fixedCast = MaskToFixedCastType::New();
     typename MaskToMovingCastType::Pointer mask2movingCast = MaskToMovingCastType::New();
@@ -202,8 +189,7 @@ typename TransformType::Pointer DoCenteredInitialization(
     }
   else if( initializeTransformMode == "useCenterOfHeadAlign" )
     {
-    typedef typename itk::ImageMaskSpatialObject<FixedImageType::ImageDimension> ImageMaskSpatialObjectType;
-    typedef itk::Image<unsigned char, 3>                                         MaskImageType;
+    typedef itk::Image<unsigned char, 3>                                         CHMMaskImageType;
     typename MovingImageType::PointType movingCenter;
     typename FixedImageType::PointType fixedCenter;
 
@@ -220,30 +206,26 @@ typename TransformType::Pointer DoCenteredInitialization(
       {
       typename ImageMaskSpatialObjectType::Pointer movingImageMask(
         dynamic_cast<ImageMaskSpatialObjectType *>( movingMask.GetPointer() ) );
-      typename MaskImageType::Pointer tempOutputMovingVolumeROI =
-        const_cast<MaskImageType *>( movingImageMask->GetImage() );
+      typename CHMMaskImageType::Pointer tempOutputMovingVolumeROI =
+        const_cast<CHMMaskImageType *>( movingImageMask->GetImage() );
       movingFindCenter->SetImageMask(tempOutputMovingVolumeROI);
       }
     movingFindCenter->Update();
     movingCenter = movingFindCenter->GetCenterOfBrain();
       {
       // convert mask image to mask
-      typedef typename itk::ImageMaskSpatialObject<Dimension>
-      ImageMaskSpatialObjectType;
-      typename ImageMaskSpatialObjectType::Pointer mask =
-        ImageMaskSpatialObjectType::New();
+      typename ImageMaskSpatialObjectType::Pointer mask = ImageMaskSpatialObjectType::New();
       mask->SetImage( movingFindCenter->GetClippedImageMask() );
 
-      typename MaskImageType::Pointer ClippedMask = movingFindCenter->GetClippedImageMask();
-      // itkUtil::WriteImage<MaskImageType>( ClippedMask ,
+      typename CHMMaskImageType::Pointer ClippedMask = movingFindCenter->GetClippedImageMask();
+      // itkUtil::WriteImage<CHMMaskImageType>( ClippedMask ,
       // std::string("MOVING_MASK.nii.gz"));
 
       mask->ComputeObjectToWorldTransform();
       typename SpatialObjectType::Pointer p = dynamic_cast<SpatialObjectType *>( mask.GetPointer() );
       if( p.IsNull() )
         {
-        std::cout << "ERROR::" << __FILE__ << " " << __LINE__ << std::endl;
-        exit(-1);
+        itkGenericExceptionMacro(<< "Can't convert mask pointer to SpatialObject");
         }
       movingMask = p;
       }
@@ -257,8 +239,8 @@ typename TransformType::Pointer DoCenteredInitialization(
       {
       typename ImageMaskSpatialObjectType::Pointer fixedImageMask(
         dynamic_cast<ImageMaskSpatialObjectType *>( fixedMask.GetPointer() ) );
-      typename MaskImageType::Pointer tempOutputFixedVolumeROI =
-        const_cast<MaskImageType *>( fixedImageMask->GetImage() );
+      typename CHMMaskImageType::Pointer tempOutputFixedVolumeROI =
+        const_cast<CHMMaskImageType *>( fixedImageMask->GetImage() );
       fixedFindCenter->SetImageMask(tempOutputFixedVolumeROI);
       }
     fixedFindCenter->Update();
@@ -266,18 +248,16 @@ typename TransformType::Pointer DoCenteredInitialization(
 
       {
       // convert mask image to mask
-      typedef typename itk::ImageMaskSpatialObject<Dimension> ImageMaskSpatialObjectType;
       typename ImageMaskSpatialObjectType::Pointer mask = ImageMaskSpatialObjectType::New();
       mask->SetImage( fixedFindCenter->GetClippedImageMask() );
 
-      typename MaskImageType::Pointer ClippedMask = fixedFindCenter->GetClippedImageMask();
+      typename CHMMaskImageType::Pointer ClippedMask = fixedFindCenter->GetClippedImageMask();
 
       mask->ComputeObjectToWorldTransform();
       typename SpatialObjectType::Pointer p = dynamic_cast<SpatialObjectType *>( mask.GetPointer() );
       if( p.IsNull() )
         {
-        std::cout << "ERROR::" << __FILE__ << " " << __LINE__ << std::endl;
-        exit(-1);
+        itkGenericExceptionMacro(<< "Can't convert mask pointer to SpatialObject");
         }
       fixedMask = p;
       }
@@ -495,9 +475,8 @@ typename TransformType::Pointer DoCenteredInitialization(
                            // was
   // added:
     {
-    std::cout << "FAILURE:  Improper mode for initializeTransformMode: "
-              << initializeTransformMode << std::endl;
-    exit(-1);
+    itkGenericExceptionMacro(<< "FAILURE:  Improper mode for initializeTransformMode: "
+                             << initializeTransformMode);
     }
   std::cout << "Initializing transform with "  << initializeTransformMode
             << " to " << std::endl;
@@ -593,6 +572,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::FitCommonCode(
   appMutualRegistration->SetFixedImage(    m_FixedVolume    );
   appMutualRegistration->SetMovingImage(   m_MovingVolume   );
   appMutualRegistration->SetCostMetricObject( this->m_CostMetricObject );
+  appMutualRegistration->SetForceMINumberOfThreads( this->m_ForceMINumberOfThreads );
 
   appMutualRegistration->SetBackgroundFillValue(   m_BackgroundFillValue   );
 
@@ -622,16 +602,14 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::FitCommonCode(
   catch( itk::ExceptionObject& err )
     {
     // pass exception to caller
-    std::cout << "ERROR OCCURED: " << err << std::endl;
-    exit(-1);
     throw err;
     }
 
-    {   // Put the transform on the CurrentTransformList
-        // Initialize next level of transformations with previous transform
-        // result
-    this->m_CurrentGenericTransform = finalTransform;
-    }
+  // Put the transform on the CurrentTransformList
+  // Initialize next level of transformations with previous transform
+  // result
+  this->m_CurrentGenericTransform = finalTransform;
+
 }
 
 template <class FixedImageType, class MovingImageType>
@@ -659,10 +637,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
     {
     if( m_MinimumStepLength.size() != 1 )
       {
-      std::cout << "ERROR:  Wrong number of parameters for MinimumStepLength."
-                << "It either needs to be 1 or the same size as TransformType."
-                << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "ERROR:  Wrong number of parameters for MinimumStepLength."
+                               << "It either needs to be 1 or the same size as TransformType.");
       }
     for( unsigned int q = 0; q < m_TransformType.size(); ++q )
       {
@@ -678,10 +654,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
     {
     if( m_NumberOfIterations.size() != 1 )
       {
-      std::cout << "ERROR:  Wrong number of parameters for NumberOfIterations."
-                << " It either needs to be 1 or the same size as TransformType."
-                << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "ERROR:  Wrong number of parameters for NumberOfIterations."
+                               << " It either needs to be 1 or the same size as TransformType.")
       }
     for( unsigned int q = 0; q < m_TransformType.size(); ++q )
       {
@@ -734,8 +708,6 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
       m_MaskInferiorCutOffFromCenter);
 
       {   // Write out some debugging information if requested
-      typedef itk::Image<unsigned char, 3>                               MaskImageType;
-      typedef itk::ImageMaskSpatialObject<MaskImageType::ImageDimension> ImageMaskSpatialObjectType;
       if( ( !this->m_FixedBinaryVolume.IsNull() ) && ( m_OutputFixedVolumeROI != "" ) )
         {
         const MaskImageType::ConstPointer tempOutputFixedVolumeROI =
@@ -789,7 +761,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -869,7 +841,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -880,7 +852,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleVersor3DTransform" )
             {
             const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -964,7 +936,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -975,7 +947,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleVersor3DTransform" )
             {
             const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -986,7 +958,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleSkewVersor3DTransform" )
             {
             const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleSkewVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleSkewVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1068,7 +1040,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1079,7 +1051,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleVersor3DTransform" )
             {
             const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1090,7 +1062,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleSkewVersor3DTransform" )
             {
             const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleSkewVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleSkewVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1101,7 +1073,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "AffineTransform" )
             {
             const AffineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<AffineTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<AffineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1196,7 +1168,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1208,7 +1180,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleVersor3DTransform" )
             {
             const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1220,7 +1192,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleSkewVersor3DTransform" )
             {
             const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleSkewVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleSkewVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1232,7 +1204,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "AffineTransform" )
             {
             const AffineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<AffineTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<AffineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1244,7 +1216,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "BSplineDeformableTransform" )
             {
             const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<BSplineTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<BSplineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1294,33 +1266,27 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
                 {
                 // Error, initializing from wrong size transform parameters;
                 //  Use its bulk transform only?
-                std::cerr
-                << "Trouble using the m_CurrentGenericTransform for initializing a BSPlineDeformableTransform:"
-                << std::endl;
-                std::cerr
-                <<
-                "The initializing BSplineDeformableTransform has a different"
-                << " number of Parameters, than what is required for the requested grid."
-                << std::endl;
-                std::cerr
-                << "BRAINSFit was only able to use the bulk transform that was before it."
-                << std::endl;
-                exit(-1);
+                itkGenericExceptionMacro(
+                  << "Trouble using the m_CurrentGenericTransform"
+                  << "for initializing a BSPlineDeformableTransform:"
+                  << std::endl
+                  << "The initializing BSplineDeformableTransform has a different"
+                  << " number of Parameters, than what is required for the requested grid."
+                  << std::endl
+                  << "BRAINSFit was only able to use the bulk transform that was before it.");
                 }
               }
             else
               {
-              std::cerr
-              << "ERROR:  initialization BSpline transform does not have the same "
-              << "parameter dimensions as the one currently specified."
-              << std::endl;
-              exit(-1);
+              itkGenericExceptionMacro(
+                << "ERROR:  initialization BSpline transform does not have the same "
+                << "parameter dimensions as the one currently specified.");
               }
             }
           else
             {
-            std::cerr << "ERROR:  Invalid transform initializer type found:  " << transformFileType << std::endl;
-            exit(-1);
+            itkGenericExceptionMacro( << "ERROR:  Invalid transform initializer type found:  "
+                                      << transformFileType )
             }
           }
         catch( itk::ExceptionObject & excp )
@@ -1514,7 +1480,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           if( transformFileType == "VersorRigid3DTransform" )
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<VersorRigid3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1526,7 +1492,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleVersor3DTransform" )
             {
             const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1538,7 +1504,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "ScaleSkewVersor3DTransform" )
             {
             const ScaleSkewVersor3DTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<ScaleSkewVersor3DTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<ScaleSkewVersor3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1550,7 +1516,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "AffineTransform" )
             {
             const AffineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<AffineTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<AffineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1562,7 +1528,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           else if( transformFileType == "BSplineDeformableTransform" )
             {
             const BSplineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<BSplineTransformType const *const>( m_CurrentGenericTransform.GetPointer() );
+              dynamic_cast<BSplineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1612,33 +1578,26 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
                 {
                 // Error, initializing from wrong size transform parameters;
                 //  Use its bulk transform only?
-                std::cerr
-                << "Trouble using the m_CurrentGenericTransform for initializing a BSPlineDeformableTransform:"
-                << std::endl;
-                std::cerr
-                <<
-                "The initializing BSplineDeformableTransform has a different"
-                << " number of Parameters, than what is required for the requested grid."
-                << std::endl;
-                std::cerr
-                << "BRAINSFit was only able to use the bulk transform that was before it."
-                << std::endl;
-                exit(-1);
+                itkGenericExceptionMacro(
+                  << "Trouble using the m_CurrentGenericTransform for initializing a BSPlineDeformableTransform:"
+                  << std::endl
+                  << "The initializing BSplineDeformableTransform has a different"
+                  << " number of Parameters, than what is required for the requested grid."
+                  << std::endl
+                  << "BRAINSFit was only able to use the bulk transform that was before it.");
                 }
               }
             else
               {
-              std::cerr
-              << "ERROR:  initialization BSpline transform does not have the same "
-              << "parameter dimensions as the one currently specified."
-              << std::endl;
-              exit(-1);
+              itkGenericExceptionMacro(
+                << "ERROR:  initialization BSpline transform does not have the same "
+                << "parameter dimensions as the one currently specified.")
               }
             }
           else
             {
-            std::cerr << "ERROR:  Invalid transform initializer type found:  " << transformFileType << std::endl;
-            exit(-1);
+            itkGenericExceptionMacro( << "ERROR:  Invalid transform initializer type found:  "
+                                      << transformFileType );
             }
           }
         catch( itk::ExceptionObject & excp )
@@ -1703,23 +1662,21 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
           }
         }
       }
-
+    else if(currentTransformType == "Composite3D")
+      {
+      itkGenericExceptionMacro(<< "Composite Transform is not yet Implemented");
+      }
     else
       {
-      std::cout
-      << "Error choosing what kind of transform to fit \""
-      << currentTransformType << "(" << currentTransformIndex + 1 << " of " << m_TransformType.size() << "). "
-      << std::endl;
-      std::cout << std::flush << std::endl;
-      exit(-1);
-      return;
+      itkGenericExceptionMacro(
+        << "Error choosing what kind of transform to fit \""
+        << currentTransformType << "(" << currentTransformIndex + 1 << " of " << m_TransformType.size() << "). ");
       }
 
     if( currentTransformId > m_GenericTransformList.size() - 1 )
       {
-      std::cerr << "Out of bounds access for transform vector!" << std::endl;
-      exit(-1);
-      return;
+      itkGenericExceptionMacro(
+        << "Out of bounds access for transform vector!" << std::endl);
       }
     m_GenericTransformList[currentTransformId++] = m_CurrentGenericTransform;
     }

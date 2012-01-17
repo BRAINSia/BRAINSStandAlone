@@ -37,37 +37,14 @@
 
 #include "gtractCoregBvaluesCLP.h"
 #include "BRAINSThreadControl.h"
-itk::Matrix<double, 3, 3> Orthogonalize( itk::Matrix<double, 3, 3> rotator)
-{
-  vnl_svd<double>                             decomposition( rotator.GetVnlMatrix(), -1E-6);
-  vnl_diag_matrix<vnl_svd<double>::singval_t> Winverse( decomposition.Winverse() );
+#include "itkOrthogonalize3DRotationMatrix.h"
 
-  vnl_matrix<double> W(3, 3);
-  W.fill( double(0) );
-  for( unsigned int i = 0; i < 3; ++i )
-    {
-    if( decomposition.Winverse() (i, i) != 0.0 )
-      {
-      W(i, i) = 1.0;
-      }
-    }
-
-  vnl_matrix<double> result(
-    decomposition.U() * W * decomposition.V().conjugate_transpose() );
-
-  //    std::cout << " svd Orthonormalized Rotation: " << std::endl
-  //      << result << std::endl;
-  itk::Matrix<double, 3, 3> Orthog;
-  Orthog.operator=(result);
-
-  return Orthog;
-}
 
 int main(int argc, char *argv[])
 {
 
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   bool debug = true;
   if( debug )
@@ -109,7 +86,7 @@ int main(int argc, char *argv[])
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   typedef signed short                         OutputPixelType;
@@ -208,7 +185,7 @@ int main(int argc, char *argv[])
     // Get Current Gradient Direction
     vnl_vector<double> curGradientDirection(3);
     char               tmpStr[64];
-    sprintf(tmpStr, "DWMRI_gradient_%04d", i);
+    sprintf(tmpStr, "DWMRI_gradient_%04u", i);
     std::string KeyString(tmpStr);
     std::string NrrdValue;
 
@@ -302,7 +279,7 @@ int main(int argc, char *argv[])
       affineTransform =
         dynamic_cast<AffineTransformType *>(registerImageFilter->GetCurrentGenericTransform().GetPointer() );
       itk::Matrix<double, 3, 3> NonOrthog = affineTransform->GetMatrix();
-      itk::Matrix<double, 3, 3> Orthog( Orthogonalize(NonOrthog) );
+      itk::Matrix<double, 3, 3> Orthog( itk::Orthogonalize3DRotationMatrix(NonOrthog) );
       curGradientDirection = Orthog.GetVnlMatrix() * curGradientDirection;
       // std::cout<<"i = "<<i<<std::endl;
       // std::cout<<curGradientDirection<<std::endl;

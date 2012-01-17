@@ -193,8 +193,8 @@ public:
   {
     if( this->m_Templates.find(name) == this->m_Templates.end() )
       {
-      std::cerr << "Attempt to access an undifined landmark template for " << name << "! Abort." << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "Attempt to access an undifined landmark template for " 
+                               << name);
       }
     return this->m_Templates[name][indexDataSet][indexAngle];
   }
@@ -205,8 +205,7 @@ public:
     if( this->m_TemplateMeansComputed.find(name) == this->m_TemplateMeansComputed.end()
         || this->m_Templates.find(name) == this->m_Templates.end() )
       {
-      std::cerr << "Attempt to access an undifined landmark template (mean)! Abort." << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "Attempt to access an undifined landmark template (mean)!");
       }
     ComputeAllMeans(this->m_TemplateMeans[name], this->m_Templates[name]);
     return this->m_TemplateMeans[name][indexAngle];
@@ -217,8 +216,7 @@ public:
     if( this->m_TemplateMeansComputed.find(name) == this->m_TemplateMeansComputed.end()
         && this->m_Templates.find(name) == this->m_Templates.end() )
       {
-      std::cerr << "Attempt to access an undefined landmark template (mean)! Abort." << std::endl;
-      exit(-1);
+      itkGenericExceptionMacro(<< "Attempt to access an undefined landmark template (mean)!");
       }
     ComputeAllMeans(this->m_TemplateMeans[name], this->m_Templates[name]);
     return this->m_TemplateMeans[name];
@@ -313,6 +311,7 @@ public:
     catch( ioErr e )
       {
       std::cerr << "Write failed for " << filename << std::endl;
+      std::cerr << e << std::endl;
       }
     output.close();
   }
@@ -354,9 +353,7 @@ public:
 
     if( !input.is_open() )
       {
-      std::cerr << "Can't read " << filename << std::endl;
-      std::cerr.flush();
-      exit(-1);
+      itkGenericExceptionMacro(<< "Can't read " << filename);
       }
     try
       {
@@ -446,9 +443,8 @@ public:
 #ifdef __USE_OFFSET_DEBUGGING_CODE__
       this->debugOffset(&input, "end of file", -1);
 #endif
-      std::cerr << "Read failed for " << filename << std::endl;
-      std::cerr << e << std::endl;
-      exit(-1);
+      std::cerr << "ioErr " << e << std::endl;
+      throw;
       }
     input.close();
   }
@@ -542,7 +538,7 @@ public:
       {
       defineTemplateIndexLocations(this->GetRadius(it2->first), this->GetHeight(it2->first),
                                    this->m_VectorIndexLocations[it2->first]);
-      printf( "%s template size = %d voxels\n", it2->first.c_str(),
+      printf( "%s template size = %u voxels\n", it2->first.c_str(),
               static_cast<unsigned int>( this->m_VectorIndexLocations[it2->first].size() ) );
       if( CreatingModel )
         {

@@ -148,7 +148,7 @@ public:
       std::cout << __FILE__ << " " << __LINE__ << " "
                 << params << " : " << cc << " " << cost_of_HeadingAngle << " " << cost_of_BankAngle << " "
                 << cost_of_motion << std::endl;
-      exit(-1);
+      return EXIT_FAILURE;
       }
 #endif
     return raw_finalcos_gamma;
@@ -235,7 +235,7 @@ public:
   }
 
   /* -- */
-  const double CenterImageReflection_crossCorrelation(vnl_vector<double> const & params)
+  double CenterImageReflection_crossCorrelation(vnl_vector<double> const & params)
   {
     // TODO WEI: the following block of code only need to be computed once for
     // one image.
@@ -441,7 +441,7 @@ namespace itk
     {} // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkReflectiveCorrelationCenterToImageMetric.txx"
+#include "itkReflectiveCorrelationCenterToImageMetric.hxx"
 #endif
 
 #endif

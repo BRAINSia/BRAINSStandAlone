@@ -184,6 +184,7 @@ public:
   virtual ~QMatrix()
   {
   }
+
 };
 class Kernel : public QMatrix
 {
@@ -2085,4 +2086,3 @@ void svm_destroy_param(svm_parameter *param)
   free(param->weight_label);
   free(param->weight);
 }
-

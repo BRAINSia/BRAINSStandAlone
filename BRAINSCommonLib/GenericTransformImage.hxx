@@ -38,7 +38,7 @@ TransformResample(
   return returnval;
 }
 
-template <class InputImageType, class OutputImageType, class DeformationImageType>
+template <class InputImageType, class OutputImageType, class DisplacementImageType>
 typename OutputImageType::Pointer
 TransformWarp(
   InputImageType const *const inputImage,
@@ -47,12 +47,12 @@ TransformWarp(
   typename itk::InterpolateImageFunction<InputImageType,
   typename itk::NumericTraits<typename InputImageType::PixelType>::RealType>
   ::Pointer interp,
-  typename DeformationImageType::Pointer deformationField)
+  typename DisplacementImageType::Pointer displacementField)
 {
-  typedef typename itk::WarpImageFilter<InputImageType, OutputImageType, DeformationImageType> WarpImageFilter;
+  typedef typename itk::WarpImageFilter<InputImageType, OutputImageType, DisplacementImageType> WarpImageFilter;
   typename WarpImageFilter::Pointer warp = WarpImageFilter::New();
   warp->SetInput(inputImage);
-  warp->SetDeformationField(deformationField);
+  warp->SetDeformationField(displacementField);
   warp->SetInterpolator(interp);
 
   if( ReferenceImage != NULL )
@@ -61,8 +61,8 @@ TransformWarp(
     }
   else
     {
-    std::cout << "Alert:  missing Reference Volume information default image size set to deformationField" << std::endl;
-    warp->SetOutputParametersFromImage(deformationField);
+    std::cout << "Alert:  missing Reference Volume information default image size set to displacementField" << std::endl;
+    warp->SetOutputParametersFromImage(displacementField);
     }
   warp->SetEdgePaddingValue(defaultValue);
   warp->Update();
@@ -194,11 +194,11 @@ GetInterpolatorFromString(const std::string interpolationMode)
   return NULL;
 }
 
-template <typename InputImageType, typename OutputImageType, typename DeformationImageType>
+template <typename InputImageType, typename OutputImageType, typename DisplacementImageType>
 typename OutputImageType::Pointer GenericTransformImage(
   InputImageType const *const OperandImage,
   const itk::ImageBase<InputImageType::ImageDimension> *ReferenceImage,
-  typename DeformationImageType::Pointer DeformationField,
+  typename DisplacementImageType::Pointer DisplacementField,
   typename GenericTransformType::Pointer genericTransform,
   typename InputImageType::PixelType suggestedDefaultValue, // NOTE:  This is
                                                             // ignored in the
@@ -295,9 +295,9 @@ typename OutputImageType::Pointer GenericTransformImage(
   // One name for the intermediate resampled float image.
   typename InputImageType::Pointer TransformedImage;
 
-  if( DeformationField.IsNull() )  // (useTransform)
+  if( DisplacementField.IsNull() )  // (useTransform)
     {
-    // std::cout<< " Deformation Field is Null... " << std::endl;
+    // std::cout<< " Displacement Field is Null... " << std::endl;
     if( genericTransform.IsNotNull() )
       {
       if( interpolationMode == "ResampleInPlace" )
@@ -306,7 +306,7 @@ typename OutputImageType::Pointer GenericTransformImage(
         typedef typename ResampleIPFilterType::Pointer                           ResampleIPFilterPointer;
 
         const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
-          dynamic_cast<VersorRigid3DTransformType const *const>( genericTransform.GetPointer() );
+          dynamic_cast<VersorRigid3DTransformType const *>( genericTransform.GetPointer() );
         if( tempInitializerITKTransform.IsNull() )
           {
           std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -331,16 +331,16 @@ typename OutputImageType::Pointer GenericTransformImage(
       }
     }
 
-  else if( DeformationField.IsNotNull() )
+  else if( DisplacementField.IsNotNull() )
     {
-    //  std::cout<< "Deformation Field is given, so applied to the image..." <<
+    //  std::cout<< "Displacement Field is given, so applied to the image..." <<
     // std::endl;
-    TransformedImage = TransformWarp<InputImageType, OutputImageType, DeformationImageType>(
+    TransformedImage = TransformWarp<InputImageType, OutputImageType, DisplacementImageType>(
       PrincipalOperandImage,
       ReferenceImage,
       suggestedDefaultValue,
       GetInterpolatorFromString<InputImageType>(interpolationMode),
-      DeformationField);
+      DisplacementField);
     }
 
   // FINALLY will need to convert signed distance to binary image in case
@@ -353,13 +353,12 @@ typename OutputImageType::Pointer GenericTransformImage(
     // A special case for dealing with binary images
     // where signed distance maps are warped and thresholds created
     typedef short int                                                                    MaskPixelType;
-    typedef typename itk::Image<MaskPixelType,  GenericTransformImageNS::SpaceDimension> MaskImageType;
+    typedef typename itk::Image<MaskPixelType,  GenericTransformImageNS::SpaceDimension> BinFlagOnMaskImageType;
 
     // Now Threshold and write out image
     typedef typename itk::BinaryThresholdImageFilter<InputImageType,
-                                                     MaskImageType> BinaryThresholdFilterType;
-    typename BinaryThresholdFilterType::Pointer finalFilter =
-      BinaryThresholdFilterType::New();
+                                                     BinFlagOnMaskImageType> BinaryThresholdFilterType;
+    typename BinaryThresholdFilterType::Pointer finalFilter = BinaryThresholdFilterType::New();
     finalFilter->SetInput(TransformedImage);
 
     const typename BinaryThresholdFilterType::OutputPixelType outsideValue = 0;
@@ -381,7 +380,7 @@ typename OutputImageType::Pointer GenericTransformImage(
 
     finalFilter->Update();
 
-    typedef typename itk::CastImageFilter<MaskImageType, InputImageType> CastImageFilter;
+    typedef typename itk::CastImageFilter<BinFlagOnMaskImageType, InputImageType> CastImageFilter;
     typename CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( finalFilter->GetOutput() );
     castFilter->Update();

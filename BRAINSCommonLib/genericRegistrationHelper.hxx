@@ -25,35 +25,12 @@
 
 #include "itkWindowedSincInterpolateImageFunction.h"
 
+#include "itkStatisticsImageFilter.h"
+#include "itkImageDuplicator.h"
+
 namespace itk
 {
 
-template <class JointPDFType>
-void MakeDebugJointHistogram(const std::string debugOutputDirectory, const typename JointPDFType::Pointer myHistogram,
-                             const int globalIteration,
-                             const int currentIteration)
-{
-  std::stringstream fn("");
-
-  fn << debugOutputDirectory << "/DEBUGHistogram_"
-     << std::setw( 4 ) << std::setfill( '0' ) << globalIteration
-     << "_"
-     << std::setw( 4 ) << std::setfill( '0' ) << currentIteration
-     << ".png";
-  // typename JOINTPDFType::ConstPointer =
-  // typedef itk::CastImageFilter<JointPDFType, itk::Image< unsigned short, 2 >
-  // > CasterType;
-  typedef itk::RescaleIntensityImageFilter<JointPDFType, itk::Image<unsigned short, 2> > CasterType;
-  // typedef itk::ShiftScaleImageFilter<JointPDFType, itk::Image< unsigned char,
-  // 2 > > CasterType;
-  typename CasterType::Pointer myCaster = CasterType::New();
-  myCaster->SetInput(myHistogram);
-  // myCaster->SetShift(0);
-  // myCaster->SetScale(255);
-  myCaster->Update();
-  itkUtil::WriteImage<itk::Image<unsigned short, 2> >( myCaster->GetOutput(), fn.str() );
-  std::cout << "Writing jointPDF: " << fn.str() << std::endl;
-}
 
 /*
   * Constructor
@@ -90,8 +67,7 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
 {
   this->SetNumberOfRequiredOutputs(1);    // for the Transform
 
-  TransformOutputPointer transformDecorator =
-    static_cast<TransformOutputType *>( this->MakeOutput(0).GetPointer() );
+  TransformOutputPointer transformDecorator = static_cast<TransformOutputType *>( this->MakeOutput(0U).GetPointer() );
 
   this->ProcessObject::SetNthOutput( 0, transformDecorator.GetPointer() );
 
@@ -143,8 +119,25 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
       dynamic_cast<MattesMutualInformationMetricType *>(this->m_CostMetricObject.GetPointer() );
     if( test_MMICostMetric.IsNotNull() )
       {
-      this->m_CostMetricObject->SetNumberOfThreads(1);
-      this->m_Registration->SetNumberOfThreads(1);
+      if( this->m_ForceMINumberOfThreads != 1 )
+        {
+        std::cout << "WARNING USING MAX MMI NUMBER OF THREADS:   " << this->m_ForceMINumberOfThreads << std::endl;
+        }
+      if ( this->m_ForceMINumberOfThreads > 0 )
+        {
+        this->m_CostMetricObject->SetNumberOfThreads(this->m_ForceMINumberOfThreads);
+        this->m_Registration->SetNumberOfThreads(this->m_ForceMINumberOfThreads);
+        }
+      else
+        {
+        this->m_CostMetricObject->SetNumberOfThreads(itk::MultiThreader::GetGlobalDefaultNumberOfThreads());
+        this->m_Registration->SetNumberOfThreads(itk::MultiThreader::GetGlobalDefaultNumberOfThreads());
+        }
+      }
+    else
+      {
+      this->m_CostMetricObject->SetNumberOfThreads(itk::MultiThreader::GetGlobalDefaultNumberOfThreads());
+      this->m_Registration->SetNumberOfThreads(itk::MultiThreader::GetGlobalDefaultNumberOfThreads());
       }
     }
   m_Registration->SetMetric(this->m_CostMetricObject);
@@ -210,10 +203,8 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
     }
   else      // Won't happen under BRAINSFitPrimary.
     {
-    std::cout
-    << "FAILURE:  InitialTransform must be set in MultiModal3DMutualRegistrationHelper before Initialize is called."
-    << std::endl;
-    exit(-1);
+    itkGenericExceptionMacro(
+      << "FAILURE:  InitialTransform must be set in MultiModal3DMutualRegistrationHelper before Initialize is called.");
     //  m_Transform would be SetIdentity() if this case continued.
     }
 
@@ -312,6 +303,12 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
   optimizer->SetMinimumStepLength(m_MinimumStepLength);
   optimizer->SetNumberOfIterations(m_NumberOfIterations);
 
+  //std::cout << "OPTIMIZER    THREADS USED: " << optimizer->GetNumberOfThreads()                << std::endl;
+  std::cout << "METRIC       THREADS USED: " << this->m_CostMetricObject->GetNumberOfThreads() <<
+   " of " << itk::MultiThreader::GetGlobalDefaultNumberOfThreads() <<  std::endl;
+  std::cout << "REGISTRATION THREADS USED: " << this->m_Registration->GetNumberOfThreads()     <<
+   " of " << itk::MultiThreader::GetGlobalDefaultNumberOfThreads() <<  std::endl;
+
 #if 0
   // if (globalVerbose)
   if( 0 )
@@ -384,7 +381,7 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
       {
       try
         {
-        m_Registration->StartRegistration();
+        m_Registration->Update();
         successful = true;
         }
       catch( itk::ExceptionObject & err )
@@ -422,48 +419,12 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
       dynamic_cast<OptimizerPointer>( m_Registration->GetOptimizer() );
     if( optimizer == NULL )
       {
-      std::cout << "ERROR::" << __FILE__ << " " << __LINE__ << std::endl;
-      exit(-1);
+      itkExceptionMacro(<< "Failed to convert pointer to Optimizer type");
       }
     std::cout << "Stop condition from optimizer." << optimizer->GetStopConditionDescription() << std::endl;
     m_FinalMetricValue = optimizer->GetValue();
     m_ActualNumberOfIterations = optimizer->GetCurrentIteration();
     m_Transform->SetParametersByValue(finalParameters);
-
-#if ITK_VERSION_MAJOR >=4  //GetJointPDF only available in ITKv4
-    //
-    // GenerateHistogram
-    // TODO: KENT:  BRAINSFit tools need to define a common output directory for
-    // all debug images to be written.
-    //             by default the it should be the same as the outputImage, and
-    // if that does not exists, then it
-    //             should default to the same directory as the outputTransform,
-    // or it should be specified by the
-    //             user on the command line.
-    //             The following function should only be called when BRAINSFit
-    // command line tool is called with
-    //             --debugLevel 7 or greater, and it should write the 3D
-    // JointPDF image to the debugOutputDirectory
-    //             location.
-    const std::string debugOutputDirectory("");
-    if( debugOutputDirectory != "" )
-      {
-      // Special BUG work around for MMI metric
-      // that does not work in multi-threaded mode
-      typedef COMMON_MMI_METRIC_TYPE<FixedImageType, MovingImageType> MattesMutualInformationMetricType;
-      static int TransformIterationCounter = 10000;
-      typename MattesMutualInformationMetricType::Pointer test_MMICostMetric =
-        dynamic_cast<MattesMutualInformationMetricType *>(this->m_CostMetricObject.GetPointer() );
-      if( test_MMICostMetric.IsNotNull() )
-        {
-        typedef itk::Image<float, 2> JointPDFType;
-        const JointPDFType::Pointer myHistogram = test_MMICostMetric->GetJointPDF();
-        MakeDebugJointHistogram<JointPDFType>(debugOutputDirectory, myHistogram, TransformIterationCounter,
-                                              optimizer->GetCurrentIteration() );
-        TransformIterationCounter += 10000;
-        }
-      }
-#endif
     }
 
   typename TransformType::MatrixType matrix = m_Transform->GetMatrix();

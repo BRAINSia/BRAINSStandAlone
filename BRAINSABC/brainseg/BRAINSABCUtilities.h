@@ -36,7 +36,6 @@ typedef unsigned int LOOPITERTYPE;
     if( !vnl_math_isfinite( XXXTESTXXX ) ) \
       { \
       std::cout << "Found " << XXXTESTXXX << " at " << srcfile << " " << srcline << std::endl; \
-      /*exit(-1);*/ \
       } \
     }
 #else
@@ -78,7 +77,7 @@ public:
   FloatingPrecision m_Weighting;  // The strength of this class.
 };
 
-#include "BRAINSABCUtilities.txx"
+#include "BRAINSABCUtilities.hxx"
 
 // External Templates to improve compilation times.
 extern std::vector<CorrectIntensityImageType::Pointer> CorrectBias(

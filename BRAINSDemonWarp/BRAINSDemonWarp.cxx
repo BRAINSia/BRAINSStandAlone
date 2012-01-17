@@ -5,7 +5,10 @@
 
 #include "BRAINSDemonWarpTemplates.h"
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#include "DebugImageWrite.h"
+DEFINE_DEBUG_IMAGE_COUNTER;
+
+#ifdef USE_DebugImageViewer
 /*************************
   * Have a global variable to
   * add debugging information.
@@ -24,9 +27,9 @@ int main(int argc, char *argv[])
 
     {
     PARSE_ARGS;
-    BRAINSUtils::SetThreadCount(numberOfThreads);
+    const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
-#ifdef USE_DEBUG_IMAGE_VIEWER
+#ifdef USE_DebugImageViewer
     DebugImageDisplaySender.SetEnabled(UseDebugImageViewer);
     DebugImageDisplaySender.SetPromptUser(PromptAfterImageSend);
 #endif
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
     command.movingVolume = movingVolume;
     command.fixedVolume = fixedVolume;
     command.outputVolume = outputVolume;
-    command.outputDeformationFieldVolume = outputDeformationFieldVolume;
+    command.outputDisplacementFieldVolume = outputDisplacementFieldVolume;
     command.inputPixelType = inputPixelType;
     command.outputPixelType = outputPixelType;
     command.outputDisplacementFieldPrefix = outputDisplacementFieldPrefix;
@@ -53,7 +56,7 @@ int main(int argc, char *argv[])
     //    command.movingLandmarks = movingLandmarks;
     //    command.fixedLandmarks = fixedLandmarks;
     //    command.initializeWithFourier = initializeWithFourier;
-    command.initializeWithDeformationField = initializeWithDeformationField;
+    command.initializeWithDisplacementField = initializeWithDisplacementField;
     command.initializeWithTransform = initializeWithTransform;
 
     command.histogramMatch = histogramMatch;
@@ -64,7 +67,7 @@ int main(int argc, char *argv[])
 
     command.maxStepLength = maxStepLength;
     command.gradientType = gradientType;
-    command.smoothDeformationFieldSigma = smoothDeformationFieldSigma;
+    command.smoothDisplacementFieldSigma = smoothDisplacementFieldSigma;
     command.smoothingUp = smoothingUp;
     command.numberOfBCHApproximationTerms = numberOfBCHApproximationTerms;
     command.interpolationMode = interpolationMode;
@@ -97,8 +100,8 @@ int main(int argc, char *argv[])
     << std::endl
     << "                   outputVolume: " << command.outputVolume
     << std::endl
-    << "   outputDeformationFieldVolume: "
-    << command.outputDeformationFieldVolume << std::endl
+    << "   outputDisplacementFieldVolume: "
+    << command.outputDisplacementFieldVolume << std::endl
     << "                 inputPixelType: " << command.inputPixelType
     << std::endl
     << "                outputPixelType: " << command.outputPixelType
@@ -137,16 +140,16 @@ int main(int argc, char *argv[])
       *  << "     initializeWithFourier: " << command.initializeWithFourier
       *  << std::endl
       */
-    << "  initializeWithDeformationField: "
-    << command.initializeWithDeformationField  << std::endl
+    << "  initializeWithDisplacementField: "
+    << command.initializeWithDisplacementField  << std::endl
     << "       initializeWithTransform: "
     << command.initializeWithTransform << std::endl
     << "                    gradientType: " << command.gradientType
     << std::endl
     << "                   maxStepLength: " << command.maxStepLength
     << std::endl
-    << "     smoothDeformationFieldSigma: "
-    << command.smoothDeformationFieldSigma << std::endl
+    << "     smoothDisplacementFieldSigma: "
+    << command.smoothDisplacementFieldSigma << std::endl
     << "                     smoothingUp: " << command.smoothingUp
     << std::endl
     << "                   histogramMatch: " << command.histogramMatch
@@ -178,12 +181,12 @@ int main(int argc, char *argv[])
     <<
     "Invalid Patameters. The value of checkboardPatternSubdivisions should not be zero!"
     << std::endl;
-    exit(-1);
+    return EXIT_FAILURE;
     }
 
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   // Test if the input data type is valid
@@ -211,7 +214,7 @@ int main(int argc, char *argv[])
       << std::endl;
       std::cout << "Use one of the following:" << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
 
@@ -242,7 +245,7 @@ int main(int argc, char *argv[])
       << std::endl;
       std::cout << "Use one of the following:" << std::endl;
       PrintDataTypeStrings();
-      exit(-1);
+      return EXIT_FAILURE;
       }
     }
 
@@ -285,7 +288,7 @@ int main(int argc, char *argv[])
     << "Error. Invalid data type for --inputPixelType!  Use one of these:"
     << std::endl;
     PrintDataTypeStrings();
-    exit(-1);
+    return EXIT_FAILURE;
     }
   return 0;
 }

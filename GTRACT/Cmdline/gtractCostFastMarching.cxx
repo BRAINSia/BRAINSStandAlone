@@ -63,7 +63,7 @@ public:
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 
   const bool debug = true;
   if( debug )
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
     marcher->SetAlivePoints( seedPoints );
     marcher->SetOverrideOutputInformation( true );
 #if  1
-    CostImageType::SizeType size = tensorImage->GetLargestPossibleRegion().GetSize();
+    //const CostImageType::SizeType size = tensorImage->GetLargestPossibleRegion().GetSize();
     marcher->SetOutputSize( tensorImage->GetLargestPossibleRegion().GetSize() );
     marcher->SetOutputRegion( tensorImage->GetLargestPossibleRegion() );
     marcher->SetOutputSpacing( tensorImage->GetSpacing() );

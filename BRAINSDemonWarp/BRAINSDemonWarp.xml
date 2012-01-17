@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Registration</category>
+  <category>Registration.Specialized</category>
   <title>Demon Registration (BRAINS)</title>
 
   <description>
-    This program finds a deformation field to warp a moving image onto a fixed image.  The images must be of the same signal kind, and contain an image of the same kind of object.  This program uses the Thirion Demons warp software in ITK, the Insight Toolkit.  Additional information is available at: http://www.nitrc.org/projects/brainsdemonwarp.
+	  This program finds a deformation field to warp a moving image onto a fixed image.  The images must be of the same signal kind, and contain an image of the same kind of object.  This program uses the Thirion Demons warp software in ITK, the Insight Toolkit.  Additional information is available at: http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.0/Modules/BRAINSDemonWarp.
 
   </description>
   <version>3.0.0</version>
@@ -64,11 +64,11 @@
     </image>
 
     <transform fileExtensions=".nrrd" type="nonlinear" reference="movingVolume">
-      <name>outputDeformationFieldVolume</name>
+      <name>outputDisplacementFieldVolume</name>
       <flag>O</flag>
-      <longflag alias="output_field">outputDeformationFieldVolume</longflag>
+      <longflag deprecatedalias="output_field,outputDeformationFieldVolume">outputDisplacementFieldVolume</longflag>
       <description>Output deformation field vector image (will have the same physical space as the fixedVolume).</description>
-      <label>Output Deformation Field Volume</label>
+      <label>Output Displacement Field Volume</label>
       <channel>output</channel>
     </transform>
 
@@ -112,21 +112,23 @@
     <string-enumeration>
       <name>registrationFilterType</name>
       <longflag>registrationFilterType</longflag>
-      <description>Registration Filter Type: Demons|FastSymmetricForces|Diffeomorphic|LogDemons|SymmetricLogDemons</description>
+      <description>Registration Filter Type: Demons|FastSymmetricForces|Diffeomorphic</description>
       <label>Registration Filter Type</label>
       <default>Diffeomorphic</default>
       <element>Demons</element>
       <element>FastSymmetricForces</element>
       <element>Diffeomorphic</element>
+      <!--  These do not work, so commenting out for now.
       <element>LogDemons</element>
-      <element>SymmetricLogDemons</element>:
+      <element>SymmetricLogDemons</element>
+      -->
     </string-enumeration>
 
     <double>
-      <name>smoothDeformationFieldSigma</name>
+      <name>smoothDisplacementFieldSigma</name>
       <flag>s</flag>
-      <longflag alias="def_field_sigma">smoothDeformationFieldSigma</longflag>
-      <label>Deformation field smoothing sigma</label>
+      <longflag alias="def_field_sigma">smoothDisplacementFieldSigma</longflag>
+      <label>Displacement field smoothing sigma</label>
       <description>A gaussian smoothing value to be applied to the deformation feild at each iteration.</description>
       <default>1.0</default>
     </double>
@@ -203,14 +205,14 @@
     </parameters>
 
   <parameters advanced="true">
-  <label> Deformation field initialziation </label>
+  <label> Displacement field initialziation </label>
   <description> Options for initializing the deformation field. </description>
 
     <transform fileExtensions=".nrrd" type="nonlinear">
-      <name>initializeWithDeformationField</name>
-      <longflag>initializeWithDeformationField</longflag>
+      <name>initializeWithDisplacementField</name>
+      <longflag>initializeWithDisplacementField</longflag>
       <description>Initial deformation field vector image file name</description>
-      <label>Initial Deformation Field Volume</label>
+      <label>Initial Displacement Field Volume</label>
       <channel>input</channel>
     </transform>
 

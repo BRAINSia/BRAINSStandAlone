@@ -32,7 +32,7 @@
 int main(int argc, char *argv[])
 {
   PARSE_ARGS;
-  BRAINSUtils::SetThreadCount(numberOfThreads);
+  const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
 itk::AddExtraTransformRegister();
 
   std::vector<int> GridSize;
@@ -92,7 +92,7 @@ itk::AddExtraTransformRegister();
     }
   if( violated )
     {
-    exit(1);
+    return EXIT_FAILURE;
     }
 
   // typedef signed short                      PixelType;
