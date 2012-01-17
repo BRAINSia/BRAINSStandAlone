@@ -123,6 +123,9 @@ public:
   std::string GetAtlasToSubjectRegistrationFilename( DataSet& subject);
   std::string GetSubjectToAtlasRegistrationFilename( DataSet& subject);
 
+  /* common functions */
+  WorkingImagePointer SmoothImage( const WorkingImagePointer image, const float GaussianValue);
+
 protected:
 
   NetConfiguration BRAINSCutNetConfiguration;
