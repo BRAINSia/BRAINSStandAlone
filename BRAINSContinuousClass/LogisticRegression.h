@@ -18,7 +18,7 @@ public:
   LogisticRegressionSample(const unsigned int featureCount);
   ~LogisticRegressionSample();
   double const GetLabelProbability(unsigned int const &) const;
-  void SetSample(std::vector<TSampleType> const &);
+  void SetSample(std::vector<TSampleType> *);
   std::vector<TSampleType> const * GetSample() const;
   void SetLabelProbability(unsigned int const &, double const &);
   unsigned int const GetLabel() const {return this->m_label;};
@@ -33,7 +33,7 @@ private:
   unsigned int m_totalSamples;
   struct parameter m_parameters;
   struct problem m_problem;
-  struct m_model;
+  struct model * m_model;
   struct feature_node * m_featureNodes;
   unsigned int m_featureCount;
   unsigned int m_classOneLabel;
@@ -46,6 +46,6 @@ public:
   void TrainModel();
   void SetClassOneLabel(const unsigned int);
   void SetClassTwoLabel(const unsigned int);
-  void ClassifySample(LogisticRegressionSample<TSampleType> const &);
+  void ClassifySample(LogisticRegressionSample<TSampleType> &);
 };
 #endif
