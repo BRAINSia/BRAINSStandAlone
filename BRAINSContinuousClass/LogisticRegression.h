@@ -21,7 +21,7 @@ public:
   void SetSample(std::vector<TSampleType> &);
   std::vector<TSampleType> const * GetSample() const;
   void SetLabelProbability(unsigned int const &, double const &);
-  unsigned int const GetLabel() const {return this->m_label;};
+  unsigned int GetLabel() const {return this->m_label;};
   void SetLabel(unsigned int const &) ;
   bool LabelIsSet() const {return this->m_labelSet;};
 
