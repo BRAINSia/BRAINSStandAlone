@@ -31,6 +31,7 @@ public:
                                                          scalarType threshold );
 
   void SetANNOutputThresholdFromNetConfiguration();
+  void SetGaussianSmoothingSigmaFromNetConfiguration();
 
   BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue );
   BinaryImagePointer ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue );
@@ -51,6 +52,7 @@ private:
   std::fstream ANNTestingSSEFileStream;
 
   scalarType annOutputThreshold;
+  scalarType gaussianSmoothingSigma;
   OpenCVMLPType * openCVANN;
 
   /* private functions  */
