@@ -54,7 +54,7 @@ BRAINSConstellationDetectorPrimary::BRAINSConstellationDetectorPrimary()
     this->m_outputLandmarksInACPCAlignedSpaceMap.clear();
 }
 
-void BRAINSConstellationDetectorPrimary::Compute( void )
+bool BRAINSConstellationDetectorPrimary::Compute( void )
 {
     const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(this->m_numberOfThreads);
     
@@ -79,7 +79,7 @@ void BRAINSConstellationDetectorPrimary::Compute( void )
     if( theModel.Read() != 0 )
     {
         std::cerr << "Error reading LLS Model" << std::endl;
-        // return EXIT_FAILURE;
+        return EXIT_FAILURE;
     }
     
     llsMeans = theModel.GetLLSMeans();
@@ -401,4 +401,5 @@ void BRAINSConstellationDetectorPrimary::Compute( void )
                                 this->m_outputLandmarksInACPCAlignedSpace );
         std::cout << "The verification script is written." << std::endl;
     }
+    return EXIT_SUCCESS;
 }
