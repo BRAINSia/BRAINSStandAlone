@@ -42,10 +42,13 @@ int main( int argc, char * argv[] )
 	const unsigned int k = atoi (argv[1]); //Number of landmark pairs
 	                                       //So the number of input landmark files = 2*k
 
-	///////////////////////////////////////////////////////////////////////////
-	//************* IN THIS PROGRAM "K" SHOULD BE AN EVEN NUMBER ***************
-	///////////////////////////////////////////////////////////////////////////
-	
+    if ( argc!=0 ) 
+    {
+        std::cout << "For comparison, we should have two landmarks files corresponding to each case; therefore, the total "
+        << "number of landmark files should be even\n" << std::endl; 
+    }
+    
+    
 	unsigned int numNamedLandmarks = 0;
 	double d0, d1, d2, dist;
 	
