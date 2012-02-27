@@ -29,6 +29,7 @@ template <class TInputImage, class TOutputImage>
 AdditiveGaussianNoiseImageFilter<TInputImage, TOutputImage>
 ::AdditiveGaussianNoiseImageFilter()
 {
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   m_Mean = 0.0;
   m_StandardDeviation = 1.0;
 }
@@ -40,8 +41,11 @@ AdditiveGaussianNoiseImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType &outputRegionForThread,
                         int threadId)
 {
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   InputImageConstPointer  inputPtr = this->GetInput();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   OutputImagePointer outputPtr = this->GetOutput(0);
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   
   // create a random generator per thread
   typename Statistics::NormalVariateGenerator::Pointer randn = Statistics::NormalVariateGenerator::New();
@@ -51,8 +55,10 @@ AdditiveGaussianNoiseImageFilter<TInputImage, TOutputImage>
   // and output images to be different dimensions
   InputImageRegionType inputRegionForThread;
   this->CallCopyOutputRegionToInputRegion(inputRegionForThread, outputRegionForThread);
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   // Define the iterators
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   ImageRegionConstIterator<TInputImage>  inputIt(inputPtr, inputRegionForThread);
   ImageRegionIterator<TOutputImage> outputIt(outputPtr, outputRegionForThread);
 
@@ -61,6 +67,7 @@ AdditiveGaussianNoiseImageFilter<TInputImage, TOutputImage>
   inputIt.GoToBegin();
   outputIt.GoToBegin();
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   while( !inputIt.IsAtEnd() ) 
     {
     double out = inputIt.Get() + m_Mean + m_StandardDeviation * randn->GetVariate();
@@ -71,6 +78,7 @@ AdditiveGaussianNoiseImageFilter<TInputImage, TOutputImage>
     ++outputIt;
     progress.CompletedPixel();  // potential exception thrown here
     }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 template <class TInputImage, class TOutputImage>

@@ -27,7 +27,7 @@ int main(int argc, char * argv[])
 
   const int dim = 3;
   
-  typedef unsigned char PixelType;
+  typedef float PixelType;
   typedef itk::Image< PixelType, dim > ImageType;
 
   typedef itk::ImageFileReader< ImageType > ReaderType;
@@ -41,6 +41,7 @@ int main(int argc, char * argv[])
 
 
   filter->SetMean( inputGaussianMean );
+  filter->Update();
 
   itk::SimpleFilterWatcher watcher(filter, "filter");
 
