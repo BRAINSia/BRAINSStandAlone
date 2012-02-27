@@ -253,15 +253,18 @@ private:
                                                                   SImageType::PointType::VectorType BCMean,
                                                                   int sign);
 
-  SImageType::PointType FindCandidatePoints(
-    SImageType::Pointer volumeMSP, SImageType::Pointer mask_LR, const double LR_restrictions,
-    const double PA_restrictions,
-    const double SI_restrictions,
+  SImageType::PointType FindCandidatePoints(SImageType::Pointer volumeMSP, 
+											SImageType::Pointer mask_LR, 
+											const double LR_restrictions,
+											const double PA_restrictions,
+											const double SI_restrictions,
     // TODO: restrictions should really be ellipsoidal values
-    const SImageType::PointType::VectorType & CenterOfSearchArea,
-    const std::vector<std::vector<float> > & TemplateMean,
-    const landmarksConstellationModelIO::IndexLocationVectorType & model, const bool ComputeOutsideSearchRadius,
-    double & cc_Max, const std::string & mapID);
+											const SImageType::PointType::VectorType & CenterOfSearchArea,
+											const std::vector<std::vector<float> > & TemplateMean,
+											const landmarksConstellationModelIO::IndexLocationVectorType & model, 
+											const bool ComputeOutsideSearchRadius,
+											double & cc_Max, 
+											const std::string & mapID);
 
 private:
   RigidTransformType::Pointer   m_TmspBasedOnReflectionCrossCorrelation;
