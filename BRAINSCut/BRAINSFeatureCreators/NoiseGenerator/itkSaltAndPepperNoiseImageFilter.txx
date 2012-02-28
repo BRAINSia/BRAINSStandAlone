@@ -37,7 +37,7 @@ template <class TInputImage, class TOutputImage>
 void
 SaltAndPepperNoiseImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData( const OutputImageRegionType &outputRegionForThread,
-                        int threadId)
+                        ThreadIdType threadId)
 {
   InputImageConstPointer  inputPtr = this->GetInput();
   OutputImagePointer outputPtr = this->GetOutput(0);

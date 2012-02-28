@@ -90,8 +90,8 @@ protected:
   virtual ~AdditiveGaussianNoiseImageFilter() {};
    
   void PrintSelf(std::ostream &os, Indent indent) const;
-  void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+  virtual void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
+                            ThreadIdType threadId );
 
 private:
   AdditiveGaussianNoiseImageFilter(const Self&); //purposely not implemented

@@ -90,7 +90,7 @@ protected:
    
   void PrintSelf(std::ostream &os, Indent indent) const;
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
 private:
   ShotNoiseImageFilter(const Self&); //purposely not implemented

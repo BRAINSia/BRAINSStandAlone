@@ -91,7 +91,7 @@ protected:
    
   void PrintSelf(std::ostream &os, Indent indent) const;
   void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
-                            int threadId );
+                            ThreadIdType threadId );
 
 private:
   SpeckleNoiseImageFilter(const Self&); //purposely not implemented
