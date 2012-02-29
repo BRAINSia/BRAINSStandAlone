@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+ 
+#include "itkIO.h"
 
 #include "DumpBinaryTrainingVectorsCLP.h"
 #define MAX_LINE_SIZE 1000
@@ -16,9 +18,7 @@ ReadHeader(const char *fname,
   filestr.open(fname);
   if( !filestr.is_open() )
     {
-      std::cout<<"Error: Could not open ANN vector file"
-               << fname 
-               << std::endl;
+      itkGenericExceptionMacro(<< "Error: Could not open ANN vector file::"<< fname );
     }
   for( int tags = 0; tags < 3; tags++ )
     {
@@ -53,11 +53,12 @@ main(int argc, char * *argv)
   unsigned int NumberTrainingVectorsFromFile;
   int          result(0);
 
-  if( argc < 3 )
+  if( inputVectorFilename.empty() || 
+      inputHeaderFilename.empty() )
     {
-    std::cerr << "DumpBinTrainingVectors hdr-name bin-name [record-offset]"
-              << std::endl;
-    return EXIT_FAILURE;
+      std::cout<< "Error: Required inputs are missing:  --inputVectorFilename and/or --inputHeaderFilename "
+               <<std::endl;
+      std::exit(EXIT_FAILURE);
     }
   // read header
   try
