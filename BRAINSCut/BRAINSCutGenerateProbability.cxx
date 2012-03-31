@@ -113,6 +113,16 @@ BRAINSCutGenerateProbability
     /** get filename */
     std::string currentProbabilityMapFilename( currentROISet->GetAttribute<StringValue>("Filename") );
 
+    /** check the directory */
+    std::string path = itksys::SystemTools::GetFilenamePath( currentProbabilityMapFilename );
+    if( !itksys::SystemTools::FileExists( path.c_str(), false ) )
+      {
+      std::cout << " Probability map directory does not exist. Create as following:: "
+                << path.c_str()
+                << std::endl;
+      itksys::SystemTools::MakeDirectory( path.c_str() );
+      }
+
     /** write image */
     itkUtil::WriteImage<WorkingImageType>( currentSmoothProbabilityImage, currentProbabilityMapFilename );
 
