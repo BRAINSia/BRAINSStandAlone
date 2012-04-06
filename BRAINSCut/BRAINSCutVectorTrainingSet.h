@@ -40,6 +40,7 @@ public:
   unsigned int GetRecordSize();
 
   void SetBufferRecordSize();
+  void SetShuffled(bool shuffled);
 
   int GetTotalVectorSize();
 
@@ -53,7 +54,7 @@ public:
 
   std::ios::off_type *    ShufflingOrder();
 
-  void                    ShuffleVectors();
+  void                    ShuffleVectors( );
 
   pairedTrainingSetType * GetTrainingDataSet();
 
