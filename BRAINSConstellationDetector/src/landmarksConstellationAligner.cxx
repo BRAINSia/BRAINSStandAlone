@@ -58,7 +58,6 @@ RigidTransformType::Pointer computeTmspFromPoints(SImageType::PointType RP,
 {
 	// a variable to store correlation coefficient values
 	SImageType::PointType::VectorType ACPC = PC - AC;
-	
 	ACPC.Normalize();
 	SImageType::PointType::VectorType ACRP = RP - AC;
 	
