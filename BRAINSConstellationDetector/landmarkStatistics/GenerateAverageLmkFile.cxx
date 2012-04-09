@@ -25,6 +25,15 @@ int main( int argc, char * argv[] )
 {
 	
 	const unsigned int k = atoi (argv[1]); //The number of input landmark files
+    
+    if ( argc != k+2 ) 
+    {
+     std::cout << "First argument indicates the number of input landmarks files.\n"
+     << "The number of input files inserted at the command line does not match." << std::endl; 
+        
+     return EXIT_FAILURE;
+    }
+    
 	unsigned int numNamedLandmarks = 0;
 	double x_ave, y_ave, z_ave;
 	
