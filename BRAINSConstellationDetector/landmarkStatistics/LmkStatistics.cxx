@@ -5,7 +5,7 @@
  */
 
 
-// This program gets a row of the fcsv files. The first argument is the number of pair landmark files for example (e0326_10335.fcsv , k0326_10335.fcsv) 
+// This program gets a row of the fcsv files. The first argument is the number of pair landmark files for example (e0326_10335.fcsv , k0326_10335.fcsv)
 // After that the fcsv file names come consequently.
 // For instance:
 //              LMKstatis 10 E_lmk1.fcsv E_lmk2.fcsv ... E_lmk10.fcsv K_lmk1.fcsv K_lmk2.fcsv ... K_lmk10.fcsv
@@ -36,41 +36,48 @@ case n:     PCn1         PCn2
 #include "math.h"
 #include "Slicer3LandmarkIO.h"
 
-int main( unsigned int argc, char * argv[] )
+int main( int argc, char * argv[] )
 {
-	
-	const unsigned int k = atoi (argv[1]); //Number of landmark pairs
-	                                       //So the number of input landmark files = 2*k
 
-    if ( ( argc%2 != 0 ) || ( argc != (2*(k+1)) ) ) 
+  if(argc < 2)
     {
-        std::cout << " First argument indicates the number of landmark pairs for comparison.\n"
-        << "Two landmarks files are needed corresponding to each data case.\n"
-        << "Therefore, you must insert an even number of landmark files at the command line.\n" << std::endl; 
-        
-        return EXIT_FAILURE;
+    std::cerr << "Usage : " << argv[0]
+              << " <#of landmark pairs> <lmk-pair1> <lmk-pair2> ... <lmk-pairN>"
+              << std::endl;
+    return EXIT_FAILURE;
     }
-    
-	unsigned int numNamedLandmarks = 0;
-	double d0, d1, d2, dist;
-	typedef std::map<std::string, std::vector<double> > LandmarksDistanceMapType;
-	LandmarksDistanceMapType LandmarksDistanceMap;
-	std::map<std::string, double> LandmarksAverageMap;  //for average
-	std::map<std::string, double> LandmarksVarianceMap; //for variance
-	std::map<std::string, double> LandmarksSTDMap;      //for standard deviation
-	
-	typedef std::vector<std::map<std::string, PointType> > LandmarksMapTypeVec;
-	LandmarksMapTypeVec LandmarksMapVector;
-	
-	// LandmarksMapType is as "std::map<std::string, PointType>" which means a map between landmarks and their coordinates.
-    // For each input landmark file this LandmarksMapType is computed and is set in a vector: "LandmarksMapTypeVec"
-	
-	LandmarksMapType temp;
-	
-	for (unsigned int i=0; i<(2*k); i++)
-	{
-		temp = ReadSlicer3toITKLmk( argv[i+2] );
-		/*		
+  const unsigned int k = atoi (argv[1]); //Number of landmark pairs
+  //So the number of input landmark files = 2*k
+
+  if ( ( argc%2 != 0 ) || ( argc != (2*(k+1)) ) )
+    {
+    std::cout << " First argument indicates the number of landmark pairs for comparison.\n"
+              << "Two landmarks files are needed corresponding to each data case.\n"
+              << "Therefore, you must insert an even number of landmark files at the command line.\n" << std::endl;
+
+    return EXIT_FAILURE;
+    }
+
+  unsigned int numNamedLandmarks = 0;
+  double d0, d1, d2, dist;
+  typedef std::map<std::string, std::vector<double> > LandmarksDistanceMapType;
+  LandmarksDistanceMapType LandmarksDistanceMap;
+  std::map<std::string, double> LandmarksAverageMap;  //for average
+  std::map<std::string, double> LandmarksVarianceMap; //for variance
+  std::map<std::string, double> LandmarksSTDMap;      //for standard deviation
+
+  typedef std::vector<std::map<std::string, PointType> > LandmarksMapTypeVec;
+  LandmarksMapTypeVec LandmarksMapVector;
+
+  // LandmarksMapType is as "std::map<std::string, PointType>" which means a map between landmarks and their coordinates.
+  // For each input landmark file this LandmarksMapType is computed and is set in a vector: "LandmarksMapTypeVec"
+
+  LandmarksMapType temp;
+
+  for (unsigned int i=0; i<(2*k); i++)
+    {
+    temp = ReadSlicer3toITKLmk( argv[i+2] );
+    /*
 		std::cout << "\n\nTemp values of landmarks" << std::endl;
 		for( LandmarksMapType::const_iterator it = temp.begin(); it != temp.end(); ++it )
 		{
@@ -78,90 +85,90 @@ int main( unsigned int argc, char * argv[] )
 		}
 		std::cout << "==============================================================" << std::endl;
 		*/
-		LandmarksMapVector.push_back(temp);
+    LandmarksMapVector.push_back(temp);
     }
-	
-	//Putting all the landmark names in a vector of strings and computing the number of landmarks
-	std::vector<std::string> LandmarksNames;
-	for( LandmarksMapType::const_iterator it = LandmarksMapVector[0].begin(); it != LandmarksMapVector[0].end(); ++it )
-	{
-		if( ( it->first ).compare("") != 0 )
-		{
-			LandmarksNames.push_back(it->first);
-			numNamedLandmarks++;
-		}
-	}
-		
-	std::cout << "\n\nNumber of landmarks = " << numNamedLandmarks << std::endl;
-	
-	// Computing the average coordinate for each landmark
-	std::cout << "\n=============Distance Values For Each Landmarks====================" << std::endl;
-	for (unsigned int j=0; j<numNamedLandmarks; j++)
-	{
-		std::string name = LandmarksNames[j];
-		
-		for (unsigned int i=0; i<k; i++)
-		{
-			dist = d0 = d1 = d2 = 0;
-			
-			
-			d0 = pow( LandmarksMapVector[i][name][0] - LandmarksMapVector[i+k][name][0], 2);
-			d1 = pow( LandmarksMapVector[i][name][1] - LandmarksMapVector[i+k][name][1], 2);
-			d2 = pow( LandmarksMapVector[i][name][2] - LandmarksMapVector[i+k][name][2], 2);
-			
-			dist = sqrt(d0+d1+d2);
-			
-			LandmarksDistanceMap[name].push_back (dist);
-		}
-		
-		std::cout << "-" << name << std::endl; 
-		for( unsigned int l=0; l<k; l++)
-		{
-			std::cout <<"(" << l+1 << "):" << LandmarksDistanceMap[name][l] << ", ";
-		}
-		std::cout << "\n==============================================================" << std::endl;
-	}
-	
-	// Computing the Average of the distances for each landmark
-	std::cout << "\n=============Average Error for Each Landmarks====================" << std::endl;
-	for (unsigned int j=0; j<numNamedLandmarks; j++)
-	{
-		std::string name = LandmarksNames[j];
-		double sum = 0;
-		
-		for (unsigned int i=0; i<k; i++)
-		{
-			sum += LandmarksDistanceMap[name][i];
-		}
-		LandmarksAverageMap[name] = sum/k;
-		std::cout << "-" << name << ": " << LandmarksAverageMap[name] << std::endl;
-	}
-	
-	// Computing the Variance of the distances for each landmark
-	std::cout << "\n=============Variance of Error for Each Landmarks====================" << std::endl;
-	for (unsigned int j=0; j<numNamedLandmarks; j++)
-	{
-		std::string name = LandmarksNames[j];
-		double sum = 0;
-		
-		for (unsigned int i=0; i<k; i++)
-		{
-			sum += pow( LandmarksDistanceMap[name][i]-LandmarksAverageMap[name], 2);
-		}
-		LandmarksVarianceMap[name] = sum/k;
-		LandmarksSTDMap[name] = sqrt(sum/k);
-		std::cout << "-" << name << ": " << LandmarksVarianceMap[name] << std::endl;
-	}
-	
-	// Computing the Standard Deviation of the distances for each landmark
-	std::cout << "\n=============Standard Deviation of Error for Each Landmarks====================" << std::endl;
-	for (unsigned int j=0; j<numNamedLandmarks; j++)
-	{
-		std::string name = LandmarksNames[j];
-		std::cout << "-" << name << ": " << LandmarksSTDMap[name] << std::endl;
-	}
-	std::cout << "==============================================================\n" << std::endl;
-		
-	return EXIT_SUCCESS;	
+
+  //Putting all the landmark names in a vector of strings and computing the number of landmarks
+  std::vector<std::string> LandmarksNames;
+  for( LandmarksMapType::const_iterator it = LandmarksMapVector[0].begin(); it != LandmarksMapVector[0].end(); ++it )
+    {
+    if( ( it->first ).compare("") != 0 )
+      {
+      LandmarksNames.push_back(it->first);
+      numNamedLandmarks++;
+      }
+    }
+
+  std::cout << "\n\nNumber of landmarks = " << numNamedLandmarks << std::endl;
+
+  // Computing the average coordinate for each landmark
+  std::cout << "\n=============Distance Values For Each Landmarks====================" << std::endl;
+  for (unsigned int j=0; j<numNamedLandmarks; j++)
+    {
+    std::string name = LandmarksNames[j];
+
+    for (unsigned int i=0; i<k; i++)
+      {
+      dist = d0 = d1 = d2 = 0;
+
+
+      d0 = pow( LandmarksMapVector[i][name][0] - LandmarksMapVector[i+k][name][0], 2);
+      d1 = pow( LandmarksMapVector[i][name][1] - LandmarksMapVector[i+k][name][1], 2);
+      d2 = pow( LandmarksMapVector[i][name][2] - LandmarksMapVector[i+k][name][2], 2);
+
+      dist = sqrt(d0+d1+d2);
+
+      LandmarksDistanceMap[name].push_back (dist);
+      }
+
+    std::cout << "-" << name << std::endl;
+    for( unsigned int l=0; l<k; l++)
+      {
+      std::cout <<"(" << l+1 << "):" << LandmarksDistanceMap[name][l] << ", ";
+      }
+    std::cout << "\n==============================================================" << std::endl;
+    }
+
+  // Computing the Average of the distances for each landmark
+  std::cout << "\n=============Average Error for Each Landmarks====================" << std::endl;
+  for (unsigned int j=0; j<numNamedLandmarks; j++)
+    {
+    std::string name = LandmarksNames[j];
+    double sum = 0;
+
+    for (unsigned int i=0; i<k; i++)
+      {
+      sum += LandmarksDistanceMap[name][i];
+      }
+    LandmarksAverageMap[name] = sum/k;
+    std::cout << "-" << name << ": " << LandmarksAverageMap[name] << std::endl;
+    }
+
+  // Computing the Variance of the distances for each landmark
+  std::cout << "\n=============Variance of Error for Each Landmarks====================" << std::endl;
+  for (unsigned int j=0; j<numNamedLandmarks; j++)
+    {
+    std::string name = LandmarksNames[j];
+    double sum = 0;
+
+    for (unsigned int i=0; i<k; i++)
+      {
+      sum += pow( LandmarksDistanceMap[name][i]-LandmarksAverageMap[name], 2);
+      }
+    LandmarksVarianceMap[name] = sum/k;
+    LandmarksSTDMap[name] = sqrt(sum/k);
+    std::cout << "-" << name << ": " << LandmarksVarianceMap[name] << std::endl;
+    }
+
+  // Computing the Standard Deviation of the distances for each landmark
+  std::cout << "\n=============Standard Deviation of Error for Each Landmarks====================" << std::endl;
+  for (unsigned int j=0; j<numNamedLandmarks; j++)
+    {
+    std::string name = LandmarksNames[j];
+    std::cout << "-" << name << ": " << LandmarksSTDMap[name] << std::endl;
+    }
+  std::cout << "==============================================================\n" << std::endl;
+
+  return EXIT_SUCCESS;
 }
-	
+
