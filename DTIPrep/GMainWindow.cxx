@@ -87,7 +87,7 @@ GMainWindow::GMainWindow()
   setCorner ( Qt::TopLeftCorner, Qt::LeftDockWidgetArea );
 
   // QT/VTK interact
-  qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue(); 
+  qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue();
   qvtkWidget_3DView->GetRenderWindow()->SetStereoTypeToRedBlue();
 
   pvtkRenderer = vtkRenderer::New();
@@ -149,9 +149,9 @@ GMainWindow::GMainWindow()
   actionIncluded->setCheckable(0);
   actionExcluded->setCheckable(0);
 
-  
 
-  
+
+
   // ProbeWithSplineWidget();
   //  connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(),
   //    SIGNAL(ResultUpdate()),
@@ -197,17 +197,17 @@ GMainWindow::GMainWindow()
 
   connect( this->DTIPrepPanel, SIGNAL( currentGradientChanged_VC(int) ),
     this, SLOT( GradientUpdate( int ) ) );
- 
-  connect( this, SIGNAL( VisualCheckingStatus(int, int ) ), 
+
+  connect( this, SIGNAL( VisualCheckingStatus(int, int ) ),
     this->DTIPrepPanel, SLOT( SetVisualCheckingStatus ( int, int )) );
 
   connect( this->DTIPrepPanel, SIGNAL( UpdateOutputDWIDiffusionVectorActors() ),
     this, SLOT( UpdateOutputDWIDiffusionVectorActors() ) );
 
-  connect( this, SIGNAL( OpenMappingXML() ), 
+  connect( this, SIGNAL( OpenMappingXML() ),
     this->DTIPrepPanel, SLOT( OpenMappingXML ()) );
 
-  //connect( this, SIGNAL( OpenQCedDWI() ), 
+  //connect( this, SIGNAL( OpenQCedDWI() ),
     //this->DTIPrepPanel, SLOT( OpenQCedDWI()) );
 
   connect( this->DTIPrepPanel, SIGNAL( SignalLoadQCedDWI( QString ) ),
@@ -358,7 +358,7 @@ GMainWindow::GMainWindow()
   connect( this->imageView2DPanelWithControls3,
     SIGNAL( WindowLevel(double, double) ),
     this, SLOT( SetAllWindowLevel(double, double ) ) );
- 
+
    // setWindowTitle(tr("Grace DTI(Qt4)"));
 
   connect( this->DTIPrepPanel,
@@ -367,7 +367,7 @@ GMainWindow::GMainWindow()
 
   connect( this,
     SIGNAL( Signal_actionOpenDWINrrd_triggered()),
-    this, SLOT( on_actionOpenDWINrrd_triggered() ));  
+    this, SLOT( on_actionOpenDWINrrd_triggered() ));
 
 
   }
@@ -932,7 +932,7 @@ void GMainWindow::ReloadQCedDWI( QString Qqcdwiname )
       return;
       }
   }
-  else 
+  else
   {
      std::cerr << "QCed DWI name is not set." << std::endl;
   }
@@ -1024,8 +1024,8 @@ void GMainWindow::ReloadQCedDWI( QString Qqcdwiname )
 
 void GMainWindow::LoadQCedDWI( QString Qqcdwiname )
 {
-  // Load QCed DWI file automatically after running 
-  	
+  // Load QCed DWI file automatically after running
+
   if ( Qqcdwiname.length() > 0)
   {
     itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
@@ -1045,7 +1045,7 @@ void GMainWindow::LoadQCedDWI( QString Qqcdwiname )
       return;
       }
   }
-  else 
+  else
   {
      std::cerr << "QCed DWI name is not set." << std::endl;
   }
@@ -1130,7 +1130,7 @@ void GMainWindow::LoadQCedDWI( QString Qqcdwiname )
   //bQCResultLoad = false;
   DTIPrepPanel->Clear_VC_Status();
   //DTIPrepPanel->GetQCResult().Clear();
-  
+
 
 }
 
@@ -1163,7 +1163,7 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 		emit Signal_actionOpenDWINrrd_triggered();
 		return;
 	}
-  	
+
 
   }
   else
@@ -1292,9 +1292,9 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
  }
 }
 
-void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer DWIImage)
+void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImage)
 {
-  itk::MetaDataDictionary imgMetaDictionary = DWIImage->GetMetaDataDictionary();    //
+  itk::MetaDataDictionary imgMetaDictionary = _DWIImage->GetMetaDataDictionary();    //
 
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
@@ -1305,7 +1305,7 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer DWIImage
 
   actorDirFile->GetParts()->RemoveAllItems();
   float vect3d[3];
-  
+
   for (; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -1403,7 +1403,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
   pvtkRenderer_3DView->RemoveActor(actorDirInclude);
   actorDirInclude->GetParts()->RemoveAllItems();
 
-  
+
 
   for ( unsigned int i = 0;
         i < DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult().size();
@@ -1417,7 +1417,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
            VisualChecking == QCResult::GRADIENT_INCLUDE) )
       {
 
-	
+
       if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
              CorrectedDir[0] == 0.0
            && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
@@ -1499,7 +1499,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
         continue;
         }
 
-      
+
       vtkLineSource *LineSource    =  vtkLineSource::New();
 
       LineSource->SetPoint1(
@@ -2066,7 +2066,7 @@ void GMainWindow::GradientChanged(int WinID, int index)
     componentExtractor1->SetIndex( index );
     componentExtractor2->SetIndex( index );
     componentExtractor3->SetIndex( index );
-  
+
     gradientConnecter1->Update();
     gradientConnecter2->Update();
     gradientConnecter3->Update();
@@ -2080,39 +2080,39 @@ void GMainWindow::GradientChanged(int WinID, int index)
 
 
     //std::cout<<"bQCResultLoad"<<bQCResultLoad<<std::endl;
-    if ( bQCResultLoad == true) 
+    if ( bQCResultLoad == true)
     {
 
-        
+
     if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
     {
       //std::cout << "WinID " << WinID << "indexID " << index <<" " <<  "Processing" << DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing << std::endl;
-      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
-      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
-      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
     }
 
     else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
     {
-      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
-      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
-      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
     }
     }
     if (bQCResultLoad == false)
     {
-      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
-      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
-      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
     }
-    
+
     imageView2DPanelWithControls1->GetImageViewer2()->Render();
     imageView2DPanelWithControls2->GetImageViewer2()->Render();
     imageView2DPanelWithControls3->GetImageViewer2()->Render();
     }
   else
     {
-    
+
     switch ( WinID )
       {
       case 0:
@@ -2121,22 +2121,22 @@ void GMainWindow::GradientChanged(int WinID, int index)
         gradientConnecter1->Update();
         imageView2DPanelWithControls1->GetHorizontalSlider_Gradient()->setSliderPosition(index);
 
-	if ( bQCResultLoad == true) 
+	if ( bQCResultLoad == true)
 	{
-        
+
 	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
 	{
-	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
 	}
-	
+
 	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
 	{
-	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
 	}
 	}
 	if (bQCResultLoad == false)
 	{
-	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
 	}
 
         imageView2DPanelWithControls1->GetImageViewer2()->Render();
@@ -2147,21 +2147,21 @@ void GMainWindow::GradientChanged(int WinID, int index)
         // componentExtractor1->Update();
         gradientConnecter2->Update();
 	imageView2DPanelWithControls2->GetHorizontalSlider_Gradient()->setSliderPosition(index);
-	if ( bQCResultLoad == true) 
+	if ( bQCResultLoad == true)
 	{
 	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
 	{
-	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
 	}
-	
+
 	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
 	{
-	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
 	}
 	}
 	if (bQCResultLoad == false)
 	{
-	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
 	}
         imageView2DPanelWithControls2->GetImageViewer2()->Render();
         break;
@@ -2171,21 +2171,21 @@ void GMainWindow::GradientChanged(int WinID, int index)
         // componentExtractor2->Update();
         gradientConnecter3->Update();
 	imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->setSliderPosition(index);
-	if ( bQCResultLoad == true) 
+	if ( bQCResultLoad == true)
 	{
 	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
 	{
-	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
 	}
-	
+
 	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
 	{
-	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
 	}
 	}
 	if (bQCResultLoad == false)
 	{
-	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" );
 	}
         imageView2DPanelWithControls3->GetImageViewer2()->Render();
         break;
@@ -2202,7 +2202,7 @@ void GMainWindow::GradientUpdate( int index )
 
   QString Grad1 = QString( "Saving Gradient Change" );
   QString Grad2 = QString( "Status of gradient %1 based on Visual Checking" ).arg( index);
-  
+
   QMessageBox msgBox;
   msgBox.setText( Grad2 );
   QPushButton * Include= msgBox.addButton( tr("Include"), QMessageBox::ActionRole);
@@ -2215,20 +2215,18 @@ void GMainWindow::GradientUpdate( int index )
     emit currentGradient_VC_Include( 0, index);
     emit currentGradient_VC_Include( 1, index);
     emit currentGradient_VC_Include( 2, index);
-    
-    
+
+
     std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing<<"processingTest"<<std::endl;
-    int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
     emit VisualCheckingStatus ( index,  QCResult::GRADIENT_INCLUDE );
   }
   if ( msgBox.clickedButton() == Exclude )
   {
-    
+
     emit currentGradient_VC_Exclude( 0, index);
     emit currentGradient_VC_Exclude( 1, index);
     emit currentGradient_VC_Exclude( 2, index);
-    
-    int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+
     emit VisualCheckingStatus ( index,  QCResult::GRADIENT_EXCLUDE_MANUALLY);
   }
   if ( msgBox.clickedButton() == Nochange )
@@ -2248,7 +2246,7 @@ void GMainWindow::GradientUpdate( int index )
    emit VisualCheckingStatus ( index, -1);
   }
   //std::cout<< DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_N"<<std::endl;
-  
+
     UpdateOutputDWIDiffusionVectorActors();
   //UpdateOutputDWIDiffusionVectorActors_VC();
 }
@@ -2269,7 +2267,7 @@ void GMainWindow::GradientChanged_VC_Include(int WinID, int index)
     componentExtractor1->SetIndex( index );
     componentExtractor2->SetIndex( index );
     componentExtractor3->SetIndex( index );
-    
+
 
     gradientConnecter1->Update();
     gradientConnecter2->Update();
@@ -2282,14 +2280,14 @@ void GMainWindow::GradientChanged_VC_Include(int WinID, int index)
     imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->
       setSliderPosition(index);
 
-    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
-    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
-    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
+    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
+    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
 
     imageView2DPanelWithControls1->GetImageViewer2()->Render();
     imageView2DPanelWithControls2->GetImageViewer2()->Render();
     imageView2DPanelWithControls3->GetImageViewer2()->Render();
- 
+
     }
   else
     {
@@ -2346,9 +2344,9 @@ void GMainWindow::GradientChanged_VC_Exclude(int WinID, int index)
     imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->
       setSliderPosition(index);
 
-    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
-    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
-    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
+    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
+    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
 
 
     imageView2DPanelWithControls1->GetImageViewer2()->Render();
@@ -2357,7 +2355,7 @@ void GMainWindow::GradientChanged_VC_Exclude(int WinID, int index)
     }
   else
     {
-    
+
     switch ( WinID )
       {
       case 0:

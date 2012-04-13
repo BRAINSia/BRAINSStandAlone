@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   NeuroLib
  Module:    $file: itkDWIQCInterlaceChecker.cpp $
  Language:  C++
  Date:      $Date: 2009-11-26 21:52:35 $
  Version:   $Revision: 1.10 $
  Author:    Zhexing Liu (liuzhexing@gmail.com)
- 
+
  Copyright (c) NIRAL, UNC. All rights reserved.
  See http://www.niral.unc.edu for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #ifndef _itkDWIQCInterlaceChecker_cpp
@@ -56,22 +56,22 @@ namespace itk
   m_CorrelationThresholdGradient  = 0.95;
   m_TranslationThreshold      = 2.00;
   m_RotationThreshold        = 0.50;
-  
+
   m_CorrelationStedvTimesBaseline = 3.0;
   m_CorrelationStdevTimesGradient = 3.5;
-  
+
   b0 = -1.0;
-  
+
   m_ReportFileName = "";
   m_ReportFileMode = DWIQCInterlaceChecker::REPORT_FILE_NEW;
   m_ReportType = DWIQCInterlaceChecker::REPORT_TYPE_VERBOSE;
-  
-  
+
+
   bValues.clear();
-  
+
   CheckDoneOff();
   }
-  
+
   /**
    *
    */
@@ -79,7 +79,7 @@ namespace itk
   DWIQCInterlaceChecker<TImageType>
   ::~DWIQCInterlaceChecker()
   {}
-  
+
   /**
    * PrintSelf
    */
@@ -91,7 +91,7 @@ namespace itk
   Superclass::PrintSelf(os, indent);
   os << indent << "DWI QC interlace-wise check filter: " << std::endl;
   }
-  
+
   /**
    * initialize QC Resullts
    */
@@ -105,7 +105,7 @@ namespace itk
     this->qcResults.push_back(1);
     }
   }
-  
+
   /**
    *
    */
@@ -116,16 +116,16 @@ namespace itk
   {
   // call the superclass' implementation of this method
   Superclass::GenerateOutputInformation();
-  
+
   // get pointers to the input and output
   InputImageConstPointer inputPtr = this->GetInput();
   OutputImagePointer     outputPtr = this->GetOutput();
-  
+
   if ( !inputPtr || !outputPtr )
     {
     return;
     }
-  
+
   // perform InterlaceWiseCheck
   // std::cout << "Interlace wise checking begins here. " <<std::endl;
   parseGradientDirections();
@@ -136,18 +136,18 @@ namespace itk
   collectLeftDiffusionStatistics();
   writeReport();
   CheckDoneOn();
-  
+
   outputPtr->SetVectorLength(
                              this->baselineLeftNumber + this->gradientLeftNumber);
-  
+
   itk::MetaDataDictionary outputMetaDictionary;
-  
+
   itk::MetaDataDictionary imgMetaDictionary
   = inputPtr->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
   = imgMetaDictionary.GetKeys();
   std::string                              metaString;
-  
+
   //  measurement frame
   if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -162,7 +162,7 @@ namespace itk
                                                                  "NRRD_measurement frame",
                                                                  nrrdmf);
     }
-  
+
   // modality
   if ( imgMetaDictionary.HasKey("modality") )
     {
@@ -171,7 +171,7 @@ namespace itk
                                           "modality",
                                           metaString);
     }
-  
+
   //     // thickness
   //     if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
   //     {
@@ -181,7 +181,7 @@ namespace itk
   //       itk::EncapsulateMetaData<double>( outputMetaDictionary,
   // "NRRD_thickness[2]", thickness);
   //     }
-  
+
   // centerings
   if ( imgMetaDictionary.HasKey("NRRD_centerings[0]") )
     {
@@ -204,7 +204,7 @@ namespace itk
                                           "NRRD_centerings[2]",
                                           metaString);
     }
-  
+
   // b-value
   if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
     {
@@ -213,7 +213,7 @@ namespace itk
                                           "DWMRI_b-value",
                                           metaString);
     }
-  
+
   // gradient vectors
   int temp = 0;
   for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
@@ -223,7 +223,7 @@ namespace itk
       //std::cout << "qcResult_InterlaceWise: "<< this->qcResults[i] << std::endl;
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
-      
+
       std::ostringstream ossMetaString;
       ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
       << std::setprecision(6) << std::setiosflags(std::ios::right)
@@ -236,7 +236,7 @@ namespace itk
       << std::setw(9) << std::setiosflags(std::ios::fixed)
       << std::setprecision(6) << std::setiosflags(std::ios::right)
       << this->m_GradientDirectionContainer->ElementAt(i)[2];
-      
+
       // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
       itk::EncapsulateMetaData<std::string>( outputMetaDictionary,
                                             ossKey.str(), ossMetaString.str() );
@@ -245,7 +245,7 @@ namespace itk
     }
   outputPtr->SetMetaDataDictionary(outputMetaDictionary);
   }
-  
+
   /**
    *
    */
@@ -272,7 +272,7 @@ namespace itk
   double>            InterpolatorType;
   typedef itk::ImageRegistrationMethod<GradientImageType,
   GradientImageType> RegistrationType;
-  
+
   typedef GradientImageType::SpacingType
   SpacingType;
   typedef GradientImageType::PointType
@@ -281,76 +281,76 @@ namespace itk
   RegionType;
   typedef GradientImageType::SizeType
   SizeType;
-  
+
   MetricType::Pointer       metric      = MetricType::New();
   OptimizerType::Pointer    optimizer    = OptimizerType::New();
   InterpolatorType::Pointer interpolator  = InterpolatorType::New();
   RegistrationType::Pointer registration  = RegistrationType::New();
   TransformType::Pointer    transform    = TransformType::New();
-  
+
   GradientImageType::Pointer fixedImage = odd;
   GradientImageType::Pointer movingImage = even;
-  
+
   unsigned int numberOfBins = BinsNumber;
   double       percentOfSamples = SamplesPercent;   // 1% ~ 20%
   // bool  useExplicitPDFDerivatives = ExplicitPDFDerivatives;
-  
+
   registration->SetMetric(        metric        );
   registration->SetOptimizer(     optimizer     );
   registration->SetInterpolator(  interpolator  );
   registration->SetTransform(     transform    );
-  
+
   registration->SetFixedImage(   fixedImage );
   registration->SetMovingImage(  movingImage);
-  
+
   // setup parameters
   registration->SetFixedImageRegion( fixedImage->GetBufferedRegion() );
-  
+
   typedef itk::CenteredTransformInitializer<TransformType, GradientImageType,
   GradientImageType> TransformInitializerType;
   TransformInitializerType::Pointer initializer = TransformInitializerType::New();
-  
+
   initializer->SetTransform(   transform );
   initializer->SetFixedImage(  fixedImage );
   initializer->SetMovingImage( movingImage);
   initializer->MomentsOn();
   // initializer->GeometryOn();
   initializer->InitializeTransform();
-  
+
   typedef TransformType::VersorType VersorType;
   typedef VersorType::VectorType    VectorType;
-  
+
   VersorType rotation;
   VectorType axis;
-  
+
   axis[0] = 0.0;
   axis[1] = 0.0;
   axis[2] = 1.0;
-  
+
   const double angle = 0;
   rotation.Set(  axis, angle  );
   transform->SetRotation( rotation );
-  
+
   registration->SetInitialTransformParameters( transform->GetParameters() );
-  
+
   typedef OptimizerType::ScalesType OptimizerScalesType;
   OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
   const double        translationScale = 1.0 / 1000.0;
-  
+
   optimizerScales[0] = 1.0;
   optimizerScales[1] = 1.0;
   optimizerScales[2] = 1.0;
   optimizerScales[3] = translationScale;
   optimizerScales[4] = translationScale;
   optimizerScales[5] = translationScale;
-  
+
   optimizer->SetScales( optimizerScales );
   optimizer->SetMaximumStepLength( 0.2000  );
   optimizer->SetMinimumStepLength( 0.0001 );
-  
+
   optimizer->SetNumberOfIterations( 1000 );
   metric->SetNumberOfHistogramBins( numberOfBins );
-  
+
   int SampleSize
   = (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples);
   if ( SampleSize > 100000 )
@@ -361,7 +361,7 @@ namespace itk
     {
     metric->UseAllPixelsOn();
     }
-  
+
   // run the registration pipeline
   try
     {
@@ -373,25 +373,25 @@ namespace itk
     std::cerr << err << std::endl;
     return;
     }
-  
+
   OptimizerType::ParametersType finalParameters
   = registration->GetLastTransformParameters();
-  
+
   const double finalAngleX           = finalParameters[0];
   const double finalAngleY           = finalParameters[1];
   const double finalAngleZ           = finalParameters[2];
   const double finalTranslationX     = finalParameters[3];
   const double finalTranslationY     = finalParameters[4];
   const double finalTranslationZ     = finalParameters[5];
-  
+
   // const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
   const double bestValue = optimizer->GetValue();
-  
+
   // Print out results
   const double finalAngleInDegreesX = finalAngleX * 45.0 / atan(1.0);
   const double finalAngleInDegreesY = finalAngleY * 45.0 / atan(1.0);
   const double finalAngleInDegreesZ = finalAngleZ * 45.0 / atan(1.0);
-  
+
   //     std::cout << "Result = " << std::endl;
   //     std::cout << " AngleX (radians)   = " << finalAngleX  << std::endl;
   //     std::cout << " AngleX (degrees)   = " << finalAngleInDegreesX  <<
@@ -407,7 +407,7 @@ namespace itk
   //     std::cout << " Translation Z = " << finalTranslationZ  << std::endl;
   //     std::cout << " Iterations    = " << numberOfIterations << std::endl;
   //     std::cout << " Metric value  = " << bestValue          << std::endl;
-  
+
   regResult.AngleX = finalAngleInDegreesX;
   regResult.AngleY = finalAngleInDegreesY;
   regResult.AngleZ = finalAngleInDegreesZ;
@@ -415,10 +415,10 @@ namespace itk
   regResult.TranslationY = finalTranslationY;
   regResult.TranslationZ = finalTranslationZ;
   regResult.Metric = -bestValue;
-  
+
   return;
   }
-  
+
   /**
    *
    */
@@ -431,10 +431,10 @@ namespace itk
   typedef itk::ImageRegionConstIterator<GradientImageType> citType;
   citType cit1( odd, odd->GetBufferedRegion() );
   citType cit2( even, even->GetBufferedRegion() );
-  
+
   cit1.GoToBegin();
   cit2.GoToBegin();
-  
+
   double Correlation;
   double sAB = 0.0, sA2 = 0.0, sB2 = 0.0;
   while ( !cit1.IsAtEnd() )
@@ -446,10 +446,10 @@ namespace itk
     ++cit2;
     }
   Correlation = sAB / sqrt(sA2 * sB2);
-  
+
   return Correlation;
   }
-  
+
   /**
    *
    */
@@ -460,18 +460,18 @@ namespace itk
   {
   std::cout << "Interlace calculating " << std::endl;
   InputImageConstPointer inputPtr = this->GetInput();
-  
+
   typedef itk::VectorIndexSelectionCastImageFilter<TImageType,
   GradientImageType> FilterType;
   typename FilterType::Pointer componentExtractor = FilterType::New();
   componentExtractor->SetInput(inputPtr);
-  
+
   GradientImageType::Pointer InterlaceOdd  = GradientImageType::New();
   GradientImageType::Pointer InterlaceEven = GradientImageType::New();
-  
+
   componentExtractor->SetIndex( 0 );
   componentExtractor->Update();
-  
+
   GradientImageType::RegionType region;
   GradientImageType::SizeType   size;
   size[0]
@@ -482,37 +482,37 @@ namespace itk
   = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]
   / 2;
   region.SetSize( size );
-  
+
   //const GradientImageType::SpacingType spacing = componentExtractor->GetOutput()->GetSpacing();
-  
+
   InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
   InterlaceOdd->SetRegions( region );
   InterlaceOdd->Allocate();
-  
+
   InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
   InterlaceEven->SetRegions( region );
   InterlaceEven->Allocate();
-  
+
   typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
   IteratorType iterateOdd( InterlaceOdd, InterlaceOdd->GetLargestPossibleRegion() );
   IteratorType iterateEven( InterlaceEven,
                            InterlaceEven->GetLargestPossibleRegion() );
-  
+
   std::vector<double> Results;
   for ( unsigned int j = 0; j < inputPtr->GetVectorLength(); j++ )
     {
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
-    
+
     typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
     IteratorType iterateGradient(
                                  componentExtractor->GetOutput(),
                                  componentExtractor->GetOutput()->GetLargestPossibleRegion() );
-    
+
     iterateGradient.GoToBegin();
     iterateOdd.GoToBegin();
     iterateEven.GoToBegin();
-    
+
     unsigned long count = 0;
     while ( !iterateGradient.IsAtEnd() )
       {
@@ -532,16 +532,16 @@ namespace itk
       ++iterateGradient;
       ++count;
       }
-    
+
     struInterlaceResults result;
     rigidRegistration(InterlaceOdd, InterlaceEven, 25, 0.1, 1, result );
     result.Correlation = computeCorrelation(InterlaceOdd, InterlaceEven);
-    
+
     std::cout << "Interlace correlation for gradient " << j << ": " << result.Correlation << std::endl;
-        
+
     this->ResultsContainer.push_back(result);
-    
-    
+
+
     //       std::cout<<"===="<<std::endl;
     //       std::cout<<std::endl<<"  Gradient "<<j;
     //       std::cout<<"RotationAngles(degree):
@@ -557,11 +557,11 @@ namespace itk
     //       std::cout<<"NormalizedCorrelation :
     // "<<this->ResultsContainer[j].Correlation << std::endl;
     }
-  
+
   std::cout << " DONE" << std::endl;
   return;
   }
-  
+
   /**
    *
    */
@@ -575,7 +575,7 @@ namespace itk
   int DWICount, BaselineCount;
   BaselineCount  = getBaselineNumber();
   DWICount    = getGradientNumber();
-  
+
   //      std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
   //      std::cout<<"DWICount: "<<DWICount<<std::endl;
   //     std::cout<<"getBValueNumber(): "<<getBValueNumber()<<std::endl;
@@ -583,33 +583,27 @@ namespace itk
   //     std::cout<<"getBValueLeftNumber(): "<<getBValueLeftNumber()<<std::endl;
   //     std::cout<<"getBaselineLeftNumber():
   // "<<getBaselineLeftNumber()<<std::endl;
-  
+
   this->interlaceBaselineMeans = 0.0;
   this->interlaceBaselineDeviations = 0.0;
-  
+
   this->interlaceGradientMeans = 0.0;
   this->interlaceGradientDeviations = 0.0;
-  
+
   this->interlaceGradientMeans = 0.0;
   this->interlaceGradientDeviations = 0.0;
-  
+
   this->quardraticFittedMeans = 0.0;
   this->quardraticFittedDeviations = 0.0;
-  
-  std::vector<double> normalizedMetric;
-  for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-    {
-    normalizedMetric.push_back(-1.0);
-    }
-    
-  if ( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )   
+
+  if ( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )
     // ensure a quardratic fit
     {
     //std::cout<<" multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation for each gradient "<<std::endl;
     vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 3);
     vnl_matrix<double> correlationVector(getBaselineNumber() + getGradientNumber(), 1);
     // unsigned int matrixLineNumber = 0;
-    for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) 
+    for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       // each
       //
       // gradient
@@ -620,19 +614,19 @@ namespace itk
       bMatrix[i][2] = 1.0;
       correlationVector[i][0] = this->ResultsContainer[i].Correlation;
       }
-    
+
     //
     vnl_matrix_fixed<double, 3, 1> coefficients;
     vnl_matrix_fixed<double, 3, 3> coefficientsTemp;
     //coefficients =
     // vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
     //      std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
-    
+
     coefficientsTemp = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
     coefficients = coefficientsTemp * bMatrix.transpose() * correlationVector;
     //       std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
-    
-    std::vector<double> normalizedMetric(this->ResultsContainer.size(),-1.0);    
+
+    std::vector<double> normalizedMetric(this->ResultsContainer.size(),-1.0);
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) // for
       // each
       //
@@ -644,15 +638,15 @@ namespace itk
          * coefficients[0][0]
          + this->bValues[i] * coefficients[1][0]
          + coefficients[2][0] );
-            
+
       //     std::cout<<"ResultsContainer[i].Correlation: "
       //    << ResultsContainer[i].Correlation <<std::endl;
       //    std::cout<<"normalizedMetric[i]: "
       //    << normalizedMetric[i]
       //     <<std::endl;
       }
-    
-    
+
+
     // to compute the mean and stdev after quardratic fitting
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
@@ -660,11 +654,11 @@ namespace itk
       / static_cast<double>( DWICount
                             + BaselineCount );
       }
-    
+
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       if ( DWICount > 1 )
-        {        
+        {
         this->quardraticFittedDeviations
         += ( normalizedMetric[i]
             - quardraticFittedMeans )
@@ -672,28 +666,28 @@ namespace itk
            - quardraticFittedMeans )
         / (double)(DWICount + BaselineCount - 1);
         }
-      
+
       else
         {
         this->quardraticFittedDeviations = 0.0;
         }
       }
     quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
-    
+
     //std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
     // <<std::endl;
     //       std::cout<<"quardraticFittedDeviations: "<<
     // quardraticFittedDeviations <<std::endl;
-    
+
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
         {  // baseline
-        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold             
+        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
           || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold          
+          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
           || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
@@ -701,25 +695,25 @@ namespace itk
           || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStedvTimesBaseline )
           {
           this->qcResults[i] = 0;
-          } 
+          }
         }
       else
         { // gradients
         if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
-          || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold 
-          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold 
-          || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold 
+          || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
           || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
           || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStdevTimesGradient )
           {
           this->qcResults[i] = 0;
-          } 
+          }
         }
       }
 
-      
+
       //           std::cout<<"normalizedMetric[i]:
       // "<<normalizedMetric[i]<<std::endl;
       //           std::cout<<"quardraticFittedMeans:
@@ -736,14 +730,14 @@ namespace itk
 
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
-      
+
       // DEBUG: delete later
       bMatrix[i][0] = this->bValues[i];
-      
+
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
-        {  // for interlace baseline correlation         
+        {  // for interlace baseline correlation
           this->interlaceBaselineMeans += this->ResultsContainer[i].Correlation
           / (double)BaselineCount;
         }
@@ -753,7 +747,7 @@ namespace itk
         / (double)DWICount;
         }
       }
-        
+
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
@@ -761,7 +755,7 @@ namespace itk
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
         {
         if ( BaselineCount >= 1 )
-          {          
+          {
           this->interlaceBaselineDeviations
           += ( this->ResultsContainer[i].Correlation
               - interlaceBaselineMeans )
@@ -776,7 +770,7 @@ namespace itk
       else
         {
         if ( DWICount >= 1 )
-          {          
+          {
           interlaceGradientDeviations
           += ( this->ResultsContainer[i].Correlation
               - interlaceGradientMeans )
@@ -789,14 +783,14 @@ namespace itk
           }
         }
       }
-    
+
     interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
     interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
-    
-    
+
+
     //     std::cout<<"interlaceBaselineDeviations: "<<interlaceBaselineDeviations<<std::endl;
     //    std::cout<<"interlaceGradientDeviations: "<<interlaceGradientDeviations<<std::endl;
-    
+
     //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
     //     std::cout<<"m_TranslationThreshold: "<<m_TranslationThreshold<<std::endl;
     //     std::cout<<"m_CorrelationThresholdBaseline: "<<m_CorrelationThresholdBaseline<<std::endl;
@@ -842,7 +836,7 @@ namespace itk
   std::cout << " DONE" << std::endl;
   return;
   }
-  
+
   /**
    *
    */
@@ -864,9 +858,9 @@ namespace itk
     {
     outfile.open( GetReportFileName().c_str() );
     }
-  
+
   int DWICount, BaselineCount;
-  
+
   switch( m_ReportType)
     {
       case DWIQCInterlaceChecker::REPORT_TYPE_SIMPLE:
@@ -874,7 +868,7 @@ namespace itk
       outfile << "================================" << std::endl;
       outfile << "     Interlace-wise checking    " << std::endl;
       outfile << "================================" << std::endl;
-      
+
       outfile << "Parameters:" << std::endl;
       outfile << "  CorrelationThresholdBaseline: "
       << m_CorrelationThresholdBaseline  << std::endl;
@@ -888,7 +882,7 @@ namespace itk
       << m_TranslationThreshold      << std::endl;
       outfile << "  RotationThreshold: "        << m_RotationThreshold
       << std::endl;
-      
+
       outfile << std::endl << "======" << std::endl;
       outfile << "Interlace-wise Check Artifacts:" << std::endl;
       outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
@@ -897,7 +891,7 @@ namespace itk
       << "TranslationX\t" << std::setw(10) << "TranslationY\t"
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      
+
 
       std::cout << "MEHDI INTELACE INSIDE " << this->qcResults.size() << std::endl;
       for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
@@ -937,13 +931,13 @@ namespace itk
           }
         }
       break;
-      
+
       case DWIQCInterlaceChecker::REPORT_TYPE_VERBOSE:
       outfile << std::endl;
       outfile << "================================" << std::endl;
       outfile << "     Interlace-wise checking    " << std::endl;
       outfile << "================================" << std::endl;
-      
+
       outfile << "Parameters:" << std::endl;
       outfile << "  CorrelationThresholdBaseline: "
       << m_CorrelationThresholdBaseline  << std::endl;
@@ -957,22 +951,22 @@ namespace itk
       << m_TranslationThreshold      << std::endl;
       outfile << "  RotationThreshold: "        << m_RotationThreshold
       << std::endl;
-      
+
       outfile << std::endl << "======" << std::endl;
       outfile << "Interlace-wise motions and correlations: " << std::endl
       << std::endl;
-      
+
       outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
       << "AngleX\t" << std::setw(10) << "AngleY\t"
       << std::setw(10) << "AngleZ\t" << std::setw(10)
       << "TranslationX\t" << std::setw(10) << "TranslationY\t"
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      
+
       collectLeftDiffusionStatistics();     // update
       BaselineCount  = getBaselineNumber();
       DWICount    = getGradientNumber();
-      
+
       for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         outfile.precision(6);
@@ -1006,7 +1000,7 @@ namespace itk
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
         }
-      
+
       outfile << std::endl << "======" << std::endl;
       outfile << "Interlace-wise Check Artifacts:" << std::endl;
       outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
@@ -1015,7 +1009,7 @@ namespace itk
       << "TranslationX\t" << std::setw(10) << "TranslationY\t"
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      
+
       for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
         if ( !this->qcResults[i] )
@@ -1052,13 +1046,13 @@ namespace itk
           outfile.setf(std::ios_base::unitbuf);
           }
         }
-      
+
       outfile << std::endl << "======" << std::endl;
       outfile << "Left Diffusion Gradient information:" << std::endl;
       outfile << "\tbValueLeftNumber: "    << bValueLeftNumber    << std::endl;
       outfile << "\tbaselineLeftNumber: "  << baselineLeftNumber  << std::endl;
       outfile << "\tgradientDirLeftNumber: " << gradientDirLeftNumber  << std::endl;
-      
+
       outfile << std::endl << "\t# " << "\tDirVector" << std::setw(34)
       << std::setiosflags(std::ios::left) << "\tIncluded" << std::endl;
       for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
@@ -1075,11 +1069,11 @@ namespace itk
         << this->m_GradientDirectionContainer->at(i)[2] << " ]"
         << "\t" << this->qcResults[i] << std::endl;
         }
-      
+
       outfile << std::endl << "Left Gradient Direction Histogram: " << std::endl;
-      outfile << "\t# " << "\tDirVector" << std::setw(34) 
+      outfile << "\t# " << "\tDirVector" << std::setw(34)
       << std::setiosflags(std::ios::left) << "\tRepLeft" << std::endl;
-      
+
       for ( unsigned int i = 0; i < this->DiffusionDirHistOutput.size(); i++ )
         {
         if ( GetReportFileName().length() > 0 )
@@ -1099,7 +1093,7 @@ namespace itk
           }
         }
       break;
-      
+
       case DWIQCInterlaceChecker::REPORT_TYPE_EASY_PARSE:
       outfile << std::endl;
       outfile << "Interlacewise_checking  CorrelationThresholdBaseline "
@@ -1112,11 +1106,11 @@ namespace itk
       << m_CorrelationStdevTimesGradient << std::endl;
       outfile << "Interlacewise_checking  TranslationThreshold "
       << m_TranslationThreshold << std::endl;
-      outfile << "Interlacewise_checking  RotationThreshold " 
+      outfile << "Interlacewise_checking  RotationThreshold "
       << m_RotationThreshold << std::endl;
-      
+
       outfile << std::endl;
-      
+
       outfile << "Interlacewise_motions_corr"
       << "\t" << std::setw(10) << "GradientNum\t" << std::setw(10)
       << "AngleX\t" << std::setw(10) << "AngleY\t"
@@ -1124,11 +1118,11 @@ namespace itk
       << "TranslationX\t" << std::setw(10) << "TranslationY\t"
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      
+
       collectLeftDiffusionStatistics();     // update
       BaselineCount  = getBaselineNumber();
       DWICount    = getGradientNumber();
-      
+
       for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         outfile.precision(6);
@@ -1162,7 +1156,7 @@ namespace itk
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
         }
-      
+
       outfile << std::endl << "Interlacewise_artifacts"
       << "\t" << std::setw(10) << "GradientNum\t" << std::setw(10)
       << "AngleX\t" << std::setw(10) << "AngleY\t"
@@ -1170,7 +1164,7 @@ namespace itk
       << "TranslationX\t" << std::setw(10) << "TranslationY\t"
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      
+
       for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
         if ( !this->qcResults[i] )
@@ -1207,12 +1201,12 @@ namespace itk
           outfile.setf(std::ios_base::unitbuf);
           }
         }
-      
+
       outfile << std::endl;
       outfile << "Post_interlacewise\tbValueLeftNumber "    << bValueLeftNumber    << std::endl;
       outfile << "Post_interlacewise\tbaselineLeftNumber "  << baselineLeftNumber  << std::endl;
       outfile << "Post_interlacewise\tgradientDirLeftNumber " << gradientDirLeftNumber  << std::endl;
-      
+
       outfile << std::endl << "Post_interlacewise_diff_grad"
       << "\tGradientNum" << "\tx" << "\ty" << "\tz"<< std::setw(34)
       << std::setiosflags(std::ios::left) << "\tIncluded" << std::endl;
@@ -1230,11 +1224,11 @@ namespace itk
         << this->m_GradientDirectionContainer->at(i)[2] << "\t"
         << this->qcResults[i] << std::endl;
         }
-      
-      outfile << std::endl << "Post_interlacewise_grad_dir_histogram" 
-      << "\tGradientNum" << "\tx"  << "\ty" << "\tz" << std::setw(34) 
+
+      outfile << std::endl << "Post_interlacewise_grad_dir_histogram"
+      << "\tGradientNum" << "\tx"  << "\ty" << "\tz" << std::setw(34)
       << std::setiosflags(std::ios::left) << "\tRepLeft" << std::endl;
-      
+
       for ( unsigned int i = 0; i < this->DiffusionDirHistOutput.size(); i++ )
         {
         if ( GetReportFileName().length() > 0 )
@@ -1254,16 +1248,16 @@ namespace itk
           }
         }
       break;
-      
+
       case DWIQCInterlaceChecker::REPORT_TYPE_NO:
       default:
       break;
     }
-  
+
   outfile.close();
   return;
   }
-  
+
   /**
    *
    */
@@ -1274,7 +1268,7 @@ namespace itk
   {
   this->DiffusionDirHistOutput.clear();
   this->repetitionLeftNumber.clear();
-  
+
   for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
     {
     if ( DiffusionDirHistOutput.size() > 0 )
@@ -1302,7 +1296,7 @@ namespace itk
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
-        
+
         struDiffusionDir diffusionDir;
         diffusionDir.gradientDir = dir;
         if ( this->qcResults[i] )
@@ -1313,7 +1307,7 @@ namespace itk
           {
           diffusionDir.repetitionNumber = 0;
           }
-        
+
         DiffusionDirHistOutput.push_back(diffusionDir);
         }
       }
@@ -1323,7 +1317,7 @@ namespace itk
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
-      
+
       struDiffusionDir diffusionDir;
       diffusionDir.gradientDir = dir;
       if ( this->qcResults[i] )
@@ -1334,14 +1328,14 @@ namespace itk
         {
         diffusionDir.repetitionNumber = 0;
         }
-      
+
       DiffusionDirHistOutput.push_back(diffusionDir);
       }
     }
-  
+
   std::vector<double> dirNorm;
   dirNorm.clear();
-  
+
   this->baselineLeftNumber = 0;
   this->gradientLeftNumber = 0;
   // double modeTemp = 0.0;
@@ -1359,7 +1353,7 @@ namespace itk
       {
       this->repetitionLeftNumber.push_back(
                                            DiffusionDirHistOutput[i].repetitionNumber);
-      
+
       double normSqr
       = DiffusionDirHistOutput[i].gradientDir[0]
       * DiffusionDirHistOutput[i].gradientDir[0]
@@ -1367,7 +1361,7 @@ namespace itk
       * DiffusionDirHistOutput[i].gradientDir[1]
       + DiffusionDirHistOutput[i].gradientDir[2]
       * DiffusionDirHistOutput[i].gradientDir[2];
-      
+
       //   std::cout<<"modeSqr: " <<modeSqr <<std::endl;
       if ( dirNorm.size() > 0 )
         {
@@ -1397,10 +1391,10 @@ namespace itk
         }
       }
     }
-  
+
   //   std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
   //   std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
-  
+
   this->gradientDirLeftNumber = 0;
   this->gradientLeftNumber = 0;
   for ( unsigned int i = 0; i < this->repetitionLeftNumber.size(); i++ )
@@ -1411,12 +1405,12 @@ namespace itk
       this->gradientDirLeftNumber++;
       }
     }
-  
+
   this->bValueLeftNumber = dirNorm.size();
-  
+
   return;
   }
-  
+
   /**
    *
    */
@@ -1427,7 +1421,7 @@ namespace itk
   {
   std::vector<struDiffusionDir> DiffusionDirections;
   DiffusionDirections.clear();
-  
+
   for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
     {
     if ( DiffusionDirections.size() > 0 )
@@ -1452,11 +1446,11 @@ namespace itk
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
-        
+
         struDiffusionDir diffusionDir;
         diffusionDir.gradientDir = dir;
         diffusionDir.repetitionNumber = 1;
-        
+
         DiffusionDirections.push_back(diffusionDir);
         }
       }
@@ -1466,23 +1460,23 @@ namespace itk
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
-      
+
       struDiffusionDir diffusionDir;
       diffusionDir.gradientDir = dir;
       diffusionDir.repetitionNumber = 1;
-      
+
       DiffusionDirections.push_back(diffusionDir);
       }
     }
-  
+
   // std::cout<<"DiffusionDirections.size(): " <<
   // m_GradientDirectionContainer->size() <<std::endl;
-  
+
   std::vector<int> repetNum;
   repetNum.clear();
   std::vector<double> dirNorm;
   dirNorm.clear();
-  
+
   // double modeTemp = 0.0;
   for ( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
     {
@@ -1497,14 +1491,14 @@ namespace itk
     else
       {
       repetNum.push_back(DiffusionDirections[i].repetitionNumber);
-      
+
       double normSqr =  DiffusionDirections[i].gradientDir[0]
       * DiffusionDirections[i].gradientDir[0]
       + DiffusionDirections[i].gradientDir[1]
       * DiffusionDirections[i].gradientDir[1]
       + DiffusionDirections[i].gradientDir[2]
       * DiffusionDirections[i].gradientDir[2];
-      
+
       // std::cout<<"normSqr: " <<normSqr <<std::endl;
       if ( dirNorm.size() > 0 )
         {
@@ -1528,10 +1522,10 @@ namespace itk
         }
       }
     }
-  
+
   this->gradientDirNumber = repetNum.size();
   this->bValueNumber = dirNorm.size();
-  
+
   repetitionNumber = repetNum[0];
   for ( unsigned int i = 1; i < repetNum.size(); i++ )
     {
@@ -1544,13 +1538,13 @@ namespace itk
       repetitionNumber = -1;
       }
     }
-  
+
   this->gradientNumber = this->m_GradientDirectionContainer->size()
   - this->baselineNumber;
-  
+
   return;
   }
-  
+
   /**
    *
    */
@@ -1560,21 +1554,21 @@ namespace itk
   ::parseGradientDirections()
   {
   InputImageConstPointer inputPtr = this->GetInput();
-  
+
   itk::MetaDataDictionary imgMetaDictionary = inputPtr->GetMetaDataDictionary();      //
-  
+
   std::vector<std::string> imgMetaKeys
   = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
   std::string                              metaString;
-  
+
   m_GradientDirectionContainer = GradientDirectionContainerType::New();
   GradientDirectionType vect3d;
   for (; itKey != imgMetaKeys.end(); itKey++ )
     {
     itk::ExposeMetaData<std::string>(imgMetaDictionary, *itKey, metaString);
     // std::cout<<*itKey<<"  "<<metaString<<std::endl;
-    
+
     if ( itKey->find("DWMRI_gradient") != std::string::npos )
       {
       std::istringstream iss(metaString);
@@ -1586,13 +1580,13 @@ namespace itk
       b0 = atof( metaString.c_str() );
       }
     }
-  
+
   if ( b0 < 0.0 )
     {
     std::cout << "BValue not specified in header file" << std::endl;
     return;
     }
-  
+
   for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
     {
     bValues.push_back( static_cast<int>( (  this->m_GradientDirectionContainer
@@ -1613,20 +1607,20 @@ namespace itk
                                           m_GradientDirectionContainer->
                                           ElementAt(i)[2] ) * b0 + 0.5 ) );
     }
-  
+
   //     std::cout << "b values:" << std::endl;
   //     for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
   //     {
   //       std::cout << bValues[i] << std::endl;
   //     }
-  
+
   if ( m_GradientDirectionContainer->size() <= 6 )
     {
     std::cout << "Gradient Images Less than 6" << std::endl;
     return;
     }
   }
-  
+
   /**
    *
    */
@@ -1637,11 +1631,11 @@ namespace itk
                          int threadId )
   {
   itkDebugMacro(<< "Actually executing");
-  
+
   // Get the input and output pointers
   InputImageConstPointer inputPtr = this->GetInput();
   OutputImagePointer     outputPtr = this->GetOutput();
-  
+
   int gradientLeft = 0;
   gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
   if ( gradientLeft == 0 )
@@ -1649,34 +1643,34 @@ namespace itk
     std::cout << "0 gradient left" << std::endl;
     return;
     }
-  
+
   // Define/declare an iterator that will walk the output region for this
   // thread.
   typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
-  
+
   OutputIterator outIt(outputPtr, outputRegionForThread);
-  
+
   // Define a few indices that will be used to translate from an input pixel
   // to an output pixel
   typename TImageType::IndexType outputIndex;
   typename TImageType::IndexType inputIndex;
-  
+
   // support progress methods/callbacks
   ProgressReporter progress( this, threadId,
                             outputRegionForThread.GetNumberOfPixels() );
-  
+
   typename TImageType::PixelType value;
   value.SetSize( gradientLeft );
-  
+
   // walk the output region, and sample the input image
   while ( !outIt.IsAtEnd() )
     {
     // determine the index of the output pixel
     outputIndex = outIt.GetIndex();
-    
+
     // determine the input pixel location associated with this output pixel
     inputIndex = outputIndex;
-    
+
     int element = 0;
     for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
       {
@@ -1689,11 +1683,11 @@ namespace itk
     // copy the input pixel to the output
     outIt.Set( value);
     ++outIt;
-    
+
     progress.CompletedPixel();
     }
   }
-  
+
   /**
    *
    */
@@ -1707,29 +1701,29 @@ namespace itk
     // Get the input and output pointers
     InputImageConstPointer inputPtr = this->GetInput();
     OutputImagePointer     outputPtr = this->GetOutput();
-    
+
     unsigned int gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
     if ( gradientLeft == inputPtr->GetVectorLength() )
       {
       std::cout << "No gradient excluded" << std::endl;
       return NULL;
       }
-    
+
     // Define/declare an iterator that will walk the output region for this
     // thread.
     // meta data
     itk::MetaDataDictionary outputMetaDictionary;
-    
+
     itk::MetaDataDictionary imgMetaDictionary
     = inputPtr->GetMetaDataDictionary();
     std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
     std::string                              metaString;
-    
+
     //  measurement frame
     if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
       {
-      
+
       // Meausurement frame
       std::vector<std::vector<double> > nrrdmf;
       itk::ExposeMetaData<std::vector<std::vector<double> > >(
@@ -1741,7 +1735,7 @@ namespace itk
                                                                    "NRRD_measurement frame",
                                                                    nrrdmf);
       }
-    
+
     // modality
     if ( imgMetaDictionary.HasKey("modality") )
       {
@@ -1750,7 +1744,7 @@ namespace itk
                                             "modality",
                                             metaString);
       }
-    
+
     //     // thickness
     //     if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
     //     {
@@ -1760,7 +1754,7 @@ namespace itk
     //       itk::EncapsulateMetaData<double>( outputMetaDictionary,
     // "NRRD_thickness[2]", thickness);
     //     }
-    
+
     // centerings
     if ( imgMetaDictionary.HasKey("NRRD_centerings[0]") )
       {
@@ -1783,7 +1777,7 @@ namespace itk
                                             "NRRD_centerings[2]",
                                             metaString);
       }
-    
+
     // b-value
     if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
       {
@@ -1792,7 +1786,7 @@ namespace itk
                                             "DWMRI_b-value",
                                             metaString);
       }
-    
+
     // gradient vectors
     int temp = 0;
     for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
@@ -1802,7 +1796,7 @@ namespace itk
         std::ostringstream ossKey;
         ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0')
         << temp;
-        
+
         std::ostringstream ossMetaString;
         ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(
@@ -1818,7 +1812,7 @@ namespace itk
         << std::setprecision(6) << std::setiosflags(
                                                     std::ios::right)
         << this->m_GradientDirectionContainer->ElementAt(i)[2];
-        
+
         // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
         itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(
                                               ), ossMetaString.str() );
@@ -1827,32 +1821,32 @@ namespace itk
       }
     excludedDwiImage = TImageType::New();
     excludedDwiImage->CopyInformation(inputPtr);
-    excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );      
+    excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
     excludedDwiImage->SetVectorLength(inputPtr->GetVectorLength() - gradientLeft);
     excludedDwiImage->Allocate();
     excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
-    
+
     typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
     OutputIterator outIt( excludedDwiImage,
                          excludedDwiImage->GetLargestPossibleRegion() );
-    
+
     // Define a few indices that will be used to translate from an input pixel
     // to an output pixel
     typename TImageType::IndexType outputIndex;
     typename TImageType::IndexType inputIndex;
-    
+
     typename TImageType::PixelType value;
     value.SetSize( inputPtr->GetVectorLength() - gradientLeft );
-    
+
     // walk the output region, and sample the input image
     while ( !outIt.IsAtEnd() )
       {
       // determine the index of the output pixel
       outputIndex = outIt.GetIndex();
-      
+
       // determine the input pixel location associated with this output pixel
       inputIndex = outputIndex;
-      
+
       int element = 0;
       for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
@@ -1868,7 +1862,7 @@ namespace itk
       }
     return excludedDwiImage;
     }
-  
+
   return NULL;
   }
 } // namespace itk

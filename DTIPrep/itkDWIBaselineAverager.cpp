@@ -355,7 +355,6 @@ namespace itk
               //  It may be possible to extract the baseline images only once.
               //  This code could be made into a separate function so that it is not replicated.
               // std::cout<<"registering all baseline onto averaged .";
-              InputImageConstPointer inputPtr = this->GetInput();
               // copy baseline images into baselineContainer
               std::vector<floatImageType::Pointer> baselineContainer;
                 {
@@ -421,7 +420,6 @@ namespace itk
               //  It may be possible to extract the baseline images only once.
               //  This code could be made into a separate function so that it is not replicated.
               // std::cout<<"registering all baseline onto averaged .";
-              InputImageConstPointer inputPtr = this->GetInput();
               // copy baseline images into baselineContainer
               std::vector<UnsignedImageType::Pointer> baselineContainer;
                 {
