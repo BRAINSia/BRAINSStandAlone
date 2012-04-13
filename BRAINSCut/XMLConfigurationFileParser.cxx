@@ -1,4 +1,4 @@
-#include "NetConfigurationParser.h"
+#include "XMLConfigurationFileParser.h"
 #include "ApplyModel.h"
 #include "NeuralParams.h"
 #include "TrainingPrameters.h"
@@ -15,7 +15,7 @@
     }
 
 void
-NetConfigurationParser::StartElement(void *userData,
+XMLConfigurationFileParser::StartElement(void *userData,
                                      const XML_Char *name,
                                      const XML_Char * *atts)
 {
@@ -45,7 +45,7 @@ NetConfigurationParser::StartElement(void *userData,
   // do them here to avoid duplication below.
   //
   DataSet *         dataSet = dynamic_cast<DataSet *>( current );
-  NetConfiguration *Local_netConfiguration = dynamic_cast<NetConfiguration *>( current );
+  BRAINSCutConfiguration *Local_netConfiguration = dynamic_cast<BRAINSCutConfiguration *>( current );
 
   if( Name == "AutoSegProcessDescription" )
     {
@@ -343,7 +343,7 @@ NetConfigurationParser::StartElement(void *userData,
 }
 
 void
-NetConfigurationParser::EndElement(void *userData,
+XMLConfigurationFileParser::EndElement(void *userData,
                                    const XML_Char *name)
 {
   std::list<XMLElementContainer *> *stack =
@@ -354,14 +354,14 @@ NetConfigurationParser::EndElement(void *userData,
     }
 }
 
-NetConfiguration *
-NetConfigurationParser::GetNetConfiguration()
+BRAINSCutConfiguration *
+XMLConfigurationFileParser::GetNetConfiguration()
 {
   return netConfiguration;
 }
 
 void
-NetConfigurationParser::ReadXML()
+XMLConfigurationFileParser::ReadXML()
 {
   std::list<XMLElementContainer *> netConfigurationBuffer;
   netConfigurationBuffer.push_front( netConfiguration );
@@ -374,7 +374,7 @@ NetConfigurationParser::ReadXML()
  * Validation function merged into this class from GenerateProbability class
  */
 void
-NetConfigurationParser::ValidateDataSets()
+XMLConfigurationFileParser::ValidateDataSets()
 {
   // HACK:  Needed to speed up testing.
   // std::list<DataSet *> dataSets = netConfiguration->GetTrainDataSets();
@@ -385,7 +385,7 @@ NetConfigurationParser::ValidateDataSets()
   // return true;
 
   /*
-   * chage validation part to check the simple file existance checking
+   * TODO:: change validation part to check the simple file existance checking
    *
    *
   for( std::list<DataSet *>::iterator it = dataSets.begin();

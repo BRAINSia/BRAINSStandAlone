@@ -24,17 +24,13 @@ BRAINSCutApplyModel
   SetAtlasDataSet();
   SetRhoPhiThetaFromNetConfiguration();
 
-  SetANNModelConfiguration();
-  SetANNTestingSSEFilename();
   SetGradientSizeFromNetConfiguration();
-  SetANNOutputThresholdFromNetConfiguration();
   SetTrainIterationFromNetConfiguration();
-
   SetApplyDataSetFromNetConfiguration();
-  SetANNModelFilenameFromNetConfiguration();
+
   SetGaussianSmoothingSigmaFromNetConfiguration();
 
-  SetRandomForestModelFilenameFromNetConfiguration();
+  /** set default: ANN **/
   openCVANN = new OpenCVMLPType();
 
   SetMethod( "ANN" );
@@ -53,14 +49,19 @@ BRAINSCutApplyModel
 {
   if( method ==  "ANN")
     {
+    SetANNModelConfiguration();
+    SetANNTestingSSEFilename();
+    SetANNOutputThresholdFromNetConfiguration();
+    SetANNModelFilenameFromNetConfiguration();
     ReadANNModelFile();
     }
   else if( method == "RandomForest")
     {
+    SetRandomForestModelFilenameFromNetConfiguration();
     ReadRandomForestModelFile();
     }
 
-  typedef NetConfiguration::ApplyDataSetListType::iterator  ApplySubjectIteratorType;
+  typedef BRAINSCutConfiguration::ApplyDataSetListType::iterator  ApplySubjectIteratorType;
 
   normalization = GetNormalizationFromNetConfiguration();
 
@@ -250,10 +251,6 @@ BRAINSCutApplyModel
                                      BinaryImageType>( labelImage,
                                                       0,
                                                       255);
-
-  /* threshold */
-  //maskVolume = ThresholdImageAtLower( labelImage, 1);
-
   /* Get One label */
   maskVolume = GetOneConnectedRegion( maskVolume );
 

@@ -1,7 +1,7 @@
 #ifndef BRAINSCutPrimary_h
 #define BRAINSCutPrimary_h
 
-#include "NetConfiguration.h"
+#include "BRAINSCutConfiguration.h"
 #include "NeuralParams.h"
 #include "itkIO.h"
 
@@ -78,7 +78,7 @@ public:
 
   void SetNetConfiguration();
 
-  NetConfiguration * GetNetConfiguration();
+  BRAINSCutConfiguration * GetNetConfiguration();
 
   void SetNetConfigurationFilename(const std::string filename);
 
@@ -136,7 +136,7 @@ public:
 
 protected:
 
-  NetConfiguration BRAINSCutNetConfiguration;
+  BRAINSCutConfiguration BRAINSCutNetConfiguration;
   NeuralParams *   annModelConfiguration;
 
   /** atlas data set*/
