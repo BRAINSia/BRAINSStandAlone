@@ -286,9 +286,8 @@ static void RescaleFunctionLocal( std::vector<FloatImageType::Pointer> & localLi
 
 static std::vector<bool> FindDuplicateImages(const std::vector<FloatImagePointer> candidateSameImageList )
 {
-  const double THREASHOLD_CUTOFF = 0.999;  // Images with higher correlation are
-
-  // considered duplicate.
+  // Images with higher correlation are considered soo much the same that they are duplicates.
+  const double IMAGES_SAME_CORRELATION_CUTOFF = 0.98;
 
   typedef itk::IdentityTransform<double, FloatImageType::ImageDimension> IDTYPE;
   IDTYPE::Pointer myID = IDTYPE::New();
@@ -312,16 +311,19 @@ static std::vector<bool> FindDuplicateImages(const std::vector<FloatImagePointer
       const double correlationValue = vcl_abs(myNormalizer->GetValue(myID->GetParameters() ) );
       std::cout << "Correlation value between image " << start
                 << " and image " << q << ": " << correlationValue << std::endl;
-      if( correlationValue > THREASHOLD_CUTOFF )
+      if( correlationValue > IMAGES_SAME_CORRELATION_CUTOFF )
         {
         isDuplicated[q] = true;
         }
       }
     }
   for( unsigned int q = 0; q < candidateSameImageList.size(); q++ )
+  {
+    if (isDuplicated[q] == true)
     {
-    std::cout << "Removing highly correlated image " << static_cast<int>(isDuplicated[q]) << std::endl;
+      std::cout << "Removing highly correlated image :" << q << std::endl;
     }
+  }
   return isDuplicated;
 }
 
