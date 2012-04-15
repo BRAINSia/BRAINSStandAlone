@@ -1,12 +1,12 @@
 #ifndef BRAINSCutGenerateRegistrations_h
 #define BRAINSCutGenerateRegistrations_h
 
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 
 typedef itk::Image<unsigned char, DIMENSION> BinaryImageType;
 typedef BinaryImageType::Pointer             BinaryImagePointer;
 
-class BRAINSCutGenerateRegistrations : public BRAINSCutPrimary
+class BRAINSCutGenerateRegistrations : public BRAINSCutDataHandler
 {
 public:
   BRAINSCutGenerateRegistrations( std::string netConfigurationFilename);
@@ -16,7 +16,7 @@ public:
   void GenerateRegistrations();
 
 private:
-  //std::string atlasImage @ BRAINSCutPrimary.h;
+  //std::string atlasImage @ BRAINSCutDataHandler.h;
   bool atlasToSubjectRegistraionOn;
 
   std::list<DataSet *> subjectDataSets;

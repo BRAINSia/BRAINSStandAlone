@@ -1,11 +1,11 @@
 #ifndef BRAINSCutGenerateProbability_h
 #define BRAINSCutGenerateProbability_h
 
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 #include "BRAINSCutConfiguration.h"
 #include <itkIO.h>
 
-class BRAINSCutGenerateProbability : private BRAINSCutPrimary
+class BRAINSCutGenerateProbability : private BRAINSCutDataHandler
 {
 public:
   BRAINSCutGenerateProbability(std::string netConfigurationFilename);

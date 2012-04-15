@@ -1,5 +1,5 @@
-#ifndef BRAINSCutPrimary_h
-#define BRAINSCutPrimary_h
+#ifndef BRAINSCutDataHandler_h
+#define BRAINSCutDataHandler_h
 
 #include "BRAINSCutConfiguration.h"
 #include "NeuralParams.h"
@@ -70,11 +70,11 @@ const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
  * BRAINSCut Primary Class Starts here
  */
 
-class BRAINSCutPrimary
+class BRAINSCutDataHandler
 {
 public:
-  BRAINSCutPrimary(){};
-  BRAINSCutPrimary(std::string netConfigurationFilename);
+  BRAINSCutDataHandler(){};
+  BRAINSCutDataHandler(std::string netConfigurationFilename);
 
   void SetNetConfiguration();
 

@@ -1,10 +1,10 @@
 #ifndef BRAINSCutCreateVectorModel_h
 #define BRAINSCutCreateVectorModel_h
 
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 #include "FeatureInputVector.h"
 
-class BRAINSCutCreateVector : public BRAINSCutPrimary
+class BRAINSCutCreateVector : public BRAINSCutDataHandler
 {
 public:
   BRAINSCutCreateVector(std::string netConfigurationFilename);

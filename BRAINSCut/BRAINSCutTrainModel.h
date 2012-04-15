@@ -2,7 +2,7 @@
 #include "BRAINSCutVectorTrainingSet.h"
 #include "TrainingPrameters.h"
 
-class BRAINSCutTrainModel : public BRAINSCutPrimary
+class BRAINSCutTrainModel : public BRAINSCutDataHandler
 {
 public:
   BRAINSCutTrainModel( std::string netConfigurationFilename );

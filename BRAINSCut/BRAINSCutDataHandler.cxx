@@ -1,12 +1,12 @@
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 #include "XMLConfigurationFileParser.h"
 
 #include "GenericTransformImage.h"
 
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
 /** constructors */
-BRAINSCutPrimary
-::BRAINSCutPrimary( std::string netConfigurationFilename )
+BRAINSCutDataHandler
+::BRAINSCutDataHandler( std::string netConfigurationFilename )
 {
   try
     {
@@ -21,7 +21,7 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetNetConfiguration()
 {
   try
@@ -42,14 +42,14 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetAtlasDataSet()
 {
   atlasDataSet = BRAINSCutNetConfiguration.GetAtlasDataSet();
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetAtlasFilename()
 {
   atlasFilename=atlasDataSet->GetImageFilenameByType( registrationImageTypeToUse) ;
@@ -58,14 +58,14 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetAtlasImage()
 {
   atlasImage = ReadImageByFilename( atlasFilename );
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetRhoPhiThetaFromNetConfiguration()
 {
   rho = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("rho") );
@@ -75,28 +75,28 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetNetConfigurationFilename(const std::string filename)
 {
   NetConfigurationFilename = filename;
 }
 
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetNetConfigurationFilename()
 {
   return NetConfigurationFilename;
 }
 
 DataSet::StringVectorType
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetROIIDsInOrder()
 {
   return roiIDsInOrder;
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetRegionsOfInterestFromNetConfiguration()
 {
   roiDataList = BRAINSCutNetConfiguration.Get<ProbabilityMapList>("ProbabilityMapList");
@@ -108,7 +108,7 @@ BRAINSCutPrimary
 
 /** registration related */
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetRegistrationParametersFromNetConfiguration()
 {
 
@@ -125,7 +125,7 @@ BRAINSCutPrimary
 }
 
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetSubjectToAtlasRegistrationFilename( DataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
@@ -134,7 +134,7 @@ BRAINSCutPrimary
 }
 
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetAtlasToSubjectRegistrationFilename( DataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
@@ -143,7 +143,7 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
                                     DataSet& subject)
 {
@@ -177,7 +177,7 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
 {
   DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
@@ -193,7 +193,7 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetDeformedROIs( std::map<std::string, WorkingImagePointer>& warpedROIs,
                    DataSet& subject)
 {
@@ -229,21 +229,21 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetANNModelConfiguration()
 {
   annModelConfiguration = BRAINSCutNetConfiguration.Get<NeuralParams>("NeuralNetParams");
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetGradientSizeFromNetConfiguration()
 {
   gradientSize = annModelConfiguration->GetAttribute<IntValue>("GradientProfileSize");
 }
 
 WorkingImagePointer
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::ReadImageByFilename( const std::string  filename )
 {
   WorkingImagePointer readInImage;
@@ -260,7 +260,7 @@ BRAINSCutPrimary
 
 inline
 DisplacementFieldType::Pointer
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetDeformationField( std::string filename)
 {
   const bool useTransform( filename.find(".mat") != std::string::npos );
@@ -278,7 +278,7 @@ BRAINSCutPrimary
 
 inline
 GenericTransformType::Pointer
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetGenericTransform( std::string filename)
 {
   const bool useDeformation( filename.find(".mat") == std::string::npos );
@@ -291,7 +291,7 @@ BRAINSCutPrimary
 }
 
 bool
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetNormalizationFromNetConfiguration()
 {
   std::string normalizationString;
@@ -316,7 +316,7 @@ BRAINSCutPrimary
 }
 
 WorkingImagePointer
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SmoothImage( const WorkingImagePointer image, const float GaussianValue)
 {
   if( GaussianValue < 0 + FLOAT_TOLERANCE )
@@ -341,7 +341,7 @@ BRAINSCutPrimary
 }
 /** model file name */
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetModelBaseName( )
 {
   std::string basename;
@@ -358,7 +358,7 @@ BRAINSCutPrimary
 }
 
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetANNModelFilenameAtIteration( const int iteration)
 {
   SetANNModelFilenameAtIteration( iteration );
@@ -366,7 +366,7 @@ BRAINSCutPrimary
 }
 
 void
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::SetANNModelFilenameAtIteration( const int iteration)
 {
   ANNModelFilename = GetModelBaseName();
@@ -377,7 +377,7 @@ BRAINSCutPrimary
 }
 
 std::string
-BRAINSCutPrimary
+BRAINSCutDataHandler
 ::GetRFModelFilename( int depth,
                       int NTrees)
 {

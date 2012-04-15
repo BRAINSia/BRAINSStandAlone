@@ -1,13 +1,13 @@
 #ifndef BRAINSCutApplyModel_h
 #define BRAINSCutApplyModel_h
 
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 #include "FeatureInputVector.h"
 
 typedef itk::Image<unsigned char, DIMENSION> BinaryImageType;
 typedef BinaryImageType::Pointer             BinaryImagePointer;
 
-class BRAINSCutApplyModel : public BRAINSCutPrimary
+class BRAINSCutApplyModel : public BRAINSCutDataHandler
 {
 public:
   BRAINSCutApplyModel( ){};

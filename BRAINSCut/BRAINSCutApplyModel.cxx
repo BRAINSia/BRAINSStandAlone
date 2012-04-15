@@ -14,7 +14,7 @@
 BRAINSCutApplyModel
 ::BRAINSCutApplyModel( std::string netConfigurationFilename)
   : 
-    BRAINSCutPrimary( netConfigurationFilename )
+    BRAINSCutDataHandler( netConfigurationFilename )
   // ANNModelFilename(NULL)
 {
   // TODO Take this apart to generate registration one by one!

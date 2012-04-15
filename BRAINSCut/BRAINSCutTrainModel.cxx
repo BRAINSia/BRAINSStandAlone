@@ -4,7 +4,7 @@
 
 BRAINSCutTrainModel
 ::BRAINSCutTrainModel( std::string netConfigurationFIlename)
-  : BRAINSCutPrimary( netConfigurationFIlename ),
+  : BRAINSCutDataHandler( netConfigurationFIlename ),
   trainIteration(0),
   trainEpochIteration(0),
   trainDesiredError(0.0),

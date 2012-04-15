@@ -6,7 +6,7 @@
 
 /** constructors */
 BRAINSCutGenerateProbability
-::BRAINSCutGenerateProbability( std::string netConfigurationFilename ) : BRAINSCutPrimary( netConfigurationFilename )
+::BRAINSCutGenerateProbability( std::string netConfigurationFilename ) : BRAINSCutDataHandler( netConfigurationFilename )
 {
   try
     {
