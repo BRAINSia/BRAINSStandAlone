@@ -45,7 +45,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
   // do them here to avoid duplication below.
   //
   DataSet *         dataSet = dynamic_cast<DataSet *>( current );
-  BRAINSCutConfiguration *Local_netConfiguration = dynamic_cast<BRAINSCutConfiguration *>( current );
+  BRAINSCutConfiguration *Local_modelConfigurationFilename = dynamic_cast<BRAINSCutConfiguration *>( current );
 
   if( Name == "AutoSegProcessDescription" )
     {
@@ -65,7 +65,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
         currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("DataSet", "OutputDir") );
         }
 
-      Local_netConfiguration->AddDataSet(currentDataSet);
+      Local_modelConfigurationFilename->AddDataSet(currentDataSet);
       stack->push_front(currentDataSet);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
@@ -79,7 +79,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     try
       {
       ProbabilityMapList *mapList =
-        Local_netConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
+        Local_modelConfigurationFilename->Get<ProbabilityMapList>("ProbabilityMapList");
       ProbabilityMapParser *map = new ProbabilityMapParser;
       std::string           structureID( attribMap.Get("ProbabilityMap",
                                                        "StructureID") );
@@ -136,7 +136,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       {
 
       RegistrationConfigurationParser *params =
-        Local_netConfiguration->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
+        Local_modelConfigurationFilename->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
       params->SetAttribute<StringValue>( "ImageTypeToUse",
                                          attribMap.Get("RegistrationConfiguration",
                                                        "ImageTypeToUse") );
@@ -236,7 +236,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       np->SetAttribute<StringValue>( "Normalization",
                                      attribMap.Get("NeuralNetParams",
                                                    "Normalization") );
-      Local_netConfiguration->Add(np, Name);
+      Local_modelConfigurationFilename->Add(np, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -266,7 +266,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "MaxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxTreeCount") );
-      Local_netConfiguration->Add(ap, Name);
+      Local_modelConfigurationFilename->Add(ap, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -305,7 +305,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "NumberOfHiddenNodes",
                                   attribMap.Get("ANNParameters",
                                                 "NumberOfHiddenNodes") );
-      Local_netConfiguration->Add(ap, Name);
+      Local_modelConfigurationFilename->Add(ap, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -325,7 +325,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
                                     attribMap.GetIfExist("ApplyModel",
                                                   "GaussianSmoothingSigma") );
 
-      Local_netConfiguration->Add(am, Name);
+      Local_modelConfigurationFilename->Add(am, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -357,16 +357,16 @@ XMLConfigurationFileParser::EndElement(void *userData,
 BRAINSCutConfiguration *
 XMLConfigurationFileParser::GetNetConfiguration()
 {
-  return netConfiguration;
+  return modelConfigurationFilename;
 }
 
 void
 XMLConfigurationFileParser::ReadXML()
 {
-  std::list<XMLElementContainer *> netConfigurationBuffer;
-  netConfigurationBuffer.push_front( netConfiguration );
+  std::list<XMLElementContainer *> modelConfigurationFilenameBuffer;
+  modelConfigurationFilenameBuffer.push_front( modelConfigurationFilename );
 
-  SetUserData( &netConfigurationBuffer);
+  SetUserData( &modelConfigurationFilenameBuffer);
   Parse();
 }
 
@@ -377,7 +377,7 @@ void
 XMLConfigurationFileParser::ValidateDataSets()
 {
   // HACK:  Needed to speed up testing.
-  // std::list<DataSet *> dataSets = netConfiguration->GetTrainDataSets();
+  // std::list<DataSet *> dataSets = modelConfigurationFilename->GetTrainDataSets();
 
   std::cout << " ***************************************************" << std::endl
             << " Validation has not been implimented yet" << std::endl

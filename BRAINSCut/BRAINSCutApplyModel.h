@@ -11,7 +11,7 @@ class BRAINSCutApplyModel : public BRAINSCutDataHandler
 {
 public:
   BRAINSCutApplyModel( ){};
-  BRAINSCutApplyModel( std::string netConfigurationFilename);
+  BRAINSCutApplyModel( std::string modelConfigurationFilenameFilename);
 
   void SetApplyDataSetFromNetConfiguration();
   void SetANNModelFilenameFromNetConfiguration();

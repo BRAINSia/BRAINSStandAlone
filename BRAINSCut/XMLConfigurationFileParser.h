@@ -66,7 +66,7 @@ public:
 private:
   void ReadXML();
 
-  BRAINSCutConfiguration * netConfiguration;
+  BRAINSCutConfiguration * modelConfigurationFilename;
 
 };
 

@@ -7,7 +7,7 @@
 class BRAINSCutCreateVector : public BRAINSCutDataHandler
 {
 public:
-  BRAINSCutCreateVector(std::string netConfigurationFilename);
+  BRAINSCutCreateVector(std::string modelConfigurationFilenameFilename);
 
   void SetTrainingDataSetFromNetConfiguration();
 

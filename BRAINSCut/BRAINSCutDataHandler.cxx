@@ -1,16 +1,16 @@
 #include "BRAINSCutDataHandler.h"
 #include "XMLConfigurationFileParser.h"
-
 #include "GenericTransformImage.h"
 
 #include <itkSmoothingRecursiveGaussianImageFilter.h>
 /** constructors */
 BRAINSCutDataHandler
-::BRAINSCutDataHandler( std::string netConfigurationFilename )
+::BRAINSCutDataHandler( std::string modelConfigurationFilenameFilename )
+  :BRAINSCutConfiguration()
 {
   try
     {
-    SetNetConfigurationFilename( netConfigurationFilename );
+    SetNetConfigurationFilename( modelConfigurationFilenameFilename );
     SetNetConfiguration();
     }
   catch( BRAINSCutExceptionStringHandler& e)
@@ -28,7 +28,7 @@ BRAINSCutDataHandler
     {
     std::list<XMLElementContainer *> elementList;
 
-    elementList.push_front( &BRAINSCutNetConfiguration );
+    elementList.push_front( this );
 
     XMLConfigurationFileParser BRIANSCutXMLConfigurationFileParser = XMLConfigurationFileParser( NetConfigurationFilename );
     BRIANSCutXMLConfigurationFileParser.SetUserData( &elementList );
@@ -45,13 +45,8 @@ void
 BRAINSCutDataHandler
 ::SetAtlasDataSet()
 {
-  atlasDataSet = BRAINSCutNetConfiguration.GetAtlasDataSet();
-}
+  atlasDataSet = this->GetAtlasDataSet();
 
-void
-BRAINSCutDataHandler
-::SetAtlasFilename()
-{
   atlasFilename=atlasDataSet->GetImageFilenameByType( registrationImageTypeToUse) ;
   atlasBinaryFilename=atlasDataSet->GetMaskFilenameByType( "RegistrationROI" );
   std::cout<<atlasBinaryFilename<<std::endl;
@@ -99,7 +94,7 @@ void
 BRAINSCutDataHandler
 ::SetRegionsOfInterestFromNetConfiguration()
 {
-  roiDataList = BRAINSCutNetConfiguration.Get<ProbabilityMapList>("ProbabilityMapList");
+  roiDataList = this->Get<ProbabilityMapList>("ProbabilityMapList");
   roiIDsInOrder = roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
 
   std::sort( roiIDsInOrder.begin(), roiIDsInOrder.end() ); // get l_caudate, l_globus, .. , r_caudate, r_globus..
@@ -113,7 +108,7 @@ BRAINSCutDataHandler
 {
 
   registrationParser =
-    BRAINSCutNetConfiguration.Get<RegistrationConfigurationParser>("RegistrationConfiguration");
+    this->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
 
   registrationImageTypeToUse =
     std::string( registrationParser->GetAttribute<StringValue>( "ImageTypeToUse") );
@@ -232,7 +227,7 @@ void
 BRAINSCutDataHandler
 ::SetANNModelConfiguration()
 {
-  annModelConfiguration = BRAINSCutNetConfiguration.Get<NeuralParams>("NeuralNetParams");
+  annModelConfiguration = this->Get<NeuralParams>("NeuralNetParams");
 }
 
 void
@@ -392,4 +387,52 @@ BRAINSCutDataHandler
   std::string filename = basename + "D"+tempDepth+"NF"+tempNTrees;
 
   return filename;
+}
+
+std::string
+BRAINSCutDataHandler
+::GetAtlasFilename()
+{
+  return atlasFilename;
+}
+
+std::string
+BRAINSCutDataHandler
+::GetAtlasBinaryFilename()
+{
+  return atlasBinaryFilename;
+}
+
+int
+BRAINSCutDataHandler
+::GetROIAutoDilateSize()
+{
+  return roiAutoDilateSize;
+}
+
+unsigned int
+BRAINSCutDataHandler
+::GetROICount()
+{
+  return roiCount;
+}
+
+WorkingImagePointer
+BRAINSCutDataHandler
+::GetAtlasImage()
+{
+  return atlasImage;
+}
+ProbabilityMapList *  
+BRAINSCutDataHandler
+::GetROIDataList()
+{
+  return roiDataList;
+}
+
+DataSet *
+BRAINSCutDataHandler
+::GetAtlasDataSet()
+{
+  return atlasDataSet;
 }

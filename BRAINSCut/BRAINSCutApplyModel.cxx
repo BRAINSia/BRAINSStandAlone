@@ -12,9 +12,9 @@
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
 
 BRAINSCutApplyModel
-::BRAINSCutApplyModel( std::string netConfigurationFilename)
+::BRAINSCutApplyModel( std::string modelConfigurationFilenameFilename)
   : 
-    BRAINSCutDataHandler( netConfigurationFilename )
+    BRAINSCutDataHandler( modelConfigurationFilenameFilename )
   // ANNModelFilename(NULL)
 {
   // TODO Take this apart to generate registration one by one!

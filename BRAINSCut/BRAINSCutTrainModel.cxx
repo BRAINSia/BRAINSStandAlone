@@ -3,8 +3,8 @@
 #include "fstream.h"
 
 BRAINSCutTrainModel
-::BRAINSCutTrainModel( std::string netConfigurationFIlename)
-  : BRAINSCutDataHandler( netConfigurationFIlename ),
+::BRAINSCutTrainModel( std::string modelConfigurationFilenameFIlename)
+  : BRAINSCutDataHandler( modelConfigurationFilenameFIlename ),
   trainIteration(0),
   trainEpochIteration(0),
   trainDesiredError(0.0),

@@ -5,7 +5,7 @@
 class BRAINSCutTrainModel : public BRAINSCutDataHandler
 {
 public:
-  BRAINSCutTrainModel( std::string netConfigurationFilename );
+  BRAINSCutTrainModel( std::string modelConfigurationFilenameFilename );
 
   /** train */
   void InitializeNeuralNetwork( );

@@ -276,7 +276,7 @@ Parser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "MaxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxTreeCount") );
-      Local_netConfiguration->Add(ap, Name);
+      Local_modelConfigurationFilename->Add(ap, Name);
       }
   else if( Name == "ANNParameters" )
     {
@@ -346,7 +346,7 @@ Parser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "maxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "maxTreeCount") );
-      Local_netConfiguration->Add(ap, Name);
+      Local_modelConfigurationFilename->Add(ap, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {

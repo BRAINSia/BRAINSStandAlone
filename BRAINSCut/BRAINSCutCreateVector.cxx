@@ -1,8 +1,8 @@
 #include "BRAINSCutCreateVector.h"
 
 BRAINSCutCreateVector
-::BRAINSCutCreateVector(std::string netConfigurationFilename)
-  : BRAINSCutDataHandler( netConfigurationFilename)
+::BRAINSCutCreateVector(std::string modelConfigurationFilenameFilename)
+  : BRAINSCutDataHandler( modelConfigurationFilenameFilename)
 {
   //GenerateRegistrations(BRAINSCutNetConfiguration, true, false, 1);
 

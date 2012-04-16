@@ -5,14 +5,14 @@
 #include "BRAINSCutConfiguration.h"
 #include <itkIO.h>
 
-class BRAINSCutGenerateProbability : private BRAINSCutDataHandler
+class BRAINSCutGenerateProbability 
 {
 public:
-  BRAINSCutGenerateProbability(std::string netConfigurationFilename);
+  BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler);
 
   BRAINSCutConfiguration * GetNetConfiguration();
 
-  void SetNetConfiguration( BRAINSCutConfiguration * netConfiguration);
+  void SetNetConfiguration( BRAINSCutConfiguration * modelConfigurationFilename);
 
   void SetNetConfigurationFilename(std::string filename);
 
@@ -27,6 +27,7 @@ public:
 
 
 private:
+  BRAINSCutDataHandler myDataHandler;
 
   /** DataSets */
   std::list<DataSet *> trainingDataSetList;

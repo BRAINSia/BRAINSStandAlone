@@ -32,6 +32,14 @@ public:
 
   const DataSet::StringVectorType GetImageTypes() const;
 
+  // Set/Get Functions
+  //
+  void SetImageTypeToUse( std::string imageTypeToUse );
+  std::string GetImageTypeToUse();
+
+  void SetRegistrationID( std::string registrationID );
+  std::string GetRegistrationID();
+
 private:
   std::string ImageTypeToUse;
   std::string RegistrationID;

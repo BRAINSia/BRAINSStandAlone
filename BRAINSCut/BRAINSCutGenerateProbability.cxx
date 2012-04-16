@@ -1,22 +1,23 @@
 #include "BRAINSCutGenerateProbability.h"
 #include "XMLConfigurationFileParser.h"
 #include "BRAINSCutConfiguration.h"
+#include "BRAINSCutDataHandler.h"
 
 #include "itkIO.h"
 
 /** constructors */
 BRAINSCutGenerateProbability
-::BRAINSCutGenerateProbability( std::string netConfigurationFilename ) : BRAINSCutDataHandler( netConfigurationFilename )
+::BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler) 
 {
+  myDataHandler =  dataHandler;
   try
     {
-    SetRegistrationParametersFromNetConfiguration();
+    myDataHandler.SetRegistrationParametersFromNetConfiguration();
 
-    SetAtlasDataSet();
-    SetAtlasFilename();
-    SetAtlasImage();
+    myDataHandler.SetAtlasDataSet();
+    myDataHandler.SetAtlasImage();
 
-    SetRegionsOfInterestFromNetConfiguration();
+    myDataHandler.SetRegionsOfInterestFromNetConfiguration();
     SetTrainingDataSetsList();
     }
   catch( BRAINSCutExceptionStringHandler& e ) 
@@ -32,7 +33,7 @@ void
 BRAINSCutGenerateProbability
 ::SetTrainingDataSetsList()
 {
-  trainingDataSetList = BRAINSCutNetConfiguration.GetTrainDataSets();
+  trainingDataSetList = myDataHandler.GetTrainDataSets();
 }
 
 /*
@@ -72,12 +73,14 @@ BRAINSCutGenerateProbability
   /** generating spherical coordinate image does not have to be here */
   GenerateSymmetricalSphericalCoordinateImage();
   /** iterate through the rois*/
-  for( unsigned int currentROIAt = 0; currentROIAt < roiCount; currentROIAt++ )
+  for( unsigned int currentROIAt = 0; 
+       currentROIAt < myDataHandler.GetROICount(); 
+       currentROIAt++ )
     {
     WorkingImageType::Pointer currentAccumulatedImages;
-    CreateNewFloatImageFromTemplate( currentAccumulatedImages, atlasImage );
+    CreateNewFloatImageFromTemplate( currentAccumulatedImages, myDataHandler.GetAtlasImage() );
 
-    std::string  currentROIID(    roiIDsInOrder[currentROIAt] );
+    std::string  currentROIID( (myDataHandler.GetROIIDsInOrder() )[currentROIAt] );
     unsigned int currentROISubjectsCounter = 0;
     /** iterate through subject */
     for( std::list<DataSet *>::iterator currentSubjectIt = trainingDataSetList.begin();
@@ -87,7 +90,7 @@ BRAINSCutGenerateProbability
       currentROISubjectsCounter++;
       /** deform ROI to Atlas */
 
-      std::string currentRegistrationFilename=GetSubjectToAtlasRegistrationFilename( *(*currentSubjectIt) );
+      std::string currentRegistrationFilename=myDataHandler.GetSubjectToAtlasRegistrationFilename( *(*currentSubjectIt) );
       /*std::string currentRegistrationFilename =
         (*currentSubjectIt)->GetRegistrationWithID( registrationID )
         ->GetAttribute<StringValue>( "SubjToAtlasRegistrationFIlename");*/
@@ -97,7 +100,7 @@ BRAINSCutGenerateProbability
 
       WorkingImageType::Pointer currentDeformedROI = ImageWarper<WorkingImageType>( currentRegistrationFilename,
                                                                                     currentROIFilename,
-                                                                                    atlasImage );
+                                                                                    myDataHandler.GetAtlasImage() );
       /** add the deformed roi to accumulator */
       currentAccumulatedImages =
         AddImageToAccumulator( currentDeformedROI, currentAccumulatedImages );
@@ -111,7 +114,8 @@ BRAINSCutGenerateProbability
 
     /** get roi object */
 
-    ProbabilityMapParser *currentROISet = roiDataList->GetMatching<ProbabilityMapParser>(
+    ProbabilityMapParser *currentROISet = 
+      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>(
         "StructureID", currentROIID.c_str() );
     /** smooth the accumulated image */
     float               GaussianSigma = currentROISet->GetAttribute<FloatValue>("Gaussian");
@@ -148,7 +152,7 @@ void
 BRAINSCutGenerateProbability
 ::GenerateSymmetricalSphericalCoordinateImage()
 {
-  const WorkingImageType::SizeType atlasImageSize( atlasImage->GetLargestPossibleRegion().GetSize() );
+  const WorkingImageType::SizeType atlasImageSize( myDataHandler.GetAtlasImage()->GetLargestPossibleRegion().GetSize() );
 
   WorkingImageType::IndexType centerOfAtlas;
 
@@ -157,17 +161,17 @@ BRAINSCutGenerateProbability
   centerOfAtlas[2] = TruncatedHalf(atlasImageSize[2]);
 
   itk::Point<WorkingPixelType, DIMENSION> centerOfAtlasPhysicalSpace;
-  atlasImage->TransformIndexToPhysicalPoint( centerOfAtlas, centerOfAtlasPhysicalSpace );
+  myDataHandler.GetAtlasImage()->TransformIndexToPhysicalPoint( centerOfAtlas, centerOfAtlasPhysicalSpace );
 
   WorkingImageType::Pointer rhoImage, phiImage, thetaImage;
 
   std::cout << __LINE__ << "::" << __FILE__ << std::endl;
-  CreateNewFloatImageFromTemplate(rhoImage, atlasImage);
-  CreateNewFloatImageFromTemplate(phiImage, atlasImage);
-  CreateNewFloatImageFromTemplate(thetaImage, atlasImage);
+  CreateNewFloatImageFromTemplate(rhoImage, myDataHandler.GetAtlasImage());
+  CreateNewFloatImageFromTemplate(phiImage, myDataHandler.GetAtlasImage());
+  CreateNewFloatImageFromTemplate(thetaImage, myDataHandler.GetAtlasImage());
 
   itk::ImageRegionIterator<WorkingImageType> it(
-    atlasImage, atlasImage->GetLargestPossibleRegion() );
+    myDataHandler.GetAtlasImage(), myDataHandler.GetAtlasImage()->GetLargestPossibleRegion() );
   it.GoToBegin();
 
   itk::ImageRegionIterator<WorkingImageType> rhoit(
@@ -188,7 +192,7 @@ BRAINSCutGenerateProbability
   while( !it.IsAtEnd() )
     {
     const WorkingImageType::IndexType CurrentIndex = it.GetIndex();
-    atlasImage->TransformIndexToPhysicalPoint(CurrentIndex, currentLocationPhysicalSpace);
+    myDataHandler.GetAtlasImage()->TransformIndexToPhysicalPoint(CurrentIndex, currentLocationPhysicalSpace);
     for( unsigned i = 0; i < DIMENSION; i++ )
       {
       LocationWithRespectToCenterOfImageInMM[i] =

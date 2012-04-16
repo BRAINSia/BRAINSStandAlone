@@ -25,11 +25,23 @@ int main(int argc, char * *argv)
   // Call register default transforms
   //itk::TransformFactoryBase::RegisterDefaultTransforms();
 
-  BRAINSCutGenerateRegistrations registrationGenerator ( netConfiguration );
+  //
+  // Data handler
+  //
+  if( !itksys::SystemTools::FileExists( modelConfigurationFilename.c_str() ) )
+    {
+    std::string errorMsg = " File does not exist! :";
+    errorMsg += modelConfigurationFilename;
+    throw BRAINSCutExceptionStringHandler( errorMsg );
+    }
+  BRAINSCutDataHandler dataHandler ( modelConfigurationFilename );
+
+  BRAINSCutGenerateRegistrations registrationGenerator ( dataHandler );
   const bool applyDataSetOff=false;
   const bool applyDataSetOn=true;
   const bool shuffleTrainVector = (NoTrainingVectorShuffling != true ) ;
 
+  /*
 
   std::cout<<"shuffleTrainVector::"<< shuffleTrainVector<<std::endl;
 
@@ -39,7 +51,7 @@ int main(int argc, char * *argv)
     registrationGenerator.SetSubjectDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
-    BRAINSCutGenerateProbability testBRAINSCutClass( netConfiguration );
+    BRAINSCutGenerateProbability testBRAINSCutClass( modelConfigurationFilename );
     testBRAINSCutClass.GenerateProbabilityMaps();
     }
   if( createVectors )
@@ -48,7 +60,7 @@ int main(int argc, char * *argv)
     registrationGenerator.SetSubjectDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
-    BRAINSCutCreateVector testCreateVector( netConfiguration );
+    BRAINSCutCreateVector testCreateVector( modelConfigurationFilename );
     testCreateVector.SetTrainingDataSetFromNetConfiguration();
     testCreateVector.CreateVectors();
 
@@ -59,7 +71,7 @@ int main(int argc, char * *argv)
         {
         try
           {
-          BRAINSCutTrainModel ANNTrain( netConfiguration);
+          BRAINSCutTrainModel ANNTrain( modelConfigurationFilename);
           ANNTrain.InitializeNeuralNetwork( );
           ANNTrain.InitializeTrainDataSet( shuffleTrainVector );
           ANNTrain.TrainANN();
@@ -71,11 +83,11 @@ int main(int argc, char * *argv)
         }
       else if( method=="RandomForest")
         {
-        BRAINSCutTrainModel RandomForestTrain( netConfiguration );
+        BRAINSCutTrainModel RandomForestTrain( modelConfigurationFilename );
         RandomForestTrain.InitializeRandomForest();
         RandomForestTrain.InitializeTrainDataSet( shuffleTrainVector);
 
-        /* these set has to be **AFTER** InitializeTrainDataSet */
+        // these set has to be **AFTER** InitializeTrainDataSet
         if( numberOfTrees > 0 && randomTreeDepth >0 )
           {
           RandomForestTrain.TrainRandomForestAt( randomTreeDepth, numberOfTrees );
@@ -101,11 +113,11 @@ int main(int argc, char * *argv)
       registrationGenerator.SetSubjectDataSet( applyDataSetOn );
       registrationGenerator.GenerateRegistrations();
 
-      BRAINSCutApplyModel ApplyModule( netConfiguration );
+      BRAINSCutApplyModel ApplyModule( modelConfigurationFilename );
 
       ApplyModule.SetMethod( method );
       ApplyModule.SetComputeSSE( computeSSEOn );
-      /* these has to be set **AFTER** InitializeTrainDataSet */
+      // these has to be set **AFTER** InitializeTrainDataSet 
       if( numberOfTrees > 0 && randomTreeDepth >0 )
           {
           ApplyModule.SetRandomForestModelFilename( randomTreeDepth, numberOfTrees );
@@ -123,5 +135,6 @@ int main(int argc, char * *argv)
 
     }
 
+  */
     return EXIT_SUCCESS;
 }

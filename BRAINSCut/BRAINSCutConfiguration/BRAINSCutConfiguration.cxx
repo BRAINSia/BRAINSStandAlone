@@ -90,3 +90,28 @@ BRAINSCutConfiguration::GetImageTypes() const
     }
   return dynamic_cast<const DataSet *>( set->begin()->second )->GetImageTypes();
 }
+// Set/Get Functions
+//
+void 
+BRAINSCutConfiguration::SetImageTypeToUse( std::string imageTypeToUse )
+{
+  ImageTypeToUse = imageTypeToUse;
+}
+
+std::string 
+BRAINSCutConfiguration::GetImageTypeToUse()
+{
+  return ImageTypeToUse;
+}
+
+void 
+BRAINSCutConfiguration::SetRegistrationID( std::string registrationID )
+{
+  RegistrationID = registrationID;
+}
+
+std::string 
+BRAINSCutConfiguration::GetRegistrationID()
+{
+  return RegistrationID;
+}

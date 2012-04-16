@@ -2,6 +2,7 @@
 #define BRAINSCutDataHandler_h
 
 #include "BRAINSCutConfiguration.h"
+
 #include "NeuralParams.h"
 #include "itkIO.h"
 
@@ -70,11 +71,11 @@ const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
  * BRAINSCut Primary Class Starts here
  */
 
-class BRAINSCutDataHandler
+class BRAINSCutDataHandler : public BRAINSCutConfiguration
 {
 public:
   BRAINSCutDataHandler(){};
-  BRAINSCutDataHandler(std::string netConfigurationFilename);
+  BRAINSCutDataHandler(std::string modelConfigurationFilenameFilename);
 
   void SetNetConfiguration();
 
@@ -86,7 +87,6 @@ public:
 
   /* Atlas(template) related */
   void SetAtlasDataSet();
-  void SetAtlasFilename();
   void SetAtlasImage();
 
   void SetRegionsOfInterestFromNetConfiguration();
@@ -114,14 +114,22 @@ public:
   /** Get Function */
   DataSet::StringVectorType GetROIIDsInOrder();
 
-  void   GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                           DataSet& subject );
-
+  void   GetDeformedSpatialLocationImages( 
+                  std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
+                  DataSet& subject );
   void GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject);
-
-  void GetDeformedROIs( std::map<std::string, WorkingImagePointer>& deformedROIs, DataSet& subject );
-
+  void GetDeformedROIs( std::map<std::string, 
+                        WorkingImagePointer>& deformedROIs, DataSet& subject );
   bool GetNormalizationFromNetConfiguration();
+  std::string           GetAtlasFilename();
+  std::string           GetAtlasBinaryFilename();
+  int                   GetROIAutoDilateSize();
+  unsigned int          GetROICount();
+  WorkingImagePointer   GetAtlasImage();
+  ProbabilityMapList *  GetROIDataList();
+  DataSet *             GetAtlasDataSet()
+
+
 
   /* Displacement Functions */
   DisplacementFieldType::Pointer GetDeformationField( std::string filename);
@@ -135,8 +143,6 @@ public:
   WorkingImagePointer SmoothImage( const WorkingImagePointer image, const float GaussianValue);
 
 protected:
-
-  BRAINSCutConfiguration BRAINSCutNetConfiguration;
   NeuralParams *   annModelConfiguration;
 
   /** atlas data set*/
