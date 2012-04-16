@@ -10,34 +10,21 @@ class BRAINSCutGenerateProbability
 public:
   BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler);
 
-  BRAINSCutConfiguration * GetNetConfiguration();
-
-  void SetNetConfiguration( BRAINSCutConfiguration * modelConfigurationFilename);
-
-  void SetNetConfigurationFilename(std::string filename);
-
-  void SetNetConfiguration();
-
   void SetTrainingDataSetsList();
-
-  std::string GetNetConfigurationFilename();
-
   void GenerateProbabilityMaps();
-
-
 
 private:
   BRAINSCutDataHandler myDataHandler;
 
   /** DataSets */
-  std::list<DataSet *> trainingDataSetList;
+  std::list<SubjectDataSet *> trainingDataSetList;
 
   void GenerateSymmetricalSphericalCoordinateImage();
 
-  void CreateNewFloatImageFromTemplate(WorkingImageType::Pointer & PointerToOutputImage,
-                                       const WorkingImageType::Pointer & PreInitializedImage);
-  void XYZToSpherical(const itk::Point<float, 3> & LocationWithOriginAtCenterOfImage,
-                      float & rho, float & phi, float & theta) ;
+  void CreateNewFloatImageFromTemplate( WorkingImageType::Pointer & PointerToOutputImage,
+                                        const WorkingImageType::Pointer & PreInitializedImage);
+  void XYZToSpherical( const itk::Point<float, 3> & LocationWithOriginAtCenterOfImage,
+                       float & rho, float & phi, float & theta) ;
 
   template <class WarperImageType>
   typename WarperImageType::Pointer 

@@ -44,7 +44,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
   // only one of these two dynamic casts will succeed, but
   // do them here to avoid duplication below.
   //
-  DataSet *         dataSet = dynamic_cast<DataSet *>( current );
+  SubjectDataSet *         dataSet = dynamic_cast<SubjectDataSet *>( current );
   BRAINSCutConfiguration *Local_modelConfigurationFilename = dynamic_cast<BRAINSCutConfiguration *>( current );
 
   if( Name == "AutoSegProcessDescription" )
@@ -52,17 +52,17 @@ XMLConfigurationFileParser::StartElement(void *userData,
     // nothing to do, top level object is on the top of stack
     return;
     }
-  else if( Name == "DataSet" )
+  else if( Name == "SubjectDataSet" )
     {
-    DataSet *currentDataSet = new DataSet;
+    SubjectDataSet *currentDataSet = new SubjectDataSet;
     try
       {
-      std::string currentDataSetName( attribMap.Get("DataSet", "Name") );
+      std::string currentDataSetName( attribMap.Get("SubjectDataSet", "Name") );
       currentDataSet->SetAttribute<StringValue, std::string>("Name", currentDataSetName);
-      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get("DataSet", "Type") );
+      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get("SubjectDataSet", "Type") );
       if( currentDataSet->GetAttribute<StringValue>("Type") == "Apply" )
         {
-        currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("DataSet", "OutputDir") );
+        currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("SubjectDataSet", "OutputDir") );
         }
 
       Local_modelConfigurationFilename->AddDataSet(currentDataSet);
@@ -348,7 +348,7 @@ XMLConfigurationFileParser::EndElement(void *userData,
 {
   std::list<XMLElementContainer *> *stack =
     static_cast<std::list<XMLElementContainer *> *>( userData );
-  if( std::string(name) == "DataSet" )
+  if( std::string(name) == "SubjectDataSet" )
     {
     stack->pop_front();
     }
@@ -377,7 +377,7 @@ void
 XMLConfigurationFileParser::ValidateDataSets()
 {
   // HACK:  Needed to speed up testing.
-  // std::list<DataSet *> dataSets = modelConfigurationFilename->GetTrainDataSets();
+  // std::list<SubjectDataSet *> dataSets = modelConfigurationFilename->GetTrainDataSets();
 
   std::cout << " ***************************************************" << std::endl
             << " Validation has not been implimented yet" << std::endl
@@ -388,10 +388,10 @@ XMLConfigurationFileParser::ValidateDataSets()
    * TODO:: change validation part to check the simple file existance checking
    *
    *
-  for( std::list<DataSet *>::iterator it = dataSets.begin();
+  for( std::list<SubjectDataSet *>::iterator it = dataSets.begin();
        it != dataSets.end(); ++it )
     {
-    DataSet::StringVectorType allImageTypes( ( *it )->GetImageTypes() );
+    SubjectDataSet::StringVectorType allImageTypes( ( *it )->GetImageTypes() );
     const std::string   FirstImageName(
       ( *it )->GetImageFilenameByType(allImageTypes[0]) );
     InternalImageType::Pointer FirstImage =
@@ -435,7 +435,7 @@ XMLConfigurationFileParser::ValidateDataSets()
         }
       } // Each Image
 
-    DataSet::StringVectorType allMaskTypes( ( *it )->GetMaskTypes() );
+    SubjectDataSet::StringVectorType allMaskTypes( ( *it )->GetMaskTypes() );
     for( unsigned maskindex = 0; maskindex < allMaskTypes.size(); maskindex++ )
       {
       const std::string CurrentMaskName( ( *it )->GetMaskFilenameByType(
@@ -469,7 +469,7 @@ XMLConfigurationFileParser::ValidateDataSets()
         throw  BRAINSCutExceptionStringHandler(errmsg);
         }
       } // Each Mask
-    }   // Each DataSet
+    }   // Each SubjectDataSet
   return true;
   */
 }

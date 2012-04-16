@@ -1,4 +1,4 @@
-#include <DataSet.h>
+#include <SubjectDataSet.h>
 #include <RegistrationConfigurationParser.h>
 #include <ProbabilityMapParser.h>
 
@@ -15,7 +15,7 @@ BRAINSCutConfiguration::BRAINSCutConfiguration() : XMLElementParser("BRAINSCutBR
 }
 
 void
-BRAINSCutConfiguration::AddDataSet(DataSet *newSet)
+BRAINSCutConfiguration::AddDataSet(SubjectDataSet *newSet)
 {
 
   DataSetList *set = this->Get<DataSetList>("DataSetList");
@@ -24,14 +24,14 @@ BRAINSCutConfiguration::AddDataSet(DataSet *newSet)
             newSet->GetAttribute<StringValue>("Name") );
 }
 
-DataSet * BRAINSCutConfiguration::GetAtlasDataSet() const
+SubjectDataSet * BRAINSCutConfiguration::GetAtlasDataSet() const
 {
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
   for( XMLElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {
-    DataSet *current = dynamic_cast<DataSet *>( it->second );
+    SubjectDataSet *current = dynamic_cast<SubjectDataSet *>( it->second );
     if( current->GetAttribute<StringValue>("Type") == "Atlas" )
       {
       return current;
@@ -45,12 +45,12 @@ BRAINSCutConfiguration::GetTrainDataSets() const
 {
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
-  std::list<DataSet *> rval;
+  std::list<SubjectDataSet *> rval;
   for( XMLElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {
-    DataSet *   current = dynamic_cast<DataSet *>( it->second );
+    SubjectDataSet *   current = dynamic_cast<SubjectDataSet *>( it->second );
     std::string type( current->GetAttribute<StringValue>("Type") );
     if( type != "Atlas" && type != "Apply" )
       {
@@ -65,12 +65,12 @@ BRAINSCutConfiguration::GetApplyDataSets() const
 {
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
-  std::list<DataSet *> rval;
+  std::list<SubjectDataSet *> rval;
   for( XMLElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {
-    DataSet *current = dynamic_cast<DataSet *>( it->second );
+    SubjectDataSet *current = dynamic_cast<SubjectDataSet *>( it->second );
     if( current->GetAttribute<StringValue>("Type") == "Apply" )
       {
       rval.push_back(current);
@@ -79,16 +79,16 @@ BRAINSCutConfiguration::GetApplyDataSets() const
   return rval;
 }
 
-const DataSet::StringVectorType
+const SubjectDataSet::StringVectorType
 BRAINSCutConfiguration::GetImageTypes() const
 {
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
   if( set->size() == 0 )
     {
-    return DataSet::StringVectorType();
+    return SubjectDataSet::StringVectorType();
     }
-  return dynamic_cast<const DataSet *>( set->begin()->second )->GetImageTypes();
+  return dynamic_cast<const SubjectDataSet *>( set->begin()->second )->GetImageTypes();
 }
 // Set/Get Functions
 //

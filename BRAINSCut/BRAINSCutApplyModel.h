@@ -7,28 +7,23 @@
 typedef itk::Image<unsigned char, DIMENSION> BinaryImageType;
 typedef BinaryImageType::Pointer             BinaryImagePointer;
 
-class BRAINSCutApplyModel : public BRAINSCutDataHandler
+class BRAINSCutApplyModel 
 {
 public:
   BRAINSCutApplyModel( ){};
-  BRAINSCutApplyModel( std::string modelConfigurationFilenameFilename);
-
-  void SetApplyDataSetFromNetConfiguration();
-  void SetANNModelFilenameFromNetConfiguration();
+  BRAINSCutApplyModel( BRAINSCutDataHandler dataHandler );
 
   void Apply();
 
-  void ApplyOnSubject( DataSet& subject);
+  void ApplyOnSubject( SubjectDataSet& subject);
 
 
-  void SetTrainIterationFromNetConfiguration();
   void SetComputeSSE( const bool sse );
-  void SetANNTestingSSEFilename();
   void SetMethod( std::string inputMethod);
 
   void ReadANNModelFile();
   void ReadRandomForestModelFile();
-  void SetRandomForestModelFilenameFromNetConfiguration();
+  void SetRandomForestModelFilename();
   void SetRandomForestModelFilename( int depth, int nTree);
 
 
@@ -36,9 +31,6 @@ public:
                                         scalarType threshold );
 
   BinaryImagePointer PostProcessingRF( std::string labelImageFilename );
-
-  void SetANNOutputThresholdFromNetConfiguration();
-  void SetGaussianSmoothingSigmaFromNetConfiguration();
 
   BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue );
   BinaryImagePointer ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue );
@@ -50,13 +42,14 @@ public:
   BinaryImagePointer FillHole( BinaryImagePointer mask);
 
 private:
+  BRAINSCutDataHandler myDataHandler;
   BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
 
   std::string method;
   bool        normalization;
   bool        computeSSE;
   int         trainIteration;
-  std::string ANNTestingSSEFilename;
+
   std::fstream ANNTestingSSEFileStream;
 
   scalarType annOutputThreshold;
@@ -83,11 +76,11 @@ private:
                                                                const std::string imageFilename,
                                                                const WorkingPixelType labelValue = HundredPercentValue);
 
-  inline std::string GetSubjectOutputDirectory( DataSet& subject);
+  inline std::string GetSubjectOutputDirectory( SubjectDataSet& subject);
 
-  inline std::string GetContinuousPredictionFilename( DataSet& subject, std::string currentROIName);
+  inline std::string GetContinuousPredictionFilename( SubjectDataSet& subject, std::string currentROIName);
 
-  inline std::string GetROIVolumeName( DataSet& subject, std::string currentROIName);
+  inline std::string GetROIVolumeName( SubjectDataSet& subject, std::string currentROIName);
 
 };
 

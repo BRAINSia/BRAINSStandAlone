@@ -2,7 +2,7 @@
 #include "XMLConfigurationFileParser.h"
 #include "GenericTransformImage.h"
 
-#include <itkSmoothingRecursiveGaussianImageFilter.h>
+
 /** constructors */
 BRAINSCutDataHandler
 ::BRAINSCutDataHandler( std::string modelConfigurationFilenameFilename )
@@ -61,7 +61,7 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetRhoPhiThetaFromNetConfiguration()
+::SetRhoPhiTheta()
 {
   rho = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("rho") );
   phi = ReadImageByFilename( atlasDataSet->GetSpatialLocationFilenameByType("phi") );
@@ -83,7 +83,17 @@ BRAINSCutDataHandler
   return NetConfigurationFilename;
 }
 
-DataSet::StringVectorType
+int
+BRAINSCutDataHandler
+::GetTrainIteration()
+{
+  int trainIteration = this->Get<TrainingParameters>("ANNParameters")
+                            ->GetAttribute<IntValue>("Iterations");
+
+  return trainIteration;
+}
+
+SubjectDataSet::StringVectorType
 BRAINSCutDataHandler
 ::GetROIIDsInOrder()
 {
@@ -92,7 +102,7 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetRegionsOfInterestFromNetConfiguration()
+::SetRegionsOfInterest()
 {
   roiDataList = this->Get<ProbabilityMapList>("ProbabilityMapList");
   roiIDsInOrder = roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
@@ -104,7 +114,7 @@ BRAINSCutDataHandler
 /** registration related */
 void
 BRAINSCutDataHandler
-::SetRegistrationParametersFromNetConfiguration()
+::SetRegistrationParameters()
 {
 
   registrationParser =
@@ -121,7 +131,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetSubjectToAtlasRegistrationFilename( DataSet& subject)
+::GetSubjectToAtlasRegistrationFilename( SubjectDataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename");
@@ -130,7 +140,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetAtlasToSubjectRegistrationFilename( DataSet& subject)
+::GetAtlasToSubjectRegistrationFilename( SubjectDataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename");
@@ -140,7 +150,7 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                    DataSet& subject)
+                                    SubjectDataSet& subject)
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
@@ -173,11 +183,11 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
+::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, SubjectDataSet& subject)
 {
-  DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
+  SubjectDataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
   std::sort( imageListFromAtlas.begin(), imageListFromAtlas.end() );            // SG, T1, T2, ... ascending order
-  for( DataSet::StringVectorType::iterator imgTyIt = imageListFromAtlas.begin();
+  for( SubjectDataSet::StringVectorType::iterator imgTyIt = imageListFromAtlas.begin();
        imgTyIt != imageListFromAtlas.end();
        ++imgTyIt ) // imgTyIt = image type iterator
     {
@@ -190,7 +200,7 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedROIs( std::map<std::string, WorkingImagePointer>& warpedROIs,
-                   DataSet& subject)
+                   SubjectDataSet& subject)
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
@@ -205,7 +215,7 @@ BRAINSCutDataHandler
     ReadImageByFilename( subject.GetImageFilenameByType(registrationImageTypeToUse) );
 
   const std::string transformationPixelType = "float";
-  for( DataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
+  for( SubjectDataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
        roiTyIt != roiIDsInOrder.end();
        ++roiTyIt )
     {
@@ -232,62 +242,21 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetGradientSizeFromNetConfiguration()
+::SetGradientSize()
 {
   gradientSize = annModelConfiguration->GetAttribute<IntValue>("GradientProfileSize");
 }
 
-WorkingImagePointer
+unsigned int
 BRAINSCutDataHandler
-::ReadImageByFilename( const std::string  filename )
+::GetGradientSize()
 {
-  WorkingImagePointer readInImage;
-
-  ReadInImagePointer inputImage = itkUtil::ReadImage<ReadInImageType>(filename.c_str() );
-  readInImage = itkUtil::ScaleAndCast<ReadInImageType,
-                                      WorkingImageType>(inputImage,
-                                                        ZeroPercentValue,
-                                                        HundredPercentValue);
-  return readInImage;
-}
-
-/* inline functions */
-
-inline
-DisplacementFieldType::Pointer
-BRAINSCutDataHandler
-::GetDeformationField( std::string filename)
-{
-  const bool useTransform( filename.find(".mat") != std::string::npos );
-  if( useTransform )
-    {
-    return NULL;
-    }
-  typedef itk::ImageFileReader<DisplacementFieldType> DeformationReaderType;
-  DeformationReaderType::Pointer deformationReader = DeformationReaderType::New();
-  deformationReader->SetFileName( filename );
-  deformationReader->Update();
-
-  return deformationReader->GetOutput();
-}
-
-inline
-GenericTransformType::Pointer
-BRAINSCutDataHandler
-::GetGenericTransform( std::string filename)
-{
-  const bool useDeformation( filename.find(".mat") == std::string::npos );
-  if( useDeformation )
-    {
-    std::cout<<"return null deformation"<<std::endl;
-    return NULL;
-    }
-  return itk::ReadTransformFromDisk( filename );
+  return gradientSize ;
 }
 
 bool
 BRAINSCutDataHandler
-::GetNormalizationFromNetConfiguration()
+::GetNormalization()
 {
   std::string normalizationString;
   try
@@ -310,30 +279,6 @@ BRAINSCutDataHandler
     }
 }
 
-WorkingImagePointer
-BRAINSCutDataHandler
-::SmoothImage( const WorkingImagePointer image, const float GaussianValue)
-{
-  if( GaussianValue < 0 + FLOAT_TOLERANCE )
-    {
-    std::cout << "Gaussian value is less than tolerance. "
-              << "No smoothing occurs at this time"
-              << std::endl;
-    return image;
-    }
-  std::cout<<"Smooth Image with Gaussian value of :: "
-           << GaussianValue
-           <<std::endl;
-  typedef itk::SmoothingRecursiveGaussianImageFilter<WorkingImageType, WorkingImageType> SmoothingFilterType;
-  SmoothingFilterType::Pointer smoothingFilter = SmoothingFilterType::New();
-
-  smoothingFilter->SetInput( image);
-  smoothingFilter->SetSigma( GaussianValue );
-
-  smoothingFilter->Update();
-
-  return smoothingFilter->GetOutput();
-}
 /** model file name */
 std::string
 BRAINSCutDataHandler
@@ -350,6 +295,13 @@ BRAINSCutDataHandler
     exit(EXIT_FAILURE);
     }
   return  basename;
+}
+
+std::string
+BRAINSCutDataHandler
+::GetANNModelFilename( )
+{
+  return ANNModelFilename;
 }
 
 std::string
@@ -384,7 +336,7 @@ BRAINSCutDataHandler
   char tempNTrees[5];
   sprintf( tempNTrees, "%04u", NTrees );
 
-  std::string filename = basename + "D"+tempDepth+"NF"+tempNTrees;
+  std::string filename = basename + "D"+tempDepth+"NT"+tempNTrees;
 
   return filename;
 }
@@ -430,9 +382,216 @@ BRAINSCutDataHandler
   return roiDataList;
 }
 
-DataSet *
+SubjectDataSet *
 BRAINSCutDataHandler
 ::GetAtlasDataSet()
 {
   return atlasDataSet;
+}
+
+scalarType
+BRAINSCutDataHandler
+::GetANNOutputThreshold()
+{
+  scalarType annOutputThreshold =
+    this->Get<ApplyModelType>("ApplyModel")
+              ->GetAttribute<FloatValue>("MaskThresh");
+  if( annOutputThreshold < 0.0F )
+    {
+    std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
+    throw BRAINSCutExceptionStringHandler( msg );
+    }
+  return annOutputThreshold;
+}
+
+//
+// Apply related 
+//
+void
+BRAINSCutDataHandler
+::SetRandomForestModelFilename(int depth, int nTree)
+{    
+  if( depth < 0 && nTree <0 )
+    {
+    std::cout<<"Read random forest model parameters from xml file"<<std::endl;
+    nTree= this->Get<TrainingParameters>("RandomForestParameters")
+                            ->GetAttribute<IntValue>("MaxDepth");
+    depth= this->Get<TrainingParameters>("RandomForestParameters")
+                            ->GetAttribute<IntValue>("MaxTreeCount");
+    }
+  RandomForestModelFilename =  GetRFModelFilename( depth, nTree );
+}
+
+std::string 
+BRAINSCutDataHandler
+::GetRandomForestModelFilename()
+{
+  if( RandomForestModelFilename.empty() )
+  {
+    std::string msg = "Random forest model file is empty \n";
+    throw BRAINSCutExceptionStringHandler( msg );
+  }
+  return RandomForestModelFilename;
+}
+
+void
+BRAINSCutDataHandler
+::SetANNTestingSSEFilename()
+{
+  ANNTestingSSEFilename = GetModelBaseName();
+  ANNTestingSSEFilename += "ValidationSetSSE.txt";
+}
+
+std::string 
+BRAINSCutDataHandler
+::GetANNTestingSSEFilename()
+{
+  return ANNTestingSSEFilename;
+}
+
+void
+BRAINSCutDataHandler
+::SetTrainVectorFilename()
+{
+  trainVectorFilename = this->GetAttribute<StringValue>("TrainingVectorFilename");
+  trainVectorFilename += "ANN"; // TODO
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+  std::cout << "Write vector file at " << trainVectorFilename << std::endl;
+  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+}
+
+std::string
+BRAINSCutDataHandler
+::GetTrainVectorFilename()
+{
+  if( trainVectorFilename.empty() )
+  {
+    std::string msg = "The train vector file name is empty.\n";
+    throw BRAINSCutExceptionStringHandler( msg );
+  }
+  return trainVectorFilename;
+}
+
+BRAINSCutConfiguration::ApplyDataSetListType
+BRAINSCutDataHandler
+::GetApplyDataSet()
+{
+  BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
+  try
+    {
+      applyDataSetList = this->GetApplyDataSets();
+    }
+  catch( BRAINSCutExceptionStringHandler& e )
+    {
+    std::cout << e.Error() << std::endl;
+    exit(EXIT_SUCCESS);
+    }
+  return applyDataSetList;
+}
+
+scalarType
+BRAINSCutDataHandler
+::GetGaussianSmoothingSigma()
+{
+  scalarType gaussianSmoothingSigma=
+    this->Get<ApplyModelType>("ApplyModel")
+              ->GetAttribute<FloatValue>("GaussianSmoothingSigma");
+  return gaussianSmoothingSigma;
+}
+
+void
+BRAINSCutDataHandler
+::SetTrainConfiguration( std::string trainParameterName )
+{
+  TrainConfiguration = this->Get<TrainingParameters>( trainParameterName.c_str() );
+}
+
+unsigned int
+BRAINSCutDataHandler
+::GetEpochIteration()
+{
+  unsigned int trainEpochIteration = TrainConfiguration->GetAttribute<IntValue>("EpochIterations");
+  return trainEpochIteration;
+}
+
+float
+BRAINSCutDataHandler
+::GetDesiredError()
+{
+  float trainDesiredError = TrainConfiguration->GetAttribute<FloatValue>("DesiredError");
+  return trainDesiredError;
+}
+
+unsigned int
+BRAINSCutDataHandler
+::GetMaximumDataSize()
+{
+  unsigned int trainMaximumDataSize = TrainConfiguration->GetAttribute<IntValue>("MaximumVectorsPerEpoch");
+  return trainMaximumDataSize;
+}
+
+int
+BRAINSCutDataHandler
+::GetANNHiddenNodesNumber()
+{
+  int ANNHiddenNodesNumber = TrainConfiguration->GetAttribute<IntValue>("NumberOfHiddenNodes");
+  return ANNHiddenNodesNumber;
+}
+
+float
+BRAINSCutDataHandler
+::GetActivationFunctionSlope()
+{
+  float activationSlope = TrainConfiguration->GetAttribute<FloatValue>("ActivationSlope");
+  return activationSlope;
+  
+}
+
+float
+BRAINSCutDataHandler
+::GetActivationFunctionMinMax()
+{
+  float activationMinMax = TrainConfiguration->GetAttribute<FloatValue>("ActivationMinMax");
+  return activationMinMax;
+}
+
+/** Get Random Tree */
+int 
+BRAINSCutDataHandler
+::GetMaxDepth()
+{
+  int trainMaxDepth= TrainConfiguration->GetAttribute<IntValue>("MaxDepth");
+  return trainMaxDepth;
+}
+
+int
+BRAINSCutDataHandler
+::GetMinSampleCount()
+{
+  int trainMinSampleCount= TrainConfiguration->GetAttribute<IntValue>("MinSampleCount");
+  return trainMinSampleCount;
+}
+
+bool
+BRAINSCutDataHandler
+::GetUseSurrogates()
+{
+  bool trainUseSurrogates= TrainConfiguration->GetAttribute<BooleanValue>("UseSurrogates");
+  return trainUseSurrogates;
+}
+
+bool
+BRAINSCutDataHandler
+::GetCalcVarImportance()
+{
+  bool trainCalcVarImportance= TrainConfiguration->GetAttribute<BooleanValue>("CalcVarImportance");
+  return trainCalcVarImportance;
+}
+
+int
+BRAINSCutDataHandler
+::GetMaxTreeCount()
+{
+  int trainMaxTreeCount= TrainConfiguration->GetAttribute<IntValue>("MaxTreeCount");
+  return trainMaxTreeCount;
 }

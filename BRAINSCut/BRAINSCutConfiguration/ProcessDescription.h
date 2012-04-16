@@ -1,7 +1,7 @@
 #ifndef ProcessDescription_h
 #define ProcessDescription_h
 #include <CompoundObjectBase.h>
-#include <DataSet.h>
+#include <SubjectDataSet.h>
 #include <RegistrationParams.h>
 #include <ProbabilityMap.h>
 #include <list>
@@ -16,7 +16,7 @@ public:
     return indent + 2;
   }
 
-  typedef std::list<DataSet *> TrainDataSetListType;
+  typedef std::list<SubjectDataSet *> TrainDataSetListType;
   ProcessDescription() : CompoundObjectBase("BRAINSCutProcessDescription")
   {
     this->Add(new DataSetList, "DataSetList");
@@ -24,7 +24,7 @@ public:
     this->Add(new RegistrationParams, "RegistrationParams");
   }
 
-  void AddDataSet(DataSet *newSet)
+  void AddDataSet(SubjectDataSet *newSet)
   {
     DataSetList *set = this->Get<DataSetList>("DataSetList");
 
@@ -32,14 +32,14 @@ public:
               newSet->GetAttribute<StringValue>("Name") );
   }
 
-  DataSet * GetAtlasDataSet() const
+  SubjectDataSet * GetAtlasDataSet() const
   {
     const DataSetList *set = this->Get<DataSetList>("DataSetList");
     for( CompoundObjectBase::const_iterator it = set->begin();
          it != set->end();
          ++it )
       {
-      DataSet *current = dynamic_cast<DataSet *>( it->second );
+      SubjectDataSet *current = dynamic_cast<SubjectDataSet *>( it->second );
       if( current->GetAttribute<StringValue>("Type") == "Atlas" )
         {
         return current;
@@ -52,12 +52,12 @@ public:
   {
     const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
-    std::list<DataSet *> rval;
+    std::list<SubjectDataSet *> rval;
     for( CompoundObjectBase::const_iterator it = set->begin();
          it != set->end();
          ++it )
       {
-      DataSet *   current = dynamic_cast<DataSet *>( it->second );
+      SubjectDataSet *   current = dynamic_cast<SubjectDataSet *>( it->second );
       std::string type( current->GetAttribute<StringValue>("Type") );
       if( type != "Atlas" && type != "Apply" )
         {
@@ -71,12 +71,12 @@ public:
   {
     const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
-    std::list<DataSet *> rval;
+    std::list<SubjectDataSet *> rval;
     for( CompoundObjectBase::const_iterator it = set->begin();
          it != set->end();
          ++it )
       {
-      DataSet *current = dynamic_cast<DataSet *>( it->second );
+      SubjectDataSet *current = dynamic_cast<SubjectDataSet *>( it->second );
       if( current->GetAttribute<StringValue>("Type") == "Apply" )
         {
         rval.push_back(current);
@@ -85,15 +85,15 @@ public:
     return rval;
   }
 
-  const DataSet::TypeVector ImageTypes() const
+  const SubjectDataSet::TypeVector ImageTypes() const
   {
     const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
     if( set->size() == 0 )
       {
-      return DataSet::TypeVector();
+      return SubjectDataSet::TypeVector();
       }
-    return dynamic_cast<const DataSet *>( set->begin()->second )->ImageTypes();
+    return dynamic_cast<const SubjectDataSet *>( set->begin()->second )->ImageTypes();
   }
 
 };

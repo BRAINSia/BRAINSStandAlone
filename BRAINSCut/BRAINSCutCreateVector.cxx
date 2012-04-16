@@ -1,40 +1,40 @@
 #include "BRAINSCutCreateVector.h"
 
 BRAINSCutCreateVector
-::BRAINSCutCreateVector(std::string modelConfigurationFilenameFilename)
-  : BRAINSCutDataHandler( modelConfigurationFilenameFilename)
+::BRAINSCutCreateVector( BRAINSCutDataHandler dataHandler )
 {
-  //GenerateRegistrations(BRAINSCutNetConfiguration, true, false, 1);
 
-  SetRegistrationParametersFromNetConfiguration();
+  myDataHandler = dataHandler;
 
-  SetRegionsOfInterestFromNetConfiguration();
+  myDataHandler.SetRegistrationParameters();
+  myDataHandler.SetRegionsOfInterest();
+  myDataHandler.SetAtlasDataSet();
+  myDataHandler.SetRhoPhiTheta();
+  myDataHandler.SetANNModelConfiguration();
+  myDataHandler.SetGradientSize();
 
-  SetAtlasDataSet();
-  SetRhoPhiThetaFromNetConfiguration();
-
-  SetANNModelConfiguration();
-  SetGradientSizeFromNetConfiguration();
-
-  std::cout << "Get Normalization From BRAINSCutConfiguration ";
-  normalization = GetNormalizationFromNetConfiguration();
-  std::cout << "(" << normalization << ")" << std::endl;
+  std::cout << "Set Normalization From BRAINSCutConfiguration ";
+  myDataHandler.SetNormalization();
+  std::cout << "(" << myDataHandler.GetNormalization() << ")" << std::endl;
 }
 
 void
 BRAINSCutCreateVector
 ::CreateVectors()
 {
-  typedef BRAINSCutConfiguration::TrainDataSetListType::iterator
-  TrainSubjectIteratorType;
+  typedef BRAINSCutDataHandler::TrainDataSetListType::iterator
+          TrainSubjectIteratorType;
 
   int numberOfInputVector = 0;
 
   /* open up the output stream */
-  SetTrainingVectorFilenameFromNetConfiguration();
+  myDataHandler.SetTrainVectorFilename();
+
   std::ofstream outputVectorStream;
 
-  std::string vectorFileDirectory = itksys::SystemTools::GetFilenamePath( vectorFilename.c_str() );
+  const std::string vectorFilename = myDataHandler.GetTrainVectorFilename();
+  const std::string vectorFileDirectory 
+          = itksys::SystemTools::GetFilenamePath( vectorFilename.c_str() );
 
   if( !itksys::SystemTools::FileExists( vectorFileDirectory.c_str(), false ) )
     {
@@ -61,16 +61,16 @@ BRAINSCutCreateVector
     }
   outputVectorStream.close();
 
-  WriteHeaderFile( this->inputVectorSize, outputVectorSize, numberOfInputVector);
+  WriteHeaderFile( vectorFilename, this->inputVectorSize, outputVectorSize, numberOfInputVector);
 }
 
 void
 BRAINSCutCreateVector
-::SetTrainingDataSetFromNetConfiguration()
+::SetTrainingDataSet()
 {
   try
     {
-    trainDataSetList = BRAINSCutNetConfiguration.GetTrainDataSets();
+    trainDataSetList = myDataHandler.GetTrainDataSets();
     }
   catch( BRAINSCutExceptionStringHandler& e )
     {
@@ -80,41 +80,41 @@ BRAINSCutCreateVector
 
 int
 BRAINSCutCreateVector
-::CreateSubjectVectors( DataSet& subject, std::ofstream& outputStream )
+::CreateSubjectVectors( SubjectDataSet& subject, std::ofstream& outputStream )
 {
   std::map<std::string, WorkingImagePointer> deformedSpatialLocationImageList;
-  GetDeformedSpatialLocationImages( deformedSpatialLocationImageList, subject );
+  myDataHandler.GetDeformedSpatialLocationImages( deformedSpatialLocationImageList, subject );
 
   WorkingImageVectorType imagesOfInterest;
-  GetImagesOfSubjectInOrder(imagesOfInterest, subject);
+  myDataHandler.GetImagesOfSubjectInOrder(imagesOfInterest, subject);
 
   std::map<std::string, WorkingImagePointer> deformedROIs;
-  GetDeformedROIs(deformedROIs, subject);
+  myDataHandler.GetDeformedROIs(deformedROIs, subject);
 
   FeatureInputVector inputVectorGenerator;
 
-  inputVectorGenerator.SetGradientSize( gradientSize );
+  inputVectorGenerator.SetGradientSize( myDataHandler.GetGradientSize() );
   inputVectorGenerator.SetImagesOfInterestInOrder( imagesOfInterest );
   inputVectorGenerator.SetImagesOfSpatialLocation( deformedSpatialLocationImageList );
   inputVectorGenerator.SetCandidateROIs( deformedROIs);
-  inputVectorGenerator.SetROIInOrder( roiIDsInOrder);
+  inputVectorGenerator.SetROIInOrder( myDataHandler.GetROIIDsInOrder() );
   inputVectorGenerator.SetInputVectorSize();
-  inputVectorGenerator.SetNormalization( normalization );
+  inputVectorGenerator.SetNormalization( myDataHandler.GetNormalization() );
 
   inputVectorSize = inputVectorGenerator.GetInputVectorSize(); // TODO
-  outputVectorSize = roiIDsInOrder.size();
+  outputVectorSize = myDataHandler.GetROIIDsInOrder().size();
 
   /* now iterate through the roi */
   unsigned int roiIDsOrderNumber = 0;
 
   int numberOfVectors = 0;
-  for( DataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
-       roiTyIt != roiIDsInOrder.end();
+  for( SubjectDataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+       roiTyIt != myDataHandler.GetROIIDsInOrder().end();
        ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
     {
 
     ProbabilityMapParser* roiDataSet =
-      roiDataList->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() );
+      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() );
 
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
@@ -143,7 +143,7 @@ BRAINSCutCreateVector
 
 inline std::string
 BRAINSCutCreateVector
-::GetROIBinaryFilename( DataSet& subject, std::string roiName)
+::GetROIBinaryFilename( SubjectDataSet& subject, std::string roiName)
 {
   return std::string(subject.GetMaskFilenameByType( roiName ) );
 }
@@ -191,17 +191,6 @@ BRAINSCutCreateVector
 
 void
 BRAINSCutCreateVector
-::SetTrainingVectorFilenameFromNetConfiguration()
-{
-  vectorFilename = annModelConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
-  vectorFilename += "ANN";
-  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-  std::cout << "Write vector file at " << vectorFilename << std::endl;
-  std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-}
-
-void
-BRAINSCutCreateVector
 ::WriteCurrentVectors( InputVectorMapType& pairedInput,
                        OutputVectorMapType& pairedOutput,
                        std::ofstream& outputStream )
@@ -237,7 +226,8 @@ BRAINSCutCreateVector
 
 void
 BRAINSCutCreateVector
-::WriteHeaderFile( int LocalinputVectorSize, int LocaloutputVectorSize, int numberOfInputVector)
+::WriteHeaderFile( std::string vectorFilename, 
+                   int LocalinputVectorSize, int LocaloutputVectorSize, int numberOfInputVector)
 {
   const std::string headerFilename = vectorFilename + ".hdr";
   std::ofstream     outputStream;

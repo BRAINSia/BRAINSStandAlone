@@ -61,7 +61,7 @@ int main(int argc, char * *argv)
     registrationGenerator.GenerateRegistrations();
 
     BRAINSCutCreateVector testCreateVector( modelConfigurationFilename );
-    testCreateVector.SetTrainingDataSetFromNetConfiguration();
+    testCreateVector.SetTrainingDataSet();
     testCreateVector.CreateVectors();
 
     }
@@ -117,16 +117,9 @@ int main(int argc, char * *argv)
 
       ApplyModule.SetMethod( method );
       ApplyModule.SetComputeSSE( computeSSEOn );
-      // these has to be set **AFTER** InitializeTrainDataSet 
-      if( numberOfTrees > 0 && randomTreeDepth >0 )
-          {
-          ApplyModule.SetRandomForestModelFilename( randomTreeDepth, numberOfTrees );
-          }
-      else
-          {
-          ApplyModule.SetRandomForestModelFilenameFromNetConfiguration();
-          }
+      ApplyModule.SetRandomForestModelFilename( randomTreeDepth, numberOfTrees );
       ApplyModule.Apply();
+
       }
     catch( BRAINSCutExceptionStringHandler& e )
       {

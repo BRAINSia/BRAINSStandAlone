@@ -3,8 +3,7 @@
 #include "fstream.h"
 
 BRAINSCutTrainModel
-::BRAINSCutTrainModel( std::string modelConfigurationFilenameFIlename)
-  : BRAINSCutDataHandler( modelConfigurationFilenameFIlename ),
+::BRAINSCutTrainModel( BRAINSCutDataHandler dataHandler ):
   trainIteration(0),
   trainEpochIteration(0),
   trainDesiredError(0.0),
@@ -13,7 +12,7 @@ BRAINSCutTrainModel
   activationSlope(0),
   activationMinMax(0)
 {
-
+  myDataHandler = dataHandler; 
 }
 
 /** train */
@@ -21,9 +20,9 @@ void
 BRAINSCutTrainModel
 ::InitializeTrainDataSet( bool doShuffle )
 {
-  const std::string Local_ANNVectorFilenamePrefix = this->GetANNVectorFilenamePrefix();
+  const std::string trainVectorFilename = myDataHandler.GetTrainVectorFilename();
 
-  trainingDataSet = new BRAINSCutVectorTrainingSet( Local_ANNVectorFilenamePrefix);
+  trainingDataSet = new BRAINSCutVectorTrainingSet( trainVectorFilename );
   try
     {
     trainingDataSet->ReadHeaderFileInformation();
@@ -58,32 +57,33 @@ void
 BRAINSCutTrainModel
 ::InitializeNeuralNetwork()
 {
-  SetANNModelConfiguration();
-  TrainNetConfiguration = BRAINSCutNetConfiguration.Get<TrainingParameters>("ANNParameters");
+  myDataHandler.SetTrainConfiguration( "ANNParameters" );
+  myDataHandler.SetANNModelConfiguration();
   ANNLayerStructure = cvCreateMat( 1, 3, CV_32SC1);
-  SetMaximumDataSizeFromNetConfiguration();
 
-  SetIterationFromNetConfiguration();
-  SetEpochIterationFromNetConfiguration();
-  SetDesiredErrorFromNetConfiguration();
-  SetANNHiddenNodesNumberFromNetConfiguration();
-  SetActivatioinFunctionFromNetConfiguration();
-  SetModelBasename();
+  trainMaximumDataSize = myDataHandler.GetMaximumDataSize();
+  trainIteration       = myDataHandler.GetTrainIteration();
+  trainEpochIteration  = myDataHandler.GetEpochIteration();
+  trainDesiredError    = myDataHandler.GetDesiredError();
+  
+  ANNHiddenNodesNumber = myDataHandler.GetANNHiddenNodesNumber();
+
+  activationSlope = myDataHandler.GetActivationFunctionSlope();
+  activationMinMax = myDataHandler.GetActivationFunctionMinMax();
 }
 
 void
 BRAINSCutTrainModel
 ::InitializeRandomForest()
 {
-  TrainNetConfiguration = BRAINSCutNetConfiguration.Get<TrainingParameters>("RandomForestParameters");
-  SetANNModelConfiguration();
-  SetMaxDepthFromNetConfiguration();
-  SetMinSampleCountFromNetConfiguration();
-  SetUseSurrogatesFromNetConfiguration();
-  SetCalcVarImportanceFromNetConfiguration();
-  SetMaxTreeCountFromNetConfiguration();
+  myDataHandler.SetTrainConfiguration( "RandomForestParameters" );
+  //SetANNModelConfiguration();
+  trainMaxDepth          = myDataHandler.GetMaxDepth();
+  trainMinSampleCount    = myDataHandler.GetMinSampleCount();
+  trainUseSurrogates     = myDataHandler.GetUseSurrogates();
+  trainCalcVarImportance = myDataHandler.GetCalcVarImportance();
+  trainMaxTreeCount      = myDataHandler.GetMaxTreeCount();
 
-  SetModelBasename();
   SetRFErrorFilename();
   SetRFErrorFile();
 }
@@ -116,8 +116,7 @@ inline void
 BRAINSCutTrainModel
 ::SaveRFTrainModelAtIteration( CvRTrees& myTrainer, int depth, int NTrees)
 {
-  std::string filename = GetRFModelFilename( depth, 
-                                             NTrees );
+  std::string filename = myDataHandler.GetRFModelFilename( depth, NTrees );
 
   try
     {
@@ -139,7 +138,7 @@ BRAINSCutTrainModel
   char tempid[10];
 
   sprintf( tempid, "%09u", No + 1 );
-  std::string filename = modelBasename + tempid;
+  std::string filename = myDataHandler.GetModelBaseName() + tempid;
 
   /** check the directory */
   std::string path = itksys::SystemTools::GetFilenamePath( filename );
@@ -296,21 +295,12 @@ BRAINSCutTrainModel
       SaveRFTrainModelAtIteration( forest, depth, numberOfTree);
 }
 
-/** setting function with net configuration */
-void
-BRAINSCutTrainModel
-::SetModelBasename()
-{
-  NeuralParams * model = BRAINSCutNetConfiguration.Get<NeuralParams>("NeuralNetParams");
-
-  modelBasename = model->GetAttribute<StringValue>("TrainingModelFilename");
-}
-
 void
 BRAINSCutTrainModel
 ::SetRFErrorFilename()
 {
-  if( modelBasename == "" )
+  const std::string basename = myDataHandler.GetModelBaseName();
+  if( basename.empty() )
     {
     std::cout<<"Model Basename has to be set first."
              <<std::endl
@@ -318,7 +308,7 @@ BRAINSCutTrainModel
              <<std::endl;
     exit( EXIT_FAILURE ) ;
     }
-  RFErrorFilename = modelBasename + "ERROR.txt";
+  RFErrorFilename = basename + "ERROR.txt";
 }
 
 void
@@ -348,183 +338,3 @@ BRAINSCutTrainModel
    filestr.close();
 }
 
-std::string
-BRAINSCutTrainModel
-::GetANNVectorFilenamePrefix()
-{
-  NeuralParams * model = BRAINSCutNetConfiguration.Get<NeuralParams>("NeuralNetParams");
-
-  return model->GetAttribute<StringValue>("TrainingVectorFilename");
-}
-
-void
-BRAINSCutTrainModel
-::SetIterationFromNetConfiguration()
-{
-  trainIteration = TrainNetConfiguration->GetAttribute<IntValue>("Iterations");
-}
-
-void
-BRAINSCutTrainModel
-::SetEpochIterationFromNetConfiguration()
-{
-  trainEpochIteration = TrainNetConfiguration->GetAttribute<IntValue>("EpochIterations");
-}
-
-void
-BRAINSCutTrainModel
-::SetDesiredErrorFromNetConfiguration()
-{
-  trainDesiredError = TrainNetConfiguration->GetAttribute<FloatValue>("DesiredError");
-}
-
-void
-BRAINSCutTrainModel
-::SetMaximumDataSizeFromNetConfiguration()
-{
-  trainMaximumDataSize = TrainNetConfiguration->GetAttribute<IntValue>("MaximumVectorsPerEpoch");
-}
-
-void
-BRAINSCutTrainModel
-::SetANNHiddenNodesNumberFromNetConfiguration()
-{
-  ANNHiddenNodesNumber = TrainNetConfiguration->GetAttribute<IntValue>("NumberOfHiddenNodes");
-}
-
-void
-BRAINSCutTrainModel
-::SetActivatioinFunctionFromNetConfiguration()
-{
-  activationSlope = TrainNetConfiguration->GetAttribute<FloatValue>("ActivationSlope");
-  activationMinMax = TrainNetConfiguration->GetAttribute<FloatValue>("ActivationMinMax");
-}
-
-/** default functions to set/get member variables */
-void
-BRAINSCutTrainModel
-::SetIteration(unsigned int iteration)
-{
-  trainIteration = iteration;
-}
-
-unsigned int
-BRAINSCutTrainModel
-::GetIteration()
-{
-  return trainIteration;
-}
-
-void
-BRAINSCutTrainModel
-::SetEpochIteration( unsigned int epochIteration)
-{
-  trainEpochIteration = epochIteration;
-}
-
-unsigned int
-BRAINSCutTrainModel
-::GetEpochIteration()
-{
-  return trainEpochIteration;
-}
-
-void
-BRAINSCutTrainModel
-::SetDesiredError( float desiredError )
-{
-  trainDesiredError = desiredError;
-}
-
-float
-BRAINSCutTrainModel
-::GetDesiredError()
-{
-  return trainDesiredError;
-}
-
-void
-BRAINSCutTrainModel
-::SetMaximumDataSize( unsigned int maximumDataSize)
-{
-  trainMaximumDataSize = maximumDataSize;
-}
-
-unsigned int
-BRAINSCutTrainModel
-::GetMaximumDataSize()
-{
-  return trainMaximumDataSize;
-}
-
-void
-BRAINSCutTrainModel
-::SetANNHiddenNodesNumber( int hiddenNodes)
-{
-  ANNHiddenNodesNumber = hiddenNodes;
-}
-
-int
-BRAINSCutTrainModel
-::GetANNHiddenNodesNumber()
-{
-  return ANNHiddenNodesNumber;
-}
-
-void
-BRAINSCutTrainModel
-::SetActivationFunction( float slope, float minMax)
-{
-  activationSlope = slope;
-  activationMinMax = minMax;
-}
-
-float
-BRAINSCutTrainModel
-::GetActivationSlope()
-{
-  return activationSlope;
-}
-
-float
-BRAINSCutTrainModel
-::GetActivationMinMax()
-{
-  return activationMinMax;
-}
-
-/** Set Random Tree */
-void
-BRAINSCutTrainModel
-::SetMaxDepthFromNetConfiguration()
-{
-  trainMaxDepth= TrainNetConfiguration->GetAttribute<IntValue>("MaxDepth");
-}
-
-void
-BRAINSCutTrainModel
-::SetMinSampleCountFromNetConfiguration()
-{
-  trainMinSampleCount= TrainNetConfiguration->GetAttribute<IntValue>("MinSampleCount");
-}
-
-void
-BRAINSCutTrainModel
-::SetUseSurrogatesFromNetConfiguration()
-{
-  trainUseSurrogates= TrainNetConfiguration->GetAttribute<BooleanValue>("UseSurrogates");
-}
-
-void
-BRAINSCutTrainModel
-::SetCalcVarImportanceFromNetConfiguration()
-{
-  trainCalcVarImportance= TrainNetConfiguration->GetAttribute<BooleanValue>("CalcVarImportance");
-}
-
-void
-BRAINSCutTrainModel
-::SetMaxTreeCountFromNetConfiguration()
-{
-  trainMaxTreeCount= TrainNetConfiguration->GetAttribute<IntValue>("MaxTreeCount");
-}

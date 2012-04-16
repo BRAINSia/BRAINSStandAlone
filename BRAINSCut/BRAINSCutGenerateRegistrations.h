@@ -20,7 +20,7 @@ private:
   BRAINSCutDataHandler myDataHandler;
   bool atlasToSubjectRegistraionOn;
 
-  std::list<DataSet *> subjectDataSets;
+  std::list<SubjectDataSet *> subjectDataSets;
 
   /** private functions */
 

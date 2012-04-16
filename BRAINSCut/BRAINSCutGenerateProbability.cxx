@@ -12,12 +12,12 @@ BRAINSCutGenerateProbability
   myDataHandler =  dataHandler;
   try
     {
-    myDataHandler.SetRegistrationParametersFromNetConfiguration();
+    myDataHandler.SetRegistrationParameters();
 
     myDataHandler.SetAtlasDataSet();
     myDataHandler.SetAtlasImage();
 
-    myDataHandler.SetRegionsOfInterestFromNetConfiguration();
+    myDataHandler.SetRegionsOfInterest();
     SetTrainingDataSetsList();
     }
   catch( BRAINSCutExceptionStringHandler& e ) 
@@ -83,7 +83,7 @@ BRAINSCutGenerateProbability
     std::string  currentROIID( (myDataHandler.GetROIIDsInOrder() )[currentROIAt] );
     unsigned int currentROISubjectsCounter = 0;
     /** iterate through subject */
-    for( std::list<DataSet *>::iterator currentSubjectIt = trainingDataSetList.begin();
+    for( std::list<SubjectDataSet *>::iterator currentSubjectIt = trainingDataSetList.begin();
          currentSubjectIt != trainingDataSetList.end();
          currentSubjectIt++ )
       {
@@ -222,9 +222,9 @@ BRAINSCutGenerateProbability
     ++thetait;
     }
 
-  std::string RhoMapName = atlasDataSet->GetSpatialLocationFilenameByType("rho");
-  std::string PhiMapName = atlasDataSet->GetSpatialLocationFilenameByType("phi");
-  std::string ThetaMapName = atlasDataSet->GetSpatialLocationFilenameByType("theta");
+  std::string RhoMapName =   myDataHandler.GetAtlasDataSet()->GetSpatialLocationFilenameByType("rho");
+  std::string PhiMapName =   myDataHandler.GetAtlasDataSet()->GetSpatialLocationFilenameByType("phi");
+  std::string ThetaMapName = myDataHandler.GetAtlasDataSet()->GetSpatialLocationFilenameByType("theta");
 
   std::string rhoPath = itksys::SystemTools::GetFilenamePath( RhoMapName );
   itksys::SystemTools::MakeDirectory( rhoPath.c_str() );

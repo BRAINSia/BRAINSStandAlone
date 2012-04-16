@@ -10,7 +10,7 @@ BRAINSCutGenerateRegistrations
   myDataHandler =  dataHandler;
 
   myDataHandler.SetAtlasDataSet();
-  myDataHandler.SetRegistrationParametersFromNetConfiguration();
+  myDataHandler.SetRegistrationParameters();
 }
 
 // ----------------------------------------------------- //
@@ -42,7 +42,7 @@ void
 BRAINSCutGenerateRegistrations
 ::GenerateRegistrations()
 {
-  for( std::list<DataSet *>::iterator subjectIt = subjectDataSets.begin();
+  for( std::list<SubjectDataSet *>::iterator subjectIt = subjectDataSets.begin();
        subjectIt != subjectDataSets.end();
        ++subjectIt)
     {
@@ -194,14 +194,14 @@ BRAINSCutGenerateRegistrations
   //
   // Set Fixed Volume
   //
-  WorkingImageType::Pointer fixedVolume = myDataHandler.ReadImageByFilename( FixedImageFilename );
+  WorkingImageType::Pointer fixedVolume = ReadImageByFilename( FixedImageFilename );
 
   BSplineRegistrationHelper->SetFixedVolume( fixedVolume );
 
   //
   // Set Moving Volume
   //
-  WorkingImageType::Pointer movingVolume = myDataHandler.ReadImageByFilename( MovingImageFilename );
+  WorkingImageType::Pointer movingVolume = ReadImageByFilename( MovingImageFilename );
 
   BSplineRegistrationHelper->SetMovingVolume( movingVolume );
 
