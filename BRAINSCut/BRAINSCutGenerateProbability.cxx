@@ -83,7 +83,7 @@ BRAINSCutGenerateProbability
     std::string  currentROIID( (myDataHandler.GetROIIDsInOrder() )[currentROIAt] );
     unsigned int currentROISubjectsCounter = 0;
     /** iterate through subject */
-    for( std::list<SubjectDataSet *>::iterator currentSubjectIt = trainingDataSetList.begin();
+    for( std::list<DataSet *>::iterator currentSubjectIt = trainingDataSetList.begin();
          currentSubjectIt != trainingDataSetList.end();
          currentSubjectIt++ )
       {

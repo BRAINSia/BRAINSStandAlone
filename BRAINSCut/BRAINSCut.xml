@@ -10,6 +10,14 @@
   <acknowledgements></acknowledgements>
  <parameters>
    <file>
+     <name>netConfiguration</name>
+     <longflag>netConfiguration</longflag>
+     <label>Neural Net Configuration File</label>
+     <channel>input</channel>
+     <description>XML File defining BRAINSCut parameters. OLD NAME. PLEASE USE modelConfigurationFilename instead.</description>
+     <default></default>
+   </file>
+   <file>
      <name>modelConfigurationFilename</name>
      <longflag>modelConfigurationFilename</longflag>
      <label>Neural Net Configuration File</label>

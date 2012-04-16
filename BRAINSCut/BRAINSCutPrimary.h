@@ -74,8 +74,8 @@ typedef std::map<int, scalarType>       PredictValueMapType;
 const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
 
 
-std::string GetAtlasToSubjectRegistrationFilename( SubjectDataSet& subject);
-std::string GetSubjectToAtlasRegistrationFilename( SubjectDataSet& subject);
+std::string GetAtlasToSubjectRegistrationFilename( DataSet& subject);
+std::string GetSubjectToAtlasRegistrationFilename( DataSet& subject);
 
 //
 // read/warp image

@@ -80,7 +80,7 @@ BRAINSCutCreateVector
 
 int
 BRAINSCutCreateVector
-::CreateSubjectVectors( SubjectDataSet& subject, std::ofstream& outputStream )
+::CreateSubjectVectors( DataSet& subject, std::ofstream& outputStream )
 {
   std::map<std::string, WorkingImagePointer> deformedSpatialLocationImageList;
   myDataHandler.GetDeformedSpatialLocationImages( deformedSpatialLocationImageList, subject );
@@ -108,7 +108,7 @@ BRAINSCutCreateVector
   unsigned int roiIDsOrderNumber = 0;
 
   int numberOfVectors = 0;
-  for( SubjectDataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
        roiTyIt != myDataHandler.GetROIIDsInOrder().end();
        ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
     {
@@ -143,7 +143,7 @@ BRAINSCutCreateVector
 
 inline std::string
 BRAINSCutCreateVector
-::GetROIBinaryFilename( SubjectDataSet& subject, std::string roiName)
+::GetROIBinaryFilename( DataSet& subject, std::string roiName)
 {
   return std::string(subject.GetMaskFilenameByType( roiName ) );
 }

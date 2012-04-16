@@ -49,7 +49,7 @@ public:
 
   void SetCandidateROIs( std::map<std::string, WorkingImagePointer>& candidateROIMap);
 
-  void SetROIInOrder( SubjectDataSet::StringVectorType roiInOrder );
+  void SetROIInOrder( DataSet::StringVectorType roiInOrder );
 
   void SetFeatureInputOfROI( std::map<std::string, WorkingImagePointer>& featureImages );
 
@@ -81,7 +81,7 @@ private:
   ImageLinearInterpolatorType::Pointer imageInterpolator;
 
   WorkingImageVectorType    imagesOfInterestInOrder;
-  SubjectDataSet::StringVectorType roiIDsInOrder;
+  DataSet::StringVectorType roiIDsInOrder;
 
   /** deformed rho/phi/theta images*/
   std::map<std::string, WorkingImagePointer> spatialLocations;

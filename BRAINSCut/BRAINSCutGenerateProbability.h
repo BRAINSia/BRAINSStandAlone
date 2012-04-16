@@ -17,7 +17,7 @@ private:
   BRAINSCutDataHandler myDataHandler;
 
   /** DataSets */
-  std::list<SubjectDataSet *> trainingDataSetList;
+  std::list<DataSet *> trainingDataSetList;
 
   void GenerateSymmetricalSphericalCoordinateImage();
 

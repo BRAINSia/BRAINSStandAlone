@@ -13,14 +13,14 @@ public:
   BRAINSCutGenerateRegistrations( BRAINSCutDataHandler& dataHandler );
 
   void SetAtlasToSubjectRegistrationOn(bool atalsToSubjectRegistration );
-  void SetSubjectDataSet( bool applyDataSet );
+  void SetDataSet( bool applyDataSet );
   void GenerateRegistrations();
 
 private:
   BRAINSCutDataHandler myDataHandler;
   bool atlasToSubjectRegistraionOn;
 
-  std::list<SubjectDataSet *> subjectDataSets;
+  std::list<DataSet *> subjectDataSets;
 
   /** private functions */
 

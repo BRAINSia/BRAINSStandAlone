@@ -1,7 +1,7 @@
 #ifndef BRAINSCutConfiguration_h
 #define BRAINSCutConfiguration_h
 
-#include <SubjectDataSet.h>
+#include <DataSet.h>
 #include <RegistrationConfigurationParser.h>
 #include <ProbabilityMapParser.h>
 #include <list>
@@ -19,18 +19,18 @@ public:
     return indent + 2;
   }
 
-  typedef std::list<SubjectDataSet *> TrainDataSetListType;
-  typedef std::list<SubjectDataSet *> ApplyDataSetListType;
+  typedef std::list<DataSet *> TrainDataSetListType;
+  typedef std::list<DataSet *> ApplyDataSetListType;
 
-  void AddDataSet(SubjectDataSet *newSet);
+  void AddDataSet(DataSet *newSet);
 
-  SubjectDataSet * GetAtlasDataSet() const;
+  DataSet * GetAtlasDataSet() const;
 
   TrainDataSetListType GetTrainDataSets() const;
 
   ApplyDataSetListType GetApplyDataSets() const;
 
-  const SubjectDataSet::StringVectorType GetImageTypes() const;
+  const DataSet::StringVectorType GetImageTypes() const;
 
   // Set/Get Functions
   //

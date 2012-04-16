@@ -55,7 +55,7 @@ FeatureInputVector
 
 void
 FeatureInputVector
-::SetROIInOrder( SubjectDataSet::StringVectorType roiInOrder)
+::SetROIInOrder( DataSet::StringVectorType roiInOrder)
 {
   roiIDsInOrder = roiInOrder;
 }
@@ -223,7 +223,7 @@ FeatureInputVector
 ::AddCandidateROIFeature( WorkingImageType::IndexType currentPixelIndex,
                           std::vector<scalarType>::iterator & elementIterator)
 {
-  for( SubjectDataSet::StringVectorType::const_iterator roiStringIt = roiIDsInOrder.begin();
+  for( DataSet::StringVectorType::const_iterator roiStringIt = roiIDsInOrder.begin();
        roiStringIt != roiIDsInOrder.end();
        ++roiStringIt )  // iterate each ROI candidates in order specified in "roi IDs in order"
     {

@@ -41,17 +41,17 @@ public:
   std::string GetRandomForestModelFilename();
   std::string GetRFModelFilename( int depth,int NTrees);
 
-  SubjectDataSet::StringVectorType GetROIIDsInOrder();
+  DataSet::StringVectorType GetROIIDsInOrder();
 
   void        SetTrainVectorFilename();
   std::string GetTrainVectorFilename();
 
   void                  GetDeformedSpatialLocationImages( 
                                          std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                         SubjectDataSet& subject );
-  void                  GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, SubjectDataSet& subject);
+                                         DataSet& subject );
+  void                  GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject);
   void                  GetDeformedROIs( std::map<std::string, 
-                                         WorkingImagePointer>& deformedROIs, SubjectDataSet& subject );
+                                         WorkingImagePointer>& deformedROIs, DataSet& subject );
   bool                  GetNormalization();
   void                  SetNormalization();
 
@@ -61,7 +61,7 @@ public:
   unsigned int          GetROICount();
   WorkingImagePointer   GetAtlasImage();
   ProbabilityMapList *  GetROIDataList();
-  SubjectDataSet *      GetAtlasDataSet();
+  DataSet *      GetAtlasDataSet();
 
   BRAINSCutConfiguration::ApplyDataSetListType GetApplyDataSet();
 
@@ -69,8 +69,8 @@ public:
   scalarType            GetANNOutputThreshold();
   scalarType            GetGaussianSmoothingSigma();
 
-  std::string           GetSubjectToAtlasRegistrationFilename( SubjectDataSet& subject);
-  std::string           GetAtlasToSubjectRegistrationFilename( SubjectDataSet& subject);
+  std::string           GetSubjectToAtlasRegistrationFilename( DataSet& subject);
+  std::string           GetAtlasToSubjectRegistrationFilename( DataSet& subject);
 
   void         SetTrainConfiguration( std::string trainParamterName );
   unsigned int GetEpochIteration();
@@ -93,14 +93,14 @@ protected:
   TrainingParameters *TrainConfiguration;
 
   /** atlas data set*/
-  SubjectDataSet *    atlasDataSet;
+  DataSet *    atlasDataSet;
   std::string         atlasFilename;
   std::string         atlasBinaryFilename;
   WorkingImagePointer atlasImage;
 
   /**ProbabilityMaps*/
   ProbabilityMapList *             roiDataList;
-  SubjectDataSet::StringVectorType roiIDsInOrder;;
+  DataSet::StringVectorType roiIDsInOrder;;
   unsigned int                     roiCount;
 
   /** registration data set */

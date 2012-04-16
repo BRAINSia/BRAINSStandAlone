@@ -39,24 +39,24 @@ Parser::StartElement(void *userData,
   //
   // only one of these two dynamic casts will succeed, but
   // do them here to avoid duplication below.
-  SubjectDataSet *           dataSet = dynamic_cast<SubjectDataSet *>( current );
+  DataSet *           dataSet = dynamic_cast<DataSet *>( current );
   ProcessDescription *proc = dynamic_cast<ProcessDescription *>( current );
   if( Name == "AutoSegProcessDescription" )
     {
     // nothing to do, top level object is on the top of stack
     return;
     }
-  else if( Name == "SubjectDataSet" )
+  else if( Name == "DataSet" )
     {
-    SubjectDataSet *_dataSet = new SubjectDataSet;
+    DataSet *_dataSet = new DataSet;
     try
       {
-      std::string _Name( attribMap.Get("SubjectDataSet", "Name") );
+      std::string _Name( attribMap.Get("DataSet", "Name") );
       _dataSet->SetAttribute<StringValue, std::string>("Name", _Name);
-      _dataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get("SubjectDataSet", "Type") );
+      _dataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get("DataSet", "Type") );
       if( _dataSet->GetAttribute<StringValue>("Type") == "Apply" )
         {
-        _dataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("SubjectDataSet", "OutputDir") );
+        _dataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("DataSet", "OutputDir") );
         }
 
       proc->AddDataSet(_dataSet);
@@ -393,7 +393,7 @@ Parser::EndElement(void *userData,
 {
   std::list<ProcessObjectBase *> *stack =
     static_cast<std::list<ProcessObjectBase *> *>( userData );
-  if( std::string(name) == "SubjectDataSet" )
+  if( std::string(name) == "DataSet" )
     {
     stack->pop_front();
     }

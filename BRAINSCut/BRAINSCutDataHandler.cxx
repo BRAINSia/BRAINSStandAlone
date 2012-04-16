@@ -45,11 +45,22 @@ void
 BRAINSCutDataHandler
 ::SetAtlasDataSet()
 {
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   atlasDataSet = this->GetAtlasDataSet();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  std::cout<<"registrationImageTypeToUse :: "<<registrationImageTypeToUse <<std::endl;
 
+  if( registrationImageTypeToUse.empty() )
+  {
+    std::cout<<"registrationImageTypeToUse is empty."<<std::endl;
+    exit(EXIT_FAILURE);
+  }
   atlasFilename=atlasDataSet->GetImageFilenameByType( registrationImageTypeToUse) ;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   atlasBinaryFilename=atlasDataSet->GetMaskFilenameByType( "RegistrationROI" );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   std::cout<<atlasBinaryFilename<<std::endl;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 void
@@ -93,7 +104,7 @@ BRAINSCutDataHandler
   return trainIteration;
 }
 
-SubjectDataSet::StringVectorType
+DataSet::StringVectorType
 BRAINSCutDataHandler
 ::GetROIIDsInOrder()
 {
@@ -131,7 +142,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetSubjectToAtlasRegistrationFilename( SubjectDataSet& subject)
+::GetSubjectToAtlasRegistrationFilename( DataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename");
@@ -140,7 +151,7 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetAtlasToSubjectRegistrationFilename( SubjectDataSet& subject)
+::GetAtlasToSubjectRegistrationFilename( DataSet& subject)
 {
   std::string filename = subject.GetRegistrationWithID( registrationID )
     ->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename");
@@ -150,7 +161,7 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedSpatialLocationImages( std::map<std::string, WorkingImagePointer>& warpedSpatialLocationImages,
-                                    SubjectDataSet& subject)
+                                    DataSet& subject)
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
@@ -183,11 +194,11 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, SubjectDataSet& subject)
+::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
 {
-  SubjectDataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
+  DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
   std::sort( imageListFromAtlas.begin(), imageListFromAtlas.end() );            // SG, T1, T2, ... ascending order
-  for( SubjectDataSet::StringVectorType::iterator imgTyIt = imageListFromAtlas.begin();
+  for( DataSet::StringVectorType::iterator imgTyIt = imageListFromAtlas.begin();
        imgTyIt != imageListFromAtlas.end();
        ++imgTyIt ) // imgTyIt = image type iterator
     {
@@ -200,7 +211,7 @@ BRAINSCutDataHandler
 void
 BRAINSCutDataHandler
 ::GetDeformedROIs( std::map<std::string, WorkingImagePointer>& warpedROIs,
-                   SubjectDataSet& subject)
+                   DataSet& subject)
 {
   std::string atlasSubjectRegistrationFilename = GetAtlasToSubjectRegistrationFilename( subject );
 
@@ -215,7 +226,7 @@ BRAINSCutDataHandler
     ReadImageByFilename( subject.GetImageFilenameByType(registrationImageTypeToUse) );
 
   const std::string transformationPixelType = "float";
-  for( SubjectDataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
+  for( DataSet::StringVectorType::iterator roiTyIt = roiIDsInOrder.begin();
        roiTyIt != roiIDsInOrder.end();
        ++roiTyIt )
     {
@@ -382,7 +393,7 @@ BRAINSCutDataHandler
   return roiDataList;
 }
 
-SubjectDataSet *
+DataSet *
 BRAINSCutDataHandler
 ::GetAtlasDataSet()
 {

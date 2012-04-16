@@ -73,7 +73,7 @@ BRAINSCutApplyModel
 /* apply on each subject */
 void
 BRAINSCutApplyModel
-::ApplyOnSubject( SubjectDataSet& subject)
+::ApplyOnSubject( DataSet& subject)
 {
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
 
@@ -115,7 +115,7 @@ BRAINSCutApplyModel
   /* now iterate through the roi */
 
   unsigned int roiIDsOrderNumber = 0;
-  for( SubjectDataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
        roiTyIt != myDataHandler.GetROIIDsInOrder().end();
        ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
     {
@@ -528,7 +528,7 @@ BRAINSCutApplyModel
 /* get output file dir */
 inline std::string
 BRAINSCutApplyModel
-::GetSubjectOutputDirectory( SubjectDataSet& subject)
+::GetSubjectOutputDirectory( DataSet& subject)
 {
   std::string outputDir = subject.GetAttribute<StringValue>("OutputDir");
 
@@ -545,7 +545,7 @@ BRAINSCutApplyModel
 /* get continuous file name */
 inline std::string
 BRAINSCutApplyModel
-::GetContinuousPredictionFilename( SubjectDataSet& subject, std::string currentROIName)
+::GetContinuousPredictionFilename( DataSet& subject, std::string currentROIName)
 {
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
 
@@ -562,7 +562,7 @@ BRAINSCutApplyModel
 /* get output mask file name of subject */
 inline std::string
 BRAINSCutApplyModel
-::GetROIVolumeName( SubjectDataSet& subject, std::string currentROIName)
+::GetROIVolumeName( DataSet& subject, std::string currentROIName)
 {
   std::string givenROIName = subject.GetMaskFilenameByType( currentROIName );
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );

@@ -7,10 +7,14 @@
 BRAINSCutGenerateRegistrations
 ::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler )
 {      
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   myDataHandler =  dataHandler;
-
-  myDataHandler.SetAtlasDataSet();
   myDataHandler.SetRegistrationParameters();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  myDataHandler.SetAtlasDataSet();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  myDataHandler.SetRegistrationParameters();
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 // ----------------------------------------------------- //
@@ -24,7 +28,7 @@ BRAINSCutGenerateRegistrations
 // ----------------------------------------------------- //
 void 
 BRAINSCutGenerateRegistrations
-::SetSubjectDataSet( bool applyDataSet )
+::SetDataSet( bool applyDataSet )
 {
   //if applyDataSEt==false, then use training dataset 
   if( applyDataSet)
@@ -42,7 +46,7 @@ void
 BRAINSCutGenerateRegistrations
 ::GenerateRegistrations()
 {
-  for( std::list<SubjectDataSet *>::iterator subjectIt = subjectDataSets.begin();
+  for( std::list<DataSet *>::iterator subjectIt = subjectDataSets.begin();
        subjectIt != subjectDataSets.end();
        ++subjectIt)
     {

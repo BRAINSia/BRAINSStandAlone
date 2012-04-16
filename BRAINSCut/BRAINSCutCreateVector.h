@@ -14,7 +14,7 @@ public:
 
   void CreateVectors();
 
-  int  CreateSubjectVectors( SubjectDataSet& subject, std::ofstream& outputStream);
+  int  CreateSubjectVectors( DataSet& subject, std::ofstream& outputStream);
 
   void WriteCurrentVectors( InputVectorMapType& pairedInput, 
                             OutputVectorMapType& pairedOutput,
@@ -37,7 +37,7 @@ private:
                                        std::string subjectROIBinaryFilename,
                                        int roiNumber);
 
-  inline std::string GetROIBinaryFilename( SubjectDataSet& subject, std::string roiName);
+  inline std::string GetROIBinaryFilename( DataSet& subject, std::string roiName);
   inline scalarType GetBinaryValue( scalarType value);
 
 };

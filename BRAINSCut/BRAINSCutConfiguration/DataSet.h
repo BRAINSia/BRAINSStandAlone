@@ -10,7 +10,7 @@
 //
 // subclass XMLElementParser, overriding the
 // constructor to initialize the model structure.
-class SubjectDataSet : public XMLElementParser
+class DataSet : public XMLElementParser
 {
 public:
   typedef XMLElementParser SuperClass;
@@ -18,13 +18,13 @@ public:
   virtual int PrintSelf(std::ostream & os, int indent) const
   {
     indent += SuperClass::PrintSelf(os, indent);
-    os << this->PrintSpaces(indent) << "=== SubjectDataSet ===" << std::endl;
+    os << this->PrintSpaces(indent) << "=== DataSet ===" << std::endl;
     return indent + 2;
   }
 
   typedef SuperClass::StringVectorType StringVectorType;
 
-  SubjectDataSet() : XMLElementParser("SubjectDataSet")
+  DataSet() : XMLElementParser("DataSet")
   {
     this->Add(new StringValue("Name", ""), "Name");
     this->Add(new StringValue("Type", ""), "Type");

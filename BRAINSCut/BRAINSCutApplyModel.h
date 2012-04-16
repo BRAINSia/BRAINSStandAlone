@@ -15,7 +15,7 @@ public:
 
   void Apply();
 
-  void ApplyOnSubject( SubjectDataSet& subject);
+  void ApplyOnSubject( DataSet& subject);
 
 
   void SetComputeSSE( const bool sse );
@@ -76,11 +76,11 @@ private:
                                                                const std::string imageFilename,
                                                                const WorkingPixelType labelValue = HundredPercentValue);
 
-  inline std::string GetSubjectOutputDirectory( SubjectDataSet& subject);
+  inline std::string GetSubjectOutputDirectory( DataSet& subject);
 
-  inline std::string GetContinuousPredictionFilename( SubjectDataSet& subject, std::string currentROIName);
+  inline std::string GetContinuousPredictionFilename( DataSet& subject, std::string currentROIName);
 
-  inline std::string GetROIVolumeName( SubjectDataSet& subject, std::string currentROIName);
+  inline std::string GetROIVolumeName( DataSet& subject, std::string currentROIName);
 
 };
 

@@ -25,6 +25,16 @@ int main(int argc, char * *argv)
   // Call register default transforms
   //itk::TransformFactoryBase::RegisterDefaultTransforms();
 
+  try{
+
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  
+  if( !netConfiguration.empty() && modelConfigurationFilename.empty() )
+    {
+      modelConfigurationFilename = netConfiguration;
+    }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+
   //
   // Data handler
   //
@@ -34,13 +44,17 @@ int main(int argc, char * *argv)
     errorMsg += modelConfigurationFilename;
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   BRAINSCutDataHandler dataHandler ( modelConfigurationFilename );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   BRAINSCutGenerateRegistrations registrationGenerator ( dataHandler );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   const bool applyDataSetOff=false;
   const bool applyDataSetOn=true;
   const bool shuffleTrainVector = (NoTrainingVectorShuffling != true ) ;
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   /*
 
   std::cout<<"shuffleTrainVector::"<< shuffleTrainVector<<std::endl;
@@ -48,7 +62,7 @@ int main(int argc, char * *argv)
   if( generateProbability )
     {
     registrationGenerator.SetAtlasToSubjectRegistrationOn( false );
-    registrationGenerator.SetSubjectDataSet( applyDataSetOff );
+    registrationGenerator.SetDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
     BRAINSCutGenerateProbability testBRAINSCutClass( modelConfigurationFilename );
@@ -57,7 +71,7 @@ int main(int argc, char * *argv)
   if( createVectors )
     {
     registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
-    registrationGenerator.SetSubjectDataSet( applyDataSetOff );
+    registrationGenerator.SetDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
     BRAINSCutCreateVector testCreateVector( modelConfigurationFilename );
@@ -110,7 +124,7 @@ int main(int argc, char * *argv)
     try
       {
       registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
-      registrationGenerator.SetSubjectDataSet( applyDataSetOn );
+      registrationGenerator.SetDataSet( applyDataSetOn );
       registrationGenerator.GenerateRegistrations();
 
       BRAINSCutApplyModel ApplyModule( modelConfigurationFilename );
@@ -129,5 +143,10 @@ int main(int argc, char * *argv)
     }
 
   */
-    return EXIT_SUCCESS;
+  }catch ( BRAINSCutExceptionStringHandler& e )
+    {
+    std::cout << e <<std::endl;
+    }
+
+  return EXIT_SUCCESS;
 }
