@@ -12,7 +12,9 @@
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
 
 BRAINSCutApplyModel
-::BRAINSCutApplyModel( BRAINSCutDataHandler dataHandler )
+::BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler )
+:numberOfTrees(-1),
+ depthOfTree(-1)
 {
   myDataHandler = dataHandler;
   // TODO Take this apart to generate registration one by one!
@@ -22,6 +24,7 @@ BRAINSCutApplyModel
   myDataHandler.SetAtlasDataSet();
   myDataHandler.SetRhoPhiTheta();
 
+  myDataHandler.SetANNModelConfiguration(); // this has to be before gradient size
   myDataHandler.SetGradientSize();
 
   gaussianSmoothingSigma = myDataHandler.GetGaussianSmoothingSigma();
@@ -47,7 +50,6 @@ BRAINSCutApplyModel
 {
   if( method ==  "ANN")
     {
-    myDataHandler.SetANNModelConfiguration();
     myDataHandler.SetANNTestingSSEFilename();
     annOutputThreshold = myDataHandler.GetANNOutputThreshold();
     myDataHandler.SetANNModelFilenameAtIteration( trainIteration);
@@ -55,6 +57,9 @@ BRAINSCutApplyModel
     }
   else if( method == "RandomForest")
     {
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+    myDataHandler.SetRandomForestModelFilename( depthOfTree, numberOfTrees);
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
     ReadRandomForestModelFile();
     }
 
@@ -573,4 +578,22 @@ BRAINSCutApplyModel
     givenROIName = outputDir + "/" + subjectID + "ANNLabel_" + currentROIName + ".nii.gz";
     }
   return givenROIName;
+}
+void 
+BRAINSCutApplyModel
+::SetNumberOfTrees( const int trees)
+{
+  if( trees < 0 )
+    numberOfTrees = myDataHandler.GetMaxTreeCount() ;
+  else
+    numberOfTrees = trees;
+}
+void 
+BRAINSCutApplyModel
+::SetDepthOfTree( const int depth )
+{
+  if( depth <0 )
+    depthOfTree = myDataHandler.GetMaxDepth() ;
+  else
+    depthOfTree = depth;
 }

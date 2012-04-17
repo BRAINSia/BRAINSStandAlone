@@ -13,8 +13,6 @@ BRAINSCutGenerateRegistrations
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   myDataHandler.SetAtlasDataSet();
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  myDataHandler.SetRegistrationParameters();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 // ----------------------------------------------------- //
@@ -50,18 +48,28 @@ BRAINSCutGenerateRegistrations
        subjectIt != subjectDataSets.end();
        ++subjectIt)
     {
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType( myDataHandler.GetImageTypeToUse() ));
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler.GetRegistrationID() );
+  std::cout<<"myDataHandler.GetRegistrationID():: "<<myDataHandler.GetRegistrationID()<<std::endl;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const std::string SubjectToAtlasRegistrationFilename
         ( subjectRegistration->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename") );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const std::string AtlasToSubjRegistrationFilename
         ( subjectRegistration->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename") );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const std::string SubjectBinaryFilename
         ( (*subjectIt)->GetMaskFilenameByType( "RegistrationROI" ) );
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       std::cout<<"RegistrationROI::"<<SubjectBinaryFilename<<std::endl;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       std::cout<<"atlasFIlename:: "<< myDataHandler.GetAtlasBinaryFilename() << std::endl;
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
       if( atlasToSubjectRegistraionOn && 
           (!itksys::SystemTools::FileExists( AtlasToSubjRegistrationFilename.c_str() ) ) )

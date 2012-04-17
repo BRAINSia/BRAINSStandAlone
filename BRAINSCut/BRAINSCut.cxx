@@ -25,8 +25,6 @@ int main(int argc, char * *argv)
   // Call register default transforms
   //itk::TransformFactoryBase::RegisterDefaultTransforms();
 
-  try{
-
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   
   if( !netConfiguration.empty() && modelConfigurationFilename.empty() )
@@ -55,37 +53,39 @@ int main(int argc, char * *argv)
   const bool shuffleTrainVector = (NoTrainingVectorShuffling != true ) ;
 
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  /*
 
   std::cout<<"shuffleTrainVector::"<< shuffleTrainVector<<std::endl;
 
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   if( generateProbability )
     {
     registrationGenerator.SetAtlasToSubjectRegistrationOn( false );
     registrationGenerator.SetDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
-    BRAINSCutGenerateProbability testBRAINSCutClass( modelConfigurationFilename );
+    BRAINSCutGenerateProbability testBRAINSCutClass( dataHandler );
     testBRAINSCutClass.GenerateProbabilityMaps();
     }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   if( createVectors )
     {
     registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
     registrationGenerator.SetDataSet( applyDataSetOff );
     registrationGenerator.GenerateRegistrations();
 
-    BRAINSCutCreateVector testCreateVector( modelConfigurationFilename );
+    BRAINSCutCreateVector testCreateVector( dataHandler);
     testCreateVector.SetTrainingDataSet();
     testCreateVector.CreateVectors();
 
     }
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   if( trainModel )
     {
       if( method=="ANN")
         {
         try
           {
-          BRAINSCutTrainModel ANNTrain( modelConfigurationFilename);
+          BRAINSCutTrainModel ANNTrain( dataHandler );
           ANNTrain.InitializeNeuralNetwork( );
           ANNTrain.InitializeTrainDataSet( shuffleTrainVector );
           ANNTrain.TrainANN();
@@ -97,7 +97,7 @@ int main(int argc, char * *argv)
         }
       else if( method=="RandomForest")
         {
-        BRAINSCutTrainModel RandomForestTrain( modelConfigurationFilename );
+        BRAINSCutTrainModel RandomForestTrain( dataHandler );
         RandomForestTrain.InitializeRandomForest();
         RandomForestTrain.InitializeTrainDataSet( shuffleTrainVector);
 
@@ -127,11 +127,12 @@ int main(int argc, char * *argv)
       registrationGenerator.SetDataSet( applyDataSetOn );
       registrationGenerator.GenerateRegistrations();
 
-      BRAINSCutApplyModel ApplyModule( modelConfigurationFilename );
+      BRAINSCutApplyModel ApplyModule( dataHandler );
 
       ApplyModule.SetMethod( method );
       ApplyModule.SetComputeSSE( computeSSEOn );
-      ApplyModule.SetRandomForestModelFilename( randomTreeDepth, numberOfTrees );
+      ApplyModule.SetDepthOfTree( randomTreeDepth );
+      ApplyModule.SetNumberOfTrees( numberOfTrees );
       ApplyModule.Apply();
 
       }
@@ -140,12 +141,6 @@ int main(int argc, char * *argv)
       std::cout << e.Error();
       }
 
-    }
-
-  */
-  }catch ( BRAINSCutExceptionStringHandler& e )
-    {
-    std::cout << e <<std::endl;
     }
 
   return EXIT_SUCCESS;

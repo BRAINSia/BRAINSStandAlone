@@ -14,7 +14,7 @@ BRAINSCutCreateVector
   myDataHandler.SetGradientSize();
 
   std::cout << "Set Normalization From BRAINSCutConfiguration ";
-  myDataHandler.SetNormalization();
+  myDataHandler.GetNormalization();
   std::cout << "(" << myDataHandler.GetNormalization() << ")" << std::endl;
 }
 

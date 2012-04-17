@@ -22,8 +22,12 @@ public:
   void SetAtlasDataSet();
   void SetAtlasImage();
   void SetRegionsOfInterest();
-  void SetRegistrationParameters();
-  void SetRhoPhiTheta();
+
+  void         SetRegistrationParameters();
+  std::string GetRegistrationID();
+
+  void         SetRhoPhiTheta();
+
   void         SetGradientSize();
   unsigned int GetGradientSize();
 

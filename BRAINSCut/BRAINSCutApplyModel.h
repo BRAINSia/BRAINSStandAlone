@@ -11,7 +11,7 @@ class BRAINSCutApplyModel
 {
 public:
   BRAINSCutApplyModel( ){};
-  BRAINSCutApplyModel( BRAINSCutDataHandler dataHandler );
+  BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler );
 
   void Apply();
 
@@ -21,11 +21,10 @@ public:
   void SetComputeSSE( const bool sse );
   void SetMethod( std::string inputMethod);
 
+  void SetNumberOfTrees( const int numberOfTree );
+  void SetDepthOfTree( const int depth );
   void ReadANNModelFile();
   void ReadRandomForestModelFile();
-  void SetRandomForestModelFilename();
-  void SetRandomForestModelFilename( int depth, int nTree);
-
 
   BinaryImagePointer PostProcessingANN( std::string continuousFilename, 
                                         scalarType threshold );
@@ -49,6 +48,9 @@ private:
   bool        normalization;
   bool        computeSSE;
   int         trainIteration;
+
+  int         numberOfTrees;
+  int         depthOfTree;
 
   std::fstream ANNTestingSSEFileStream;
 
