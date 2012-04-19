@@ -5,12 +5,11 @@
 
 /** constructors */
 BRAINSCutDataHandler
-::BRAINSCutDataHandler( std::string modelConfigurationFilenameFilename )
-  :BRAINSCutConfiguration()
+::BRAINSCutDataHandler( std::string modelConfigurationFilename )
 {
   try
     {
-    SetNetConfigurationFilename( modelConfigurationFilenameFilename );
+    SetNetConfigurationFilename( modelConfigurationFilename );
     SetNetConfiguration();
     }
   catch( BRAINSCutExceptionStringHandler& e)
@@ -26,13 +25,19 @@ BRAINSCutDataHandler
 {
   try
     {
-    std::list<XMLElementContainer *> elementList;
+    //
+    // read in xml images
+    //
+    std::list<ElementContainer *> elementList;
 
-    elementList.push_front( this );
+    elementList.push_front( myConfiguration );
 
-    XMLConfigurationFileParser BRIANSCutXMLConfigurationFileParser = XMLConfigurationFileParser( NetConfigurationFilename );
-    BRIANSCutXMLConfigurationFileParser.SetUserData( &elementList );
-    BRIANSCutXMLConfigurationFileParser.Parse();
+    XMLConfigurationFileParser BRAINSCutXMLConfigurationFileParser = 
+      XMLConfigurationFileParser( myConfigurationFilename );
+    BRAINSCutXMLConfigurationFileParser.SetUserData( &elementList );
+    BRAINSCutXMLConfigurationFileParser.Parse();
+
+    myConfiguration = BRAINSCutXMLConfigurationFileParser.GetConfiguration();
     }
   catch( BRAINSCutExceptionStringHandler& e)
     {
@@ -45,7 +50,7 @@ void
 BRAINSCutDataHandler
 ::SetAtlasDataSet()
 {
-  atlasDataSet = BRAINSCutConfiguration::GetAtlasDataSet();
+  atlasDataSet = myConfiguration->GetAtlasDataSet();
   std::cout<<"registrationImageTypeToUse :: "<<registrationImageTypeToUse <<std::endl;
 
   if( registrationImageTypeToUse.empty() )
@@ -79,21 +84,21 @@ void
 BRAINSCutDataHandler
 ::SetNetConfigurationFilename(const std::string filename)
 {
-  NetConfigurationFilename = filename;
+  myConfigurationFilename = filename;
 }
 
 std::string
 BRAINSCutDataHandler
 ::GetNetConfigurationFilename()
 {
-  return NetConfigurationFilename;
+  return myConfigurationFilename;
 }
 
 int
 BRAINSCutDataHandler
 ::GetTrainIteration()
 {
-  int trainIteration = this->Get<TrainingParameters>("ANNParameters")
+  int trainIteration = myConfiguration->Get<TrainingParameters>("ANNParameters")
                             ->GetAttribute<IntValue>("Iterations");
 
   return trainIteration;
@@ -110,7 +115,7 @@ void
 BRAINSCutDataHandler
 ::SetRegionsOfInterest()
 {
-  roiDataList = this->Get<ProbabilityMapList>("ProbabilityMapList");
+  roiDataList = myConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
   roiIDsInOrder = roiDataList->CollectAttValues<ProbabilityMapParser>("StructureID");
 
   std::sort( roiIDsInOrder.begin(), roiIDsInOrder.end() ); // get l_caudate, l_globus, .. , r_caudate, r_globus..
@@ -124,15 +129,34 @@ BRAINSCutDataHandler
 {
 
   registrationParser =
-    this->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
+    myConfiguration->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
 
-  registrationImageTypeToUse =
-    std::string( registrationParser->GetAttribute<StringValue>( "ImageTypeToUse") );
+  SetRegistrationImageTypeToUse ( 
+      std::string( registrationParser->GetAttribute<StringValue>( "ImageTypeToUse") ) );
 
   registrationID = std::string(
     registrationParser->GetAttribute<StringValue>("ID") );
 
   roiAutoDilateSize = registrationParser->GetAttribute<IntValue>("BRAINSROIAutoDilateSize") ;
+}
+
+void
+BRAINSCutDataHandler
+::SetRegistrationImageTypeToUse( std::string type )
+{
+  registrationImageTypeToUse=type;
+}
+
+std::string
+BRAINSCutDataHandler
+::GetRegistrationImageTypeToUse()
+{
+  if( registrationImageTypeToUse.empty() )
+  {
+    std::cout<<"registrationImageTypeToUse is empty."<<std::endl;
+    exit(EXIT_FAILURE);
+  }
+  return registrationImageTypeToUse;
 }
 
 std::string
@@ -255,7 +279,7 @@ void
 BRAINSCutDataHandler
 ::SetANNModelConfiguration()
 {
-  annModelConfiguration = BRAINSCutConfiguration::Get<NeuralParams>("NeuralNetParams");
+  annModelConfiguration = myConfiguration->Get<NeuralParams>("NeuralNetParams");
 }
 
 void
@@ -423,7 +447,7 @@ BRAINSCutDataHandler
 ::GetANNOutputThreshold()
 {
   scalarType annOutputThreshold =
-    BRAINSCutConfiguration::Get<ApplyModelType>("ApplyModel")
+    myConfiguration->Get<ApplyModelType>("ApplyModel")
               ->GetAttribute<FloatValue>("MaskThresh");
   if( annOutputThreshold < 0.0F )
     {
@@ -444,9 +468,9 @@ BRAINSCutDataHandler
   if( depth < 0 && nTree <0 )
     {
     std::cout<<"Read random forest model parameters from xml file"<<std::endl;
-    nTree= BRAINSCutConfiguration::Get<TrainingParameters>("RandomForestParameters")
+    nTree= myConfiguration->Get<TrainingParameters>("RandomForestParameters")
                             ->GetAttribute<IntValue>("MaxDepth");
-    depth= BRAINSCutConfiguration::Get<TrainingParameters>("RandomForestParameters")
+    depth= myConfiguration->Get<TrainingParameters>("RandomForestParameters")
                             ->GetAttribute<IntValue>("MaxTreeCount");
     }
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
@@ -485,7 +509,7 @@ void
 BRAINSCutDataHandler
 ::SetTrainVectorFilename()
 {
-  trainVectorFilename = BRAINSCutConfiguration::GetAttribute<StringValue>("TrainingVectorFilename");
+  trainVectorFilename = myConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
   trainVectorFilename += "ANN"; // TODO
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
   std::cout << "Write vector file at " << trainVectorFilename << std::endl;
@@ -504,6 +528,23 @@ BRAINSCutDataHandler
   return trainVectorFilename;
 }
 
+BRAINSCutConfiguration::TrainDataSetListType
+BRAINSCutDataHandler
+::GetTrainDataSet()
+{
+  BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
+  try
+    {
+      trainDataSetList = myConfiguration->GetTrainDataSets();
+    }
+  catch( BRAINSCutExceptionStringHandler& e )
+    {
+    std::cout << e.Error() << std::endl;
+    exit(EXIT_SUCCESS);
+    }
+  return trainDataSetList;
+}
+
 BRAINSCutConfiguration::ApplyDataSetListType
 BRAINSCutDataHandler
 ::GetApplyDataSet()
@@ -511,7 +552,7 @@ BRAINSCutDataHandler
   BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
   try
     {
-      applyDataSetList = BRAINSCutConfiguration::GetApplyDataSets();
+      applyDataSetList = myConfiguration->GetApplyDataSets();
     }
   catch( BRAINSCutExceptionStringHandler& e )
     {
@@ -526,7 +567,7 @@ BRAINSCutDataHandler
 ::GetGaussianSmoothingSigma()
 {
   scalarType gaussianSmoothingSigma=
-    BRAINSCutConfiguration::Get<ApplyModelType>("ApplyModel")
+    myConfiguration->Get<ApplyModelType>("ApplyModel")
               ->GetAttribute<FloatValue>("GaussianSmoothingSigma");
   return gaussianSmoothingSigma;
 }
@@ -535,7 +576,7 @@ void
 BRAINSCutDataHandler
 ::SetTrainConfiguration( std::string trainParameterName )
 {
-  TrainConfiguration = BRAINSCutConfiguration::Get<TrainingParameters>( trainParameterName.c_str() );
+  TrainConfiguration = myConfiguration->Get<TrainingParameters>( trainParameterName.c_str() );
 }
 
 unsigned int
@@ -627,3 +668,5 @@ BRAINSCutDataHandler
   int trainMaxTreeCount= TrainConfiguration->GetAttribute<IntValue>("MaxTreeCount");
   return trainMaxTreeCount;
 }
+
+

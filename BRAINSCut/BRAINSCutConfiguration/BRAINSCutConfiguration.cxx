@@ -7,11 +7,14 @@
 #include <list>
 #include <BRAINSCutConfiguration.h>
 
-BRAINSCutConfiguration::BRAINSCutConfiguration() : XMLElementParser("BRAINSCutBRAINSCutConfiguration")
+BRAINSCutConfiguration::BRAINSCutConfiguration() : ElementParser("BRAINSCutBRAINSCutConfiguration")
 {
   this->Add(new DataSetList, "DataSetList");
   this->Add(new ProbabilityMapList, "ProbabilityMapList");
   this->Add(new RegistrationConfigurationParser, "RegistrationConfiguration");
+
+  RegistrationConfigurationParser *params=
+    this->Get< RegistrationConfigurationParser >("RegistrationConfiguration");
 }
 
 void
@@ -27,7 +30,7 @@ BRAINSCutConfiguration::AddDataSet(DataSet *newSet)
 DataSet * BRAINSCutConfiguration::GetAtlasDataSet() const
 {
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
-  for( XMLElementParser::const_iterator it = set->begin();
+  for( ElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {
@@ -46,7 +49,7 @@ BRAINSCutConfiguration::GetTrainDataSets() const
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
   std::list<DataSet *> rval;
-  for( XMLElementParser::const_iterator it = set->begin();
+  for( ElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {
@@ -66,7 +69,7 @@ BRAINSCutConfiguration::GetApplyDataSets() const
   const DataSetList *set = this->Get<DataSetList>("DataSetList");
 
   std::list<DataSet *> rval;
-  for( XMLElementParser::const_iterator it = set->begin();
+  for( ElementParser::const_iterator it = set->begin();
        it != set->end();
        ++it )
     {

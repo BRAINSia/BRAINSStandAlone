@@ -7,7 +7,7 @@
  * BRAINSCut Primary Class Starts here
  */
 
-class BRAINSCutDataHandler : public BRAINSCutConfiguration
+class BRAINSCutDataHandler 
 {
 public:
   BRAINSCutDataHandler(){};
@@ -21,10 +21,13 @@ public:
 
   void SetAtlasDataSet();
   void SetAtlasImage();
+
   void SetRegionsOfInterest();
 
   void         SetRegistrationParameters();
-  std::string GetRegistrationID();
+  std::string  GetRegistrationID();
+  void         SetRegistrationImageTypeToUse( std::string type );
+  std::string  GetRegistrationImageTypeToUse( );
 
   void         SetRhoPhiTheta();
 
@@ -68,6 +71,7 @@ public:
   DataSet *      GetAtlasDataSet();
 
   BRAINSCutConfiguration::ApplyDataSetListType GetApplyDataSet();
+  BRAINSCutConfiguration::TrainDataSetListType GetTrainDataSet();
 
   int                   GetTrainIteration();
   scalarType            GetANNOutputThreshold();
@@ -130,8 +134,11 @@ protected:
   std::string ANNTestingSSEFilename;
 
 private:
+  std::string              myConfigurationFilename;
+  BRAINSCutConfiguration * myConfiguration;
+
   WorkingImageType GetDeformedImage( WorkingImageType image);
-  std::string NetConfigurationFilename;
+
 
 };
 #endif

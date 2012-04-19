@@ -7,10 +7,10 @@
 #include <list>
 #include <SpatialLocationType.h>
 
-class BRAINSCutConfiguration : public XMLElementParser
+class BRAINSCutConfiguration : public ElementParser
 {
 public:
-  typedef XMLElementParser SuperClass;
+  typedef ElementParser SuperClass;
   BRAINSCutConfiguration();
 
   virtual int PrintSelf(std::ostream & os, int indent) const

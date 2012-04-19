@@ -18,22 +18,13 @@ BRAINSCutGenerateProbability
     myDataHandler.SetAtlasImage();
 
     myDataHandler.SetRegionsOfInterest();
-    SetTrainingDataSetsList();
+    myDataHandler.GetTrainDataSet();
     }
   catch( BRAINSCutExceptionStringHandler& e ) 
     {
     std::cout << e.Error();    
     }
 
-}
-
-/** Get/Set Methods */
-
-void
-BRAINSCutGenerateProbability
-::SetTrainingDataSetsList()
-{
-  trainingDataSetList = myDataHandler.GetTrainDataSets();
 }
 
 /*
@@ -65,10 +56,6 @@ void
 BRAINSCutGenerateProbability
 ::GenerateProbabilityMaps()
 {
-
-  //GenerateRegistrations(BRAINSCutNetConfiguration, false, false,  1);
-
-
 
   /** generating spherical coordinate image does not have to be here */
   GenerateSymmetricalSphericalCoordinateImage();

@@ -1,21 +1,21 @@
-#ifndef XMLElementContainer_H
-#define XMLElementContainer_H
+#ifndef ElementContainer_H
+#define ElementContainer_H
 #include <string>
 #include <iostream>
 
-class XMLElementContainer
+class ElementContainer
 {
 public:
-  XMLElementContainer(const std::string & name)
+  ElementContainer(const std::string & name)
   {
     this->SetName(name);
   }
 
-  XMLElementContainer()
+  ElementContainer()
   {
   }
 
-  virtual ~XMLElementContainer()
+  virtual ~ElementContainer()
   {
   }
 
@@ -49,10 +49,10 @@ private:
 
 template <typename TOutputType>
 class XMLContents :
-  public XMLElementContainer
+  public ElementContainer
 {
 public:
-  typedef XMLElementContainer SuperClass;
+  typedef ElementContainer SuperClass;
   typedef TOutputType         OutputType;
   virtual int PrintSelf(std::ostream &, int indent) const
   {
@@ -64,7 +64,7 @@ public:
   }
 
   XMLContents(const std::string & s) :
-    XMLElementContainer(s)
+    ElementContainer(s)
   {
   }
 
@@ -80,4 +80,4 @@ public:
 
 };
 
-#endif // XMLElementContainer_H
+#endif // ElementContainer_H

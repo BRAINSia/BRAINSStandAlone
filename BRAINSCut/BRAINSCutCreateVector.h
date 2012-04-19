@@ -27,7 +27,7 @@ public:
 
 private:
   BRAINSCutDataHandler myDataHandler;
-  BRAINSCutDataHandler::TrainDataSetListType trainDataSetList;
+  BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
 
   int inputVectorSize;
   int outputVectorSize;

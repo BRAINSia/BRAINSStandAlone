@@ -2,7 +2,6 @@
 #define BRAINSCutGenerateRegistrations_h
 
 #include "BRAINSCutDataHandler.h"
-#include "XMLConfigurationFileParser.h"
 
 typedef itk::Image<unsigned char, DIMENSION> BinaryImageType;
 typedef BinaryImageType::Pointer             BinaryImagePointer;

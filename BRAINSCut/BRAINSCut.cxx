@@ -42,21 +42,16 @@ int main(int argc, char * *argv)
     errorMsg += modelConfigurationFilename;
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   BRAINSCutDataHandler dataHandler ( modelConfigurationFilename );
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   BRAINSCutGenerateRegistrations registrationGenerator ( dataHandler );
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   const bool applyDataSetOff=false;
   const bool applyDataSetOn=true;
   const bool shuffleTrainVector = (NoTrainingVectorShuffling != true ) ;
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
   std::cout<<"shuffleTrainVector::"<< shuffleTrainVector<<std::endl;
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   if( generateProbability )
     {
     registrationGenerator.SetAtlasToSubjectRegistrationOn( false );

@@ -174,7 +174,6 @@ BRAINSCutTrainModel
   line += ", number of Tree, ";
   line += cNTree ;
 
-  std::cout<<line<<std::endl;
   appendToFile( RFErrorFilename, line );
 }
 

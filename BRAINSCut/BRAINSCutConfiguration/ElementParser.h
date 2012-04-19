@@ -1,6 +1,6 @@
-#ifndef XMLElementParser_h
-#define XMLElementParser_h
-#include "XMLElementContainer.h"
+#ifndef ElementParser_h
+#define ElementParser_h
+#include "ElementContainer.h"
 #include "BRAINSCutExceptionStringHandler.h"
 
 #include "StringValue.h"
@@ -12,11 +12,11 @@
 #include <vector>
 #include <ctype.h>
 
-class XMLElementParser :
-  public XMLElementContainer
+class ElementParser :
+  public ElementContainer
 {
 private:
-  typedef XMLElementContainer SuperClass;
+  typedef ElementContainer SuperClass;
   void toLower(std::string & s) const
   {
     for( unsigned i = 0; i < s.size(); i++ )
@@ -26,21 +26,21 @@ private:
   }
 
 public:
-  typedef std::map<std::string, XMLElementContainer *> MapType;
+  typedef std::map<std::string, ElementContainer *> MapType;
   typedef MapType::iterator                            iterator;
   typedef MapType::const_iterator                      const_iterator;
   typedef std::vector<std::string>                     StringVectorType;
 
-  XMLElementParser(const char *name) :
-    XMLElementContainer(name)
+  ElementParser(const char *name) :
+    ElementContainer(name)
   {
   }
 
-  XMLElementParser()
+  ElementParser()
   {
   }
 
-  virtual ~XMLElementParser()
+  virtual ~ElementParser()
   {
     for( iterator it = m_Map.begin();
          it != m_Map.end(); ++it )
@@ -71,7 +71,7 @@ public:
   virtual int PrintSelf(std::ostream & os, int indent) const
   {
     // SuperClass::PrintSelf(os);
-    // os << this->PrintSpaces(indent) << "=== XMLElementParser ===" <<
+    // os << this->PrintSpaces(indent) << "=== ElementParser ===" <<
     // std::endl;
     MapType::const_iterator errdump;
     for( errdump = m_Map.begin(); errdump != m_Map.end(); ++errdump )
@@ -86,7 +86,7 @@ public:
   }
 
 // AddElementByName
-  void Add(XMLElementContainer *toAdd, const char *name)
+  void Add(ElementContainer *toAdd, const char *name)
   {
     std::string Name(name);
 
@@ -101,7 +101,7 @@ public:
     m_Map[Name] = toAdd;
   }
 
-  void Add(XMLElementContainer *toAdd,
+  void Add(ElementContainer *toAdd,
            const std::string & name)
   {
     this->Add( toAdd, name.c_str() );
@@ -328,4 +328,4 @@ private:
   MapType m_Map;
 };
 
-#endif // XMLElementParser_h
+#endif // ElementParser_h

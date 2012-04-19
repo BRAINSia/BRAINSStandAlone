@@ -7,12 +7,9 @@
 BRAINSCutGenerateRegistrations
 ::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler )
 {      
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   myDataHandler =  dataHandler;
   myDataHandler.SetRegistrationParameters();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
   myDataHandler.SetAtlasDataSet();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 // ----------------------------------------------------- //
@@ -31,11 +28,11 @@ BRAINSCutGenerateRegistrations
   //if applyDataSEt==false, then use training dataset 
   if( applyDataSet)
     {
-    subjectDataSets = myDataHandler.GetApplyDataSets();
+    subjectDataSets = myDataHandler.GetApplyDataSet();
     }
   else
     {
-    subjectDataSets = myDataHandler.GetTrainDataSets();
+    subjectDataSets = myDataHandler.GetTrainDataSet();
     }
 }
 
@@ -49,7 +46,7 @@ BRAINSCutGenerateRegistrations
        ++subjectIt)
     {
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-      const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType( myDataHandler.GetImageTypeToUse() ));
+      const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType( myDataHandler.GetRegistrationImageTypeToUse() ));
 
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler.GetRegistrationID() );

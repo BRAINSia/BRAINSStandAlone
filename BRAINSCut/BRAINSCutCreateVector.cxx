@@ -22,7 +22,7 @@ void
 BRAINSCutCreateVector
 ::CreateVectors()
 {
-  typedef BRAINSCutDataHandler::TrainDataSetListType::iterator
+  typedef BRAINSCutConfiguration::TrainDataSetListType::iterator
           TrainSubjectIteratorType;
 
   int numberOfInputVector = 0;
@@ -70,7 +70,7 @@ BRAINSCutCreateVector
 {
   try
     {
-    trainDataSetList = myDataHandler.GetTrainDataSets();
+    trainDataSetList = myDataHandler.GetTrainDataSet();
     }
   catch( BRAINSCutExceptionStringHandler& e )
     {
