@@ -10,7 +10,7 @@
 BRAINSCutVectorTrainingSet
 ::BRAINSCutVectorTrainingSet( const std::string vectorFilename)
   : trainingVectorFilename( vectorFilename),
-  trainingHeaderFilename( vectorFilename + "hdr" ),
+  trainingHeaderFilename( vectorFilename + ".hdr" ),
   totalVectorSize(0),
   inputVectorSize(0),
   outputVectorSize(0),

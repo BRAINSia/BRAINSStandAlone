@@ -126,8 +126,12 @@ int main(int argc, char * *argv)
 
       ApplyModule.SetMethod( method );
       ApplyModule.SetComputeSSE( computeSSEOn );
-      ApplyModule.SetDepthOfTree( randomTreeDepth );
-      ApplyModule.SetNumberOfTrees( numberOfTrees );
+
+      if( method == "RandomForest" )
+        {
+        ApplyModule.SetDepthOfTree( randomTreeDepth );
+        ApplyModule.SetNumberOfTrees( numberOfTrees );
+        }
       ApplyModule.Apply();
 
       }

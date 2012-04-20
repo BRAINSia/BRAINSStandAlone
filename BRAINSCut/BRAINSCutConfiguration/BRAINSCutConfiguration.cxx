@@ -12,9 +12,6 @@ BRAINSCutConfiguration::BRAINSCutConfiguration() : ElementParser("BRAINSCutBRAIN
   this->Add(new DataSetList, "DataSetList");
   this->Add(new ProbabilityMapList, "ProbabilityMapList");
   this->Add(new RegistrationConfigurationParser, "RegistrationConfiguration");
-
-  RegistrationConfigurationParser *params=
-    this->Get< RegistrationConfigurationParser >("RegistrationConfiguration");
 }
 
 void

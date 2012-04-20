@@ -515,7 +515,7 @@ BRAINSCutDataHandler
     trainingVectorConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
   trainVectorFilename += "ANN"; // TODO
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-  std::cout << "Write vector file at " << trainVectorFilename << std::endl;
+  std::cout << "vector file at " << trainVectorFilename << std::endl;
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
 }
 

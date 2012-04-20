@@ -18,7 +18,7 @@ BRAINSCutGenerateProbability
     myDataHandler.SetAtlasImage();
 
     myDataHandler.SetRegionsOfInterest();
-    myDataHandler.GetTrainDataSet();
+    trainingDataSetList = myDataHandler.GetTrainDataSet();
     }
   catch( BRAINSCutExceptionStringHandler& e ) 
     {

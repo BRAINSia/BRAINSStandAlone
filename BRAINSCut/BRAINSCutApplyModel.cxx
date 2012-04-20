@@ -42,6 +42,14 @@ BRAINSCutApplyModel
 ::SetMethod( std::string inputMethod)
 {
   method = inputMethod;
+  if( method ==  "ANN") 
+    {
+    myDataHandler.SetTrainConfiguration( "ANNParameters" );
+    }
+  else
+    {
+    myDataHandler.SetTrainConfiguration( "RandomForestParameters");
+    }
 }
 /* iterate through subject */
 void
@@ -120,26 +128,29 @@ BRAINSCutApplyModel
   /* now iterate through the roi */
 
   unsigned int roiIDsOrderNumber = 0;
-  for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
-       roiTyIt != myDataHandler.GetROIIDsInOrder().end();
-       ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
+  //for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  //     roiTyIt != myDataHandler.GetROIIDsInOrder().end();
+  //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
+  while( roiIDsOrderNumber < myDataHandler.GetROIIDsInOrder().size() )
     {
+    std::string currentROIName = std::string( myDataHandler.GetROIIDsInOrder()[ roiIDsOrderNumber ] );
+
     ProbabilityMapParser* roiDataSet =
-      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() );
+      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROIName.c_str() );
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
-      InputVectorMapType  roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( *roiTyIt );
+      InputVectorMapType  roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( currentROIName );
       PredictValueMapType predictedOutputVector;
 
       if( ! computeSSE )
         {
         PredictROI( roiInputVector, predictedOutputVector,
                     roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
-        std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, (*roiTyIt) );
+        std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, currentROIName );
 
         WritePredictROIProbabilityBasedOnReferenceImage( predictedOutputVector,
                                                          imagesOfInterest.front(),
-                                                         deformedROIs.find( *roiTyIt )->second,
+                                                         deformedROIs.find( currentROIName )->second,
                                                          ANNContinuousOutputFilename, 
                                                          roiIDsOrderNumber );
 
@@ -157,9 +168,9 @@ BRAINSCutApplyModel
           mask = PostProcessingRF( ANNContinuousOutputFilename );
         }
 
-        std::string roiOutputFilename = GetROIVolumeName( subject, *roiTyIt );
+        std::string roiOutputFilename = GetROIVolumeName( subject, currentROIName );
         itkUtil::WriteImage<BinaryImageType>( mask, roiOutputFilename );
-        itkUtil::WriteImage<WorkingImageType>( deformedROIs.find( *roiTyIt )->second,
+        itkUtil::WriteImage<WorkingImageType>( deformedROIs.find( currentROIName )->second,
                                                roiOutputFilename+"def.nii.gz");
         }
       else /* testing phase */
@@ -169,10 +180,10 @@ BRAINSCutApplyModel
           myDataHandler.SetANNModelFilenameAtIteration( currentIteration ) ;
           PredictROI( roiInputVector, predictedOutputVector,
                       roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
-          std::string roiReferenceFilename = GetROIVolumeName( subject, *roiTyIt );
+          std::string roiReferenceFilename = GetROIVolumeName( subject, currentROIName );
           float SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
 
-          ANNTestingSSEFileStream<<*roiTyIt
+          ANNTestingSSEFileStream<<currentROIName
                                  <<", subjectID, "<< subjectID
                                  <<", Iteration, "<<currentIteration
                                  <<", SSE, "<<SSE 

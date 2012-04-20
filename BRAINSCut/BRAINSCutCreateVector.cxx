@@ -6,8 +6,8 @@ BRAINSCutCreateVector
   myDataHandler = dataHandler;
 
   myDataHandler.SetRegistrationParameters();
-  myDataHandler.SetRegionsOfInterest();
   myDataHandler.SetAtlasDataSet();
+  myDataHandler.SetRegionsOfInterest();
   myDataHandler.SetRhoPhiTheta();
   myDataHandler.SetTrainingVectorConfiguration();
   myDataHandler.SetGradientSize();
@@ -103,27 +103,29 @@ BRAINSCutCreateVector
   unsigned int roiIDsOrderNumber = 0;
 
   int numberOfVectors = 0;
-  for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
-       roiTyIt != myDataHandler.GetROIIDsInOrder().end();
-       ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
+  //for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  //     roiTyIt != myDataHandler.GetROIIDsInOrder().end();
+  //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
+  while( roiIDsOrderNumber <  myDataHandler.GetROIIDsInOrder().size() )
     {
+    std::string currentROI( myDataHandler.GetROIIDsInOrder()[ roiIDsOrderNumber ] );
 
     ProbabilityMapParser* roiDataSet =
-      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", (*roiTyIt).c_str() );
+      myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROI.c_str() );
 
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
       /* get input vector */
-      InputVectorMapType roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( *roiTyIt );
+      InputVectorMapType roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( currentROI );
 
       /*
        * get paired output vector
        * * subjectROIBinaryName = given answer = ground truth of segmentation = manual
        */
-      std::string subjectROIBinaryName = GetROIBinaryFilename( subject, *roiTyIt );
+      std::string subjectROIBinaryName = GetROIBinaryFilename( subject, currentROI );
       std::cout << __LINE__ << "::" << __FILE__ << "::" << subjectROIBinaryName << std::endl;
 
-      OutputVectorMapType roiOutputVector = GetPairedOutput( deformedROIs, *roiTyIt,
+      OutputVectorMapType roiOutputVector = GetPairedOutput( deformedROIs, currentROI,
                                                              subjectROIBinaryName, roiIDsOrderNumber );
       WriteCurrentVectors( roiInputVector, roiOutputVector, outputStream );
       numberOfVectors += roiInputVector.size();

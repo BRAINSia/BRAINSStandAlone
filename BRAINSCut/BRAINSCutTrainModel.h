@@ -6,7 +6,7 @@
 class BRAINSCutTrainModel 
 {
 public:
-  BRAINSCutTrainModel( BRAINSCutDataHandler dataHandler );
+  BRAINSCutTrainModel( BRAINSCutDataHandler & dataHandler );
 
   /** train */
   void InitializeNeuralNetwork( );

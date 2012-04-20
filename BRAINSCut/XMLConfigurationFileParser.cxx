@@ -234,7 +234,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       np->SetAttribute<StringValue>( "Normalization",
                                     attribMap.Get( Name.c_str(),
                                                    "Normalization") );
-      myConfiguration->Add(np, "TRainingVectorConfiguration");
+      myConfiguration->Add(np, "TrainingVectorConfiguration");
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {

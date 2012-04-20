@@ -3,7 +3,7 @@
 #include "fstream.h"
 
 BRAINSCutTrainModel
-::BRAINSCutTrainModel( BRAINSCutDataHandler dataHandler ):
+::BRAINSCutTrainModel( BRAINSCutDataHandler & dataHandler ):
   trainIteration(0),
   trainEpochIteration(0),
   trainDesiredError(0.0),
@@ -13,6 +13,7 @@ BRAINSCutTrainModel
   activationMinMax(0)
 {
   myDataHandler = dataHandler; 
+
 }
 
 /** train */
@@ -20,6 +21,7 @@ void
 BRAINSCutTrainModel
 ::InitializeTrainDataSet( bool doShuffle )
 {
+  myDataHandler.SetTrainVectorFilename();
   const std::string trainVectorFilename = myDataHandler.GetTrainVectorFilename();
 
   trainingDataSet = new BRAINSCutVectorTrainingSet( trainVectorFilename );
@@ -77,7 +79,7 @@ BRAINSCutTrainModel
 ::InitializeRandomForest()
 {
   myDataHandler.SetTrainConfiguration( "RandomForestParameters" );
-  //SetTrainingVectorConfiguration();
+  myDataHandler.SetTrainingVectorConfiguration();
   trainMaxDepth          = myDataHandler.GetMaxDepth();
   trainMinSampleCount    = myDataHandler.GetMinSampleCount();
   trainUseSurrogates     = myDataHandler.GetUseSurrogates();
@@ -231,7 +233,7 @@ BRAINSCutTrainModel
                     activationMinMax);
 
   for( unsigned int currentIteration = 0;
-       currentIteration < trainIteration;
+       currentIteration <= trainIteration;
        currentIteration++ )
     {
     unsigned int subSetNo =  currentIteration % trainingDataSet->GetNumberOfSubSet();
@@ -253,9 +255,9 @@ void
 BRAINSCutTrainModel
 ::TrainRandomForest() 
 {
-  for( int depth=1; depth<trainMaxDepth; depth++)
+  for( int depth=1; depth<= trainMaxDepth; depth++)
     {
-    for( int nTree=2; nTree<trainMaxTreeCount; nTree++)
+    for( int nTree=2; nTree<= trainMaxTreeCount; nTree++)
       {
       TrainRandomForestAt( depth, nTree );
       }
