@@ -34,7 +34,7 @@ public:
   void         SetGradientSize();
   unsigned int GetGradientSize();
 
-  void SetANNModelConfiguration();
+  void SetTrainingVectorConfiguration();
 
   std::string GetModelBaseName();
 
@@ -95,7 +95,7 @@ public:
 
 
 protected:
-  NeuralParams *   annModelConfiguration;
+  TrainingVectorConfigurationType *   trainingVectorConfiguration;
 
   /* train parameters */
   TrainingParameters *TrainConfiguration;

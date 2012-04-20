@@ -1,5 +1,5 @@
 #include "BRAINSCutTrainModel.h"
-#include "NeuralParams.h"
+#include "TrainingVectorConfigurationType.h"
 #include "fstream.h"
 
 BRAINSCutTrainModel
@@ -58,7 +58,7 @@ BRAINSCutTrainModel
 ::InitializeNeuralNetwork()
 {
   myDataHandler.SetTrainConfiguration( "ANNParameters" );
-  myDataHandler.SetANNModelConfiguration();
+  myDataHandler.SetTrainingVectorConfiguration();
   ANNLayerStructure = cvCreateMat( 1, 3, CV_32SC1);
 
   trainMaximumDataSize = myDataHandler.GetMaximumDataSize();
@@ -77,7 +77,7 @@ BRAINSCutTrainModel
 ::InitializeRandomForest()
 {
   myDataHandler.SetTrainConfiguration( "RandomForestParameters" );
-  //SetANNModelConfiguration();
+  //SetTrainingVectorConfiguration();
   trainMaxDepth          = myDataHandler.GetMaxDepth();
   trainMinSampleCount    = myDataHandler.GetMinSampleCount();
   trainUseSurrogates     = myDataHandler.GetUseSurrogates();

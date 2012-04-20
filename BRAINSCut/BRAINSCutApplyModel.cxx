@@ -24,7 +24,7 @@ BRAINSCutApplyModel
   myDataHandler.SetAtlasDataSet();
   myDataHandler.SetRhoPhiTheta();
 
-  myDataHandler.SetANNModelConfiguration(); // this has to be before gradient size
+  myDataHandler.SetTrainingVectorConfiguration(); // this has to be before gradient size
   myDataHandler.SetGradientSize();
 
   gaussianSmoothingSigma = myDataHandler.GetGaussianSmoothingSigma();

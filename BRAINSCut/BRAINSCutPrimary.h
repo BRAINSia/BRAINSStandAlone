@@ -3,7 +3,7 @@
 
 #include "BRAINSCutConfiguration.h"
 
-#include "NeuralParams.h"
+#include "TrainingVectorConfigurationType.h"
 #include "TrainingPrameters.h"
 #include "ApplyModel.h"
 #include "itkIO.h"

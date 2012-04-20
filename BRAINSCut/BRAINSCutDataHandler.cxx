@@ -277,16 +277,18 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetANNModelConfiguration()
+::SetTrainingVectorConfiguration()
 {
-  annModelConfiguration = myConfiguration->Get<NeuralParams>("NeuralNetParams");
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  trainingVectorConfiguration = myConfiguration->Get<TrainingVectorConfigurationType>("TrainingVectorConfiguration");
+  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 }
 
 void
 BRAINSCutDataHandler
 ::SetGradientSize()
 {
-  gradientSize = annModelConfiguration->GetAttribute<IntValue>("GradientProfileSize");
+  gradientSize = trainingVectorConfiguration->GetAttribute<IntValue>("GradientProfileSize");
 }
 
 unsigned int
@@ -303,7 +305,7 @@ BRAINSCutDataHandler
   std::string normalizationString;
   try
     { 
-    normalizationString = annModelConfiguration->GetAttribute<StringValue>("Normalization");
+    normalizationString = trainingVectorConfiguration->GetAttribute<StringValue>("Normalization");
     }catch( BRAINSCutExceptionStringHandler& e)
     {
       std::cout<<e.Error()<<std::endl;
@@ -334,7 +336,7 @@ BRAINSCutDataHandler
   std::string basename;
   try
     {
-    basename = annModelConfiguration->GetAttribute<StringValue>("TrainingModelFilename");
+    basename = trainingVectorConfiguration->GetAttribute<StringValue>("TrainingModelFilename");
     }
   catch( ... )
     {
@@ -509,7 +511,8 @@ void
 BRAINSCutDataHandler
 ::SetTrainVectorFilename()
 {
-  trainVectorFilename = myConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
+  trainVectorFilename = 
+    trainingVectorConfiguration->GetAttribute<StringValue>("TrainingVectorFilename");
   trainVectorFilename += "ANN"; // TODO
   std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
   std::cout << "Write vector file at " << trainVectorFilename << std::endl;

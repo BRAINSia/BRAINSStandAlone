@@ -1,6 +1,6 @@
 #include "XMLConfigurationFileParser.h"
 #include "ApplyModel.h"
-#include "NeuralParams.h"
+#include "TrainingVectorConfigurationType.h"
 #include "TrainingPrameters.h"
 #include <ElementContainer.h>
 #include "BRAINSCutExceptionStringHandler.h"
@@ -211,30 +211,30 @@ XMLConfigurationFileParser::StartElement(void *userData,
       throw ex;
       }
     }
-  else if( Name == "NeuralNetParams" )
+  else if( Name == "TrainingVectorConfiguration" || Name=="NeuralNetParams" ) // TODO Change NeuralNet Param
     {
     try
       {
-      NeuralParams *np = new NeuralParams;
+      TrainingVectorConfigurationType *np = new TrainingVectorConfigurationType;
       np->SetAttribute<FloatValue>( "MaskSmoothingValue",
-                                    attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                   "MaskSmoothingValue") );
       np->SetAttribute<IntValue>( "GradientProfileSize",
-                                  attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                 "GradientProfileSize") );
       np->SetAttribute<StringValue>( "TrainingVectorFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TrainingVectorFilename") );
       np->SetAttribute<StringValue>( "TestVectorFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TestVectorFilename") );
       np->SetAttribute<StringValue>( "TrainingModelFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TrainingModelFilename") );
       np->SetAttribute<StringValue>( "Normalization",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "Normalization") );
-      myConfiguration->Add(np, Name);
+      myConfiguration->Add(np, "TRainingVectorConfiguration");
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {

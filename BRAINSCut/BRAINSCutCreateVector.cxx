@@ -3,19 +3,14 @@
 BRAINSCutCreateVector
 ::BRAINSCutCreateVector( BRAINSCutDataHandler dataHandler )
 {
-
   myDataHandler = dataHandler;
 
   myDataHandler.SetRegistrationParameters();
   myDataHandler.SetRegionsOfInterest();
   myDataHandler.SetAtlasDataSet();
   myDataHandler.SetRhoPhiTheta();
-  myDataHandler.SetANNModelConfiguration();
+  myDataHandler.SetTrainingVectorConfiguration();
   myDataHandler.SetGradientSize();
-
-  std::cout << "Set Normalization From BRAINSCutConfiguration ";
-  myDataHandler.GetNormalization();
-  std::cout << "(" << myDataHandler.GetNormalization() << ")" << std::endl;
 }
 
 void
