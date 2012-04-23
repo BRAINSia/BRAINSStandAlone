@@ -36,7 +36,7 @@ case n:     PCn1         PCn2
 #include "math.h"
 #include "Slicer3LandmarkIO.h"
 
-int main( int argc, char * argv[] )
+int main( unsigned int argc, char * argv[] )
 {
 
   if(argc < 2)

@@ -301,7 +301,11 @@ int main(int argc, char *argv[])
 	finalTransform->SetTranslation( ACPC_AlignedTransform->GetTranslation() );
     // inverse transform
 	VersorTransformType::Pointer ACPC_AlignedTransform_INV = VersorTransformType::New();
+<<<<<<< .merge_file_YTiT3q
 	SImageType::PointType        centerPoint = finalTransform->GetCenter(); 
+=======
+	SImageType::PointType        centerPoint = finalTransform->GetCenter();
+>>>>>>> .merge_file_I30bcX
     centerPoint = finalTransform->GetCenter();
 	ACPC_AlignedTransform_INV->SetCenter( centerPoint );
 	ACPC_AlignedTransform_INV->SetIdentity();
@@ -344,11 +348,19 @@ int main(int argc, char *argv[])
       const SImageType::PointType origPoint = it->second;
       const SImageType::PointType transformedPoint = ACPC_AlignedTransform_INV->TransformPoint(origPoint);
           
+<<<<<<< .merge_file_YTiT3q
     /* PRINT FOR TEST /////////////////////////////////////////////
           std::cout << "original point: " << it->second << std::endl;
           std::cout << "transformed point: " << transformedPoint << std::endl;
       /////////////////////////////////////////////////////////////////
     */
+=======
+      /* PRINT FOR TEST /////////////////////////////////////////////
+          std::cout << "original point: " << it->second << std::endl;
+          std::cout << "transformed point: " << transformedPoint << std::endl;
+      /////////////////////////////////////////////////////////////*/
+          
+>>>>>>> .merge_file_I30bcX
           
       for( unsigned int currentAngle = 0; currentAngle < myModel.GetNumRotationSteps(); currentAngle++ )
         {
@@ -392,14 +404,22 @@ int main(int argc, char *argv[])
       }
     }
   
+<<<<<<< .merge_file_YTiT3q
   /* PRINT FOR TEST ////////////////////////////////////////////
+=======
+  /* PRINT FOR TEST /////////////////////////////////////////////
+>>>>>>> .merge_file_I30bcX
   std::cout << "\nPROCESSING AC transformed values in MSP aligned space by 'Reflective Correlation' method:" << std::endl;
   for( unsigned int currentDataset = 0; currentDataset < mDef.GetNumDataSets(); currentDataset++ )
     {
         std::cout << "====================================================================================" << std::endl;
         std::cout << currentDataset+1 << "#: " << ac_InMSPAlignedSpace[currentDataset] << std::endl;
     }
+<<<<<<< .merge_file_YTiT3q
   ////////////////////////////////////////////////////////////////*/
+=======
+  //////////////////////////////////////////////////////////////*/
+>>>>>>> .merge_file_I30bcX
 
   // -------------------------------
   std::cout << "\nCompute vector means:" << std::endl;
