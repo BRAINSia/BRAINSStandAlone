@@ -50,9 +50,10 @@ class ANTSWrapper(CommandLine):
         """
         from os.path import abspath
         outputs = self.output_spec().get()
-        outputs['output_affine'] = abspath( self.inputs.output_prefix + 'Affine.txt')
-        outputs['output_warp'] = abspath( self.inputs.output_prefix + '_1' + 'Warp.nii.gz')
-        outputs['output_invwarp'] = abspath( self.inputs.output_prefix + '_1' + 'InverseWarp.nii.gz')
+        #outputs['output_affine'] = abspath( self.inputs.output_prefix + 'Affine.txt')
+        outputs['output_affine'] = abspath( self.inputs.initialTransform )
+        outputs['output_warp'] = abspath( self.inputs.output_prefix + '1' + 'Warp.nii.gz')
+        outputs['output_invwarp'] = abspath( self.inputs.output_prefix + '1' + 'InverseWarp.nii.gz')
         return outputs
 
 if __name__ == '__main__':
