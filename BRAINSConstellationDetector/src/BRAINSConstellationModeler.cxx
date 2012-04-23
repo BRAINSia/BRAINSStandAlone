@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
 	finalTransform->SetTranslation( ACPC_AlignedTransform->GetTranslation() );
     // inverse transform
 	VersorTransformType::Pointer ACPC_AlignedTransform_INV = VersorTransformType::New();
-	SImageType::PointType        centerPoint = finalTransform->GetCenter(); //was commented before
+	SImageType::PointType        centerPoint = finalTransform->GetCenter(); 
     centerPoint = finalTransform->GetCenter();
 	ACPC_AlignedTransform_INV->SetCenter( centerPoint );
 	ACPC_AlignedTransform_INV->SetIdentity();
@@ -344,11 +344,11 @@ int main(int argc, char *argv[])
       const SImageType::PointType origPoint = it->second;
       const SImageType::PointType transformedPoint = ACPC_AlignedTransform_INV->TransformPoint(origPoint);
           
-      /* PRINT FOR TEST */////////////////////////////////////////////
-          std::cout << "original point: " << it->second << std::endl;//[0] << "," << it->second[1] << "," << it->second[2] << ")" << std::endl;
-          std::cout << "transformed point: " << transformedPoint << std::endl;//[0] << "," << transformedPoint[1] << "," << transformedPoint[2] << ")" << std::endl;
+    /* PRINT FOR TEST /////////////////////////////////////////////
+          std::cout << "original point: " << it->second << std::endl;
+          std::cout << "transformed point: " << transformedPoint << std::endl;
       /////////////////////////////////////////////////////////////////
-          
+    */
           
       for( unsigned int currentAngle = 0; currentAngle < myModel.GetNumRotationSteps(); currentAngle++ )
         {
@@ -392,14 +392,14 @@ int main(int argc, char *argv[])
       }
     }
   
-  /* PRINT FOR TEST *////////////////////////////////////////////
+  /* PRINT FOR TEST ////////////////////////////////////////////
   std::cout << "\nPROCESSING AC transformed values in MSP aligned space by 'Reflective Correlation' method:" << std::endl;
   for( unsigned int currentDataset = 0; currentDataset < mDef.GetNumDataSets(); currentDataset++ )
     {
         std::cout << "====================================================================================" << std::endl;
         std::cout << currentDataset+1 << "#: " << ac_InMSPAlignedSpace[currentDataset] << std::endl;
     }
-  ////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////*/
 
   // -------------------------------
   std::cout << "\nCompute vector means:" << std::endl;
