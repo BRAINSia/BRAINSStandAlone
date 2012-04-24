@@ -73,13 +73,13 @@ void sample_variance(const std::vector<DType> & x, DType *mean, DType *var)
 
 //
 //
-// ==============================================================================================
+// ===========================================================================
 int main(int argc, char *argv[])
 {
   std::cout.precision(20);
   //
   //
-  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////
   PARSE_ARGS;
 
   const BRAINSUtils::StackPushITKDefaultNumberOfThreads TempDefaultNumberOfThreadsHolder(numberOfThreads);
@@ -286,29 +286,29 @@ int main(int argc, char *argv[])
 
     // Instead of RC method, now we compute all the ac-pc aligned transforms by estimating the plane passing through RP, AC and PC points
     RigidTransformType::Pointer ACPC_AlignedTransform = computeTmspFromPoints(origRP, origAC, origPC, origin);
-        
+
     // We cannot easily compute the Inverse transform by the following to lines, we need to use versor for percise transformation
     //    RigidTransformType::Pointer ACPC_AlignedTransform_INV = RigidTransformType::New();
     //    ACPC_AlignedTransform_INV->GetInverse(ACPC_AlignedTransform);
 
     // AC-PC aligned TRANSFORM
     VersorTransformType::Pointer finalTransform = VersorTransformType::New();
-	finalTransform->SetFixedParameters( ACPC_AlignedTransform->GetFixedParameters() );
+        finalTransform->SetFixedParameters( ACPC_AlignedTransform->GetFixedParameters() );
     itk::Versor<double> versorRotation; //was commented before
     const itk::Matrix<double,3,3> & NewCleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( ACPC_AlignedTransform->GetRotationMatrix() );
     versorRotation.Set( NewCleanedOrthogonalized );
-	finalTransform->SetRotation( versorRotation );
-	finalTransform->SetTranslation( ACPC_AlignedTransform->GetTranslation() );
+        finalTransform->SetRotation( versorRotation );
+        finalTransform->SetTranslation( ACPC_AlignedTransform->GetTranslation() );
     // inverse transform
-	VersorTransformType::Pointer ACPC_AlignedTransform_INV = VersorTransformType::New();
-	SImageType::PointType        centerPoint = finalTransform->GetCenter(); //was commented before
-    centerPoint = finalTransform->GetCenter();
-	ACPC_AlignedTransform_INV->SetCenter( centerPoint );
-	ACPC_AlignedTransform_INV->SetIdentity();
-	finalTransform->GetInverse( ACPC_AlignedTransform_INV );
+        VersorTransformType::Pointer ACPC_AlignedTransform_INV = VersorTransformType::New();
+        SImageType::PointType        centerPoint = finalTransform->GetCenter();
+        centerPoint = finalTransform->GetCenter();
+        ACPC_AlignedTransform_INV->SetCenter( centerPoint );
+        ACPC_AlignedTransform_INV->SetIdentity();
+        finalTransform->GetInverse( ACPC_AlignedTransform_INV );
     //////////////////////////////////////////////////////////////////
-        
-    //Transform points based on the new transform    
+
+    //Transform points based on the new transform
     cm_InMSPAlignedSpace[currentDataset] = ACPC_AlignedTransform_INV->TransformPoint(centerOfHeadMass);
     rp_InMSPAlignedSpace[currentDataset] = ACPC_AlignedTransform_INV->TransformPoint(origRP);
     ac_InMSPAlignedSpace[currentDataset] = ACPC_AlignedTransform_INV->TransformPoint(origAC);
@@ -316,20 +316,20 @@ int main(int argc, char *argv[])
     vn4_InMSPAlignedSpace[currentDataset] = ACPC_AlignedTransform_INV->TransformPoint(origVN4);
     cec_InMSPAlignedSpace[currentDataset] = ACPC_AlignedTransform_INV->TransformPoint(origCEC);
 
-        
+
     if( globalImagedebugLevel > 3 )
       {
       const SImageType::PointType finalRP = ACPC_AlignedTransform_INV->TransformPoint(origRP);
       const SImageType::PointType finalAC = ACPC_AlignedTransform_INV->TransformPoint(origAC);
       const SImageType::PointType finalPC = ACPC_AlignedTransform_INV->TransformPoint(origPC);
       const SImageType::PointType finalVN4 = ACPC_AlignedTransform_INV->TransformPoint(origVN4);
-          
-      // TransformResample( inputImage, referenceImage, defaultValue, interpolationMode, transform )    
+
+      // TransformResample( inputImage, referenceImage, defaultValue, interpolationMode, transform )
       SImageType::Pointer volumeACPC_Aligned =
       TransformResample<SImageType, SImageType>( image, image, BackgroundFillValue,
                                                  GetInterpolatorFromString<SImageType>("Linear"),
                                                  ACPC_AlignedTransform.GetPointer() );
-      
+
       itkUtil::WriteImage<SImageType>( volumeACPC_Aligned, resultsDir + "/ACPC_Aligned_"
                                        + itksys::SystemTools::GetFilenameName( mDef[currentDataset].GetImageFilename() ) );
       MakeLabelImage( volumeACPC_Aligned, finalRP, finalAC, finalPC, finalVN4, resultsDir + "/Mask_Resampled_"
@@ -343,20 +343,20 @@ int main(int argc, char *argv[])
       std::cout << "Training template for " << it->first << std::endl;
       const SImageType::PointType origPoint = it->second;
       const SImageType::PointType transformedPoint = ACPC_AlignedTransform_INV->TransformPoint(origPoint);
-          
-      /* PRINT FOR TEST */////////////////////////////////////////////
-          std::cout << "original point: " << it->second << std::endl;//[0] << "," << it->second[1] << "," << it->second[2] << ")" << std::endl;
-          std::cout << "transformed point: " << transformedPoint << std::endl;//[0] << "," << transformedPoint[1] << "," << transformedPoint[2] << ")" << std::endl;
-      /////////////////////////////////////////////////////////////////
-          
-          
+
+      /* PRINT FOR TEST /////////////////////////////////////////////
+          std::cout << "original point: " << it->second << std::endl;
+          std::cout << "transformed point: " << transformedPoint << std::endl;
+      /////////////////////////////////////////////////////////////*/
+
+
       for( unsigned int currentAngle = 0; currentAngle < myModel.GetNumRotationSteps(); currentAngle++ )
         {
         // //////  create a rotation about the center with respect to the
         // current test rotation angle
         const float degree_current_angle = myModel.GetInitialRotationAngle() + myModel.GetInitialRotationStep() * currentAngle;
         const float current_angle = degree_current_angle * vnl_math::pi / 180;
-        
+
         RigidTransformType::Pointer Point_Rotate = RigidTransformType::New();
         Point_Rotate->SetCenter(transformedPoint);
         Point_Rotate->SetRotation(current_angle, 0, 0);
@@ -391,15 +391,15 @@ int main(int argc, char *argv[])
       MSPOptFile.close();
       }
     }
-  
-  /* PRINT FOR TEST *////////////////////////////////////////////
+
+  /* PRINT FOR TEST ////////////////////////////////////////////
   std::cout << "\nPROCESSING AC transformed values in MSP aligned space by 'Reflective Correlation' method:" << std::endl;
   for( unsigned int currentDataset = 0; currentDataset < mDef.GetNumDataSets(); currentDataset++ )
     {
         std::cout << "====================================================================================" << std::endl;
         std::cout << currentDataset+1 << "#: " << ac_InMSPAlignedSpace[currentDataset] << std::endl;
     }
-  ////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////*/
 
   // -------------------------------
   std::cout << "\nCompute vector means:" << std::endl;
@@ -503,14 +503,14 @@ int main(int argc, char *argv[])
     decomposeRPAC(rp_InMSPAlignedSpace[currentDataset],
                   pc_InMSPAlignedSpace[currentDataset],
                   ac_InMSPAlignedSpace[currentDataset],
-                  &curr_RPPC_to_RPAC_angle, 
+                  &curr_RPPC_to_RPAC_angle,
                   &curr_RPAC_over_RPPC);
     RPPC_to_RPAC_angle[currentDataset] = curr_RPPC_to_RPAC_angle;
     RPAC_over_RPPC[currentDataset] = curr_RPAC_over_RPPC;
-        
+
     // JOB2: CMtoRPMean
     // // NOTE:  This needs to be the average distance from the center of gravity.
-    SImageType::PointType::VectorType RPDistanceFromCenterOfMass = 
+    SImageType::PointType::VectorType RPDistanceFromCenterOfMass =
         rp_InMSPAlignedSpace[currentDataset] - cm_InMSPAlignedSpace[currentDataset];
     CMtoRPMean += RPDistanceFromCenterOfMass;
     }
