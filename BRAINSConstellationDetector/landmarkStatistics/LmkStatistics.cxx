@@ -101,8 +101,6 @@ int main( int argc, char * argv[] )
 
     for (unsigned int i=0; i<k; i++)
       {
-      dist = d0 = d1 = d2 = 0;
-
 
       d0 = pow( LandmarksMapVector[i][name][0] - LandmarksMapVector[i+k][name][0], 2);
       d1 = pow( LandmarksMapVector[i][name][1] - LandmarksMapVector[i+k][name][1], 2);
