@@ -1,6 +1,11 @@
 #include "BRAINSCutTrainModel.h"
+<<<<<<< HEAD
+#include "NeuralParams.h"
+#include <fstream>
+=======
 #include "TrainingVectorConfigurationType.h"
 #include "fstream.h"
+>>>>>>> refactoring
 
 BRAINSCutTrainModel
 ::BRAINSCutTrainModel( BRAINSCutDataHandler & dataHandler ):

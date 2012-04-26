@@ -2,7 +2,11 @@
 #define ProbabilityMapParser_h
 //#include "StringValue.h"
 //#include "FloatValue.h"
+<<<<<<< HEAD
+#include "XMLElementParser.h"
+=======
 #include "ElementParser.h"
+>>>>>>> refactoring
 
 class ProbabilityMapParser : public ElementParser
 {

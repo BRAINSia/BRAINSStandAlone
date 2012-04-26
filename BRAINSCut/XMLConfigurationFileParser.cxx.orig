@@ -43,7 +43,12 @@ XMLConfigurationFileParser::StartElement(void *userData,
   //
   // name
   //
+<<<<<<< HEAD
+  DataSet *         dataSet = dynamic_cast<DataSet *>( current );
+  BRAINSCutConfiguration *Local_netConfiguration = dynamic_cast<BRAINSCutConfiguration *>( current );
+=======
   const std::string Name(name);
+>>>>>>> refactoring
 
   if( Name == "AutoSegProcessDescription" )
     {
@@ -351,7 +356,11 @@ XMLConfigurationFileParser::EndElement(void *userData,
 }
 
 BRAINSCutConfiguration *
+<<<<<<< HEAD
+XMLConfigurationFileParser::GetNetConfiguration()
+=======
 XMLConfigurationFileParser::GetConfiguration()
+>>>>>>> refactoring
 {
   return myConfiguration;
 }

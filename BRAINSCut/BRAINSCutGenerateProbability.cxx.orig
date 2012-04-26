@@ -1,7 +1,10 @@
 #include "BRAINSCutGenerateProbability.h"
 #include "XMLConfigurationFileParser.h"
 #include "BRAINSCutConfiguration.h"
+<<<<<<< HEAD
+=======
 #include "BRAINSCutDataHandler.h"
+>>>>>>> refactoring
 
 #include "itkIO.h"
 

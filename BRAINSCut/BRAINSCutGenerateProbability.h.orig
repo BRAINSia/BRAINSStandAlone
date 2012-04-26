@@ -1,14 +1,30 @@
 #ifndef BRAINSCutGenerateProbability_h
 #define BRAINSCutGenerateProbability_h
 
+<<<<<<< HEAD
+#include "BRAINSCutPrimary.h"
+=======
 #include "BRAINSCutDataHandler.h"
+>>>>>>> refactoring
 #include "BRAINSCutConfiguration.h"
 #include <itkIO.h>
 
 class BRAINSCutGenerateProbability 
 {
 public:
+<<<<<<< HEAD
+  BRAINSCutGenerateProbability(std::string netConfigurationFilename);
+
+  BRAINSCutConfiguration * GetNetConfiguration();
+
+  void SetNetConfiguration( BRAINSCutConfiguration * netConfiguration);
+
+  void SetNetConfigurationFilename(std::string filename);
+
+  void SetNetConfiguration();
+=======
   BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler);
+>>>>>>> refactoring
 
   void SetTrainingDataSetsList();
   void GenerateProbabilityMaps();

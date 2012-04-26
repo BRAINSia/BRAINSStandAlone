@@ -24,12 +24,20 @@ BRAINSCutApplyModel
   myDataHandler.SetAtlasDataSet();
   myDataHandler.SetRhoPhiTheta();
 
+<<<<<<< HEAD
+  SetGradientSizeFromNetConfiguration();
+  SetTrainIterationFromNetConfiguration();
+  SetApplyDataSetFromNetConfiguration();
+
+  SetGaussianSmoothingSigmaFromNetConfiguration();
+=======
   myDataHandler.SetTrainingVectorConfiguration(); // this has to be before gradient size
   myDataHandler.SetGradientSize();
 
   gaussianSmoothingSigma = myDataHandler.GetGaussianSmoothingSigma();
   trainIteration   = myDataHandler.GetTrainIteration();
   applyDataSetList = myDataHandler.GetApplyDataSet();
+>>>>>>> refactoring
 
   /** set default: ANN **/
   openCVANN = new OpenCVMLPType();
@@ -58,16 +66,27 @@ BRAINSCutApplyModel
 {
   if( method ==  "ANN")
     {
+<<<<<<< HEAD
+    SetANNModelConfiguration();
+    SetANNTestingSSEFilename();
+    SetANNOutputThresholdFromNetConfiguration();
+    SetANNModelFilenameFromNetConfiguration();
+=======
     myDataHandler.SetANNTestingSSEFilename();
     annOutputThreshold = myDataHandler.GetANNOutputThreshold();
     myDataHandler.SetANNModelFilenameAtIteration( trainIteration);
+>>>>>>> refactoring
     ReadANNModelFile();
     }
   else if( method == "RandomForest")
     {
+<<<<<<< HEAD
+    SetRandomForestModelFilenameFromNetConfiguration();
+=======
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
     myDataHandler.SetRandomForestModelFilename( depthOfTree, numberOfTrees);
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+>>>>>>> refactoring
     ReadRandomForestModelFile();
     }
 

@@ -1,7 +1,11 @@
 #ifndef SpatialLocationType_h
 #define SpatialLocationType_h
 //#include "StringValue.h"
+<<<<<<< HEAD
+#include "XMLElementParser.h"
+=======
 #include "ElementParser.h"
+>>>>>>> refactoring
 
 class SpatialLocationType : public ElementParser
 {

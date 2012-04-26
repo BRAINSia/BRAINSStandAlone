@@ -1,22 +1,22 @@
-#ifndef NeuralParams_h
-#define NeuralParams_h
+#ifndef TrainingVectorConfigurationType_h
+#define TrainingVectorConfigurationType_h
 #include "StringValue.h"
 #include "IntValue.h"
 #include "FloatValue.h"
-#include "XMLElementParser.h"
+#include "ElementParser.h"
 
-class NeuralParams : public XMLElementParser
+class TrainingVectorConfigurationType : public ElementParser
 {
 public:
-  typedef XMLElementParser SuperClass;
+  typedef ElementParser SuperClass;
   virtual int PrintSelf(std::ostream & os, int indent) const
   {
     indent += SuperClass::PrintSelf(os, indent);
-    os << this->PrintSpaces(indent) << "=== NeuralParams ===" << std::endl;
+    os << this->PrintSpaces(indent) << "=== TrainingVectorConfigurationType ===" << std::endl;
     return indent + 2;
   }
 
-  NeuralParams() : XMLElementParser("NeuralParams")
+  TrainingVectorConfigurationType() : ElementParser("TrainingVectorConfiguration")
   {
     this->Add(new FloatValue("MaskSmoothingValue", 0.0), "MaskSmoothingValue");
     this->Add(new IntValue("GradientProfileSize", 1), "GradientProfileSize");
@@ -28,4 +28,4 @@ public:
 
 };
 
-#endif // NeuralParams_h
+#endif // TrainingVectorConfigurationType_h

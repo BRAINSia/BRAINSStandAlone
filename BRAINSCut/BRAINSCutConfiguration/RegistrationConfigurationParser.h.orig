@@ -1,6 +1,10 @@
 #ifndef RegistrationConfigurationParser_h
 #define RegistrationConfigurationParser_h
+<<<<<<< HEAD
+#include "XMLElementParser.h"
+=======
 #include "ElementParser.h"
+>>>>>>> refactoring
 //#include "StringValue.h"
 //#include "IntValue.h"
 

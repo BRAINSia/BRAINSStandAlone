@@ -126,12 +126,24 @@ int main(int argc, char * *argv)
 
       ApplyModule.SetMethod( method );
       ApplyModule.SetComputeSSE( computeSSEOn );
+<<<<<<< HEAD
+      /* these has to be set **AFTER** InitializeTrainDataSet */
+      if( numberOfTrees > 0 && randomTreeDepth >0 )
+          {
+          ApplyModule.SetRandomForestModelFilename( randomTreeDepth, numberOfTrees );
+          }
+      else
+          {
+          ApplyModule.SetRandomForestModelFilenameFromNetConfiguration();
+          }
+=======
 
       if( method == "RandomForest" )
         {
         ApplyModule.SetDepthOfTree( randomTreeDepth );
         ApplyModule.SetNumberOfTrees( numberOfTrees );
         }
+>>>>>>> refactoring
       ApplyModule.Apply();
 
       }

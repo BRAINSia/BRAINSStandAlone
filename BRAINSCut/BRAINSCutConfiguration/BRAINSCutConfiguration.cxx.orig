@@ -7,7 +7,11 @@
 #include <list>
 #include <BRAINSCutConfiguration.h>
 
+<<<<<<< HEAD
+BRAINSCutConfiguration::BRAINSCutConfiguration() : XMLElementParser("BRAINSCutBRAINSCutConfiguration")
+=======
 BRAINSCutConfiguration::BRAINSCutConfiguration() : ElementParser("BRAINSCutBRAINSCutConfiguration")
+>>>>>>> refactoring
 {
   this->Add(new DataSetList, "DataSetList");
   this->Add(new ProbabilityMapList, "ProbabilityMapList");

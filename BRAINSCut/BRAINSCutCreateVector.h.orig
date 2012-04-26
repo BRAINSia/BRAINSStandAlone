@@ -26,8 +26,15 @@ public:
                         int numberOfInputVector);
 
 private:
+<<<<<<< HEAD
+  BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
+  bool                                   normalization;
+
+  std::string vectorFilename;
+=======
   BRAINSCutDataHandler myDataHandler;
   BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
+>>>>>>> refactoring
 
   int inputVectorSize;
   int outputVectorSize;

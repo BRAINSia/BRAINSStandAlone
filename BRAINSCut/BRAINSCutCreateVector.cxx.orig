@@ -3,6 +3,23 @@
 BRAINSCutCreateVector
 ::BRAINSCutCreateVector( BRAINSCutDataHandler dataHandler )
 {
+<<<<<<< HEAD
+  //GenerateRegistrations(BRAINSCutNetConfiguration, true, false, 1);
+
+  SetRegistrationParametersFromNetConfiguration();
+
+  SetRegionsOfInterestFromNetConfiguration();
+
+  SetAtlasDataSet();
+  SetRhoPhiThetaFromNetConfiguration();
+
+  SetANNModelConfiguration();
+  SetGradientSizeFromNetConfiguration();
+
+  std::cout << "Get Normalization From BRAINSCutConfiguration ";
+  normalization = GetNormalizationFromNetConfiguration();
+  std::cout << "(" << normalization << ")" << std::endl;
+=======
   myDataHandler = dataHandler;
 
   myDataHandler.SetRegistrationParameters();
@@ -11,6 +28,7 @@ BRAINSCutCreateVector
   myDataHandler.SetRhoPhiTheta();
   myDataHandler.SetTrainingVectorConfiguration();
   myDataHandler.SetGradientSize();
+>>>>>>> refactoring
 }
 
 void
@@ -18,7 +36,11 @@ BRAINSCutCreateVector
 ::CreateVectors()
 {
   typedef BRAINSCutConfiguration::TrainDataSetListType::iterator
+<<<<<<< HEAD
+  TrainSubjectIteratorType;
+=======
           TrainSubjectIteratorType;
+>>>>>>> refactoring
 
   int numberOfInputVector = 0;
 
