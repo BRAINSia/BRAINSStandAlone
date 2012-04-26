@@ -1,7 +1,7 @@
-#ifndef Parser_h
-#define Parser_h
+#ifndef XMLConfigurationFileParser_h
+#define XMLConfigurationFileParser_h
 
-#include <ProcessDescription.h>
+#include <BRAINSCutConfiguration.h>
 #include "XMLParser.h"
 #include <list>
 #include <vector>
@@ -24,7 +24,7 @@ public:
       msg +=  key;
       msg += " in ";
       msg += eleType;
-      throw ProcessObjectException(msg);
+      throw BRAINSCutExceptionStringHandler(msg);
       }
     return it->second;
   }
@@ -48,19 +48,39 @@ public:
 
 };
 
-class Parser : public XMLParserBase
+class XMLConfigurationFileParser : public XMLParser
 {
 public:
-  Parser(const std::string & filename) : XMLParserBase(filename)
+<<<<<<< HEAD
+  XMLConfigurationFileParser(const std::string & filename) : XMLParser(filename)
+=======
+  XMLConfigurationFileParser(const std::string & filename ) : XMLParser(filename)
+>>>>>>> refactoring
   {
+    myConfiguration=new BRAINSCutConfiguration();
   }
 
   virtual void StartElement(void *userData, const XML_Char *name, const XML_Char * *atts);
 
   virtual void EndElement(void *userData, const XML_Char *name);
 
+<<<<<<< HEAD
+  BRAINSCutConfiguration * GetNetConfiguration();
+=======
+  BRAINSCutConfiguration * GetConfiguration();
+>>>>>>> refactoring
+
+  void ValidateDataSets();
+
+private:
+  //void ReadXML();
+
+<<<<<<< HEAD
+  BRAINSCutConfiguration * netConfiguration;
+=======
+  BRAINSCutConfiguration * myConfiguration;
+>>>>>>> refactoring
+
 };
 
-extern bool ReadXML(const char *filename, ProcessDescription & prob);
-
-#endif // Parser_h
+#endif // XMLConfigurationFileParser_h

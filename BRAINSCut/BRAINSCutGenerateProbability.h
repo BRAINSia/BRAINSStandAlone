@@ -1,42 +1,30 @@
 #ifndef BRAINSCutGenerateProbability_h
 #define BRAINSCutGenerateProbability_h
 
-#include "BRAINSCutPrimary.h"
+#include "BRAINSCutDataHandler.h"
 #include "BRAINSCutConfiguration.h"
 #include <itkIO.h>
 
-class BRAINSCutGenerateProbability : private BRAINSCutPrimary
+class BRAINSCutGenerateProbability 
 {
 public:
-  BRAINSCutGenerateProbability(std::string netConfigurationFilename);
-
-  BRAINSCutConfiguration * GetNetConfiguration();
-
-  void SetNetConfiguration( BRAINSCutConfiguration * netConfiguration);
-
-  void SetNetConfigurationFilename(std::string filename);
-
-  void SetNetConfiguration();
+  BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler);
 
   void SetTrainingDataSetsList();
-
-  std::string GetNetConfigurationFilename();
-
   void GenerateProbabilityMaps();
 
-
-
 private:
+  BRAINSCutDataHandler myDataHandler;
 
   /** DataSets */
   std::list<DataSet *> trainingDataSetList;
 
   void GenerateSymmetricalSphericalCoordinateImage();
 
-  void CreateNewFloatImageFromTemplate(WorkingImageType::Pointer & PointerToOutputImage,
-                                       const WorkingImageType::Pointer & PreInitializedImage);
-  void XYZToSpherical(const itk::Point<float, 3> & LocationWithOriginAtCenterOfImage,
-                      float & rho, float & phi, float & theta) ;
+  void CreateNewFloatImageFromTemplate( WorkingImageType::Pointer & PointerToOutputImage,
+                                        const WorkingImageType::Pointer & PreInitializedImage);
+  void XYZToSpherical( const itk::Point<float, 3> & LocationWithOriginAtCenterOfImage,
+                       float & rho, float & phi, float & theta) ;
 
   template <class WarperImageType>
   typename WarperImageType::Pointer 
