@@ -35,7 +35,7 @@ class ANTSWrapperCLInputSpec(CommandLineInputSpec):
 class ANTSWrapperCLOutputSpec(CommandLineInputSpec):
     output_affine = File( desc = "Affine Transform Text File", exists = True, mandatory = False)
     output_warp = File( desc = "Warped Output Volume", exists = True, mandatory = True )
-    output_invwarp = File( desc = "Inverse Warp Output Volume", exists = True, mandatory = False)
+    output_inversewarp = File( desc = "Inverse Warp Output Volume", exists = True, mandatory = False)
 
 class ANTSWrapper(CommandLine):
     _cmd = 'ANTS_wrapper.sh'
@@ -53,7 +53,7 @@ class ANTSWrapper(CommandLine):
         #outputs['output_affine'] = abspath( self.inputs.output_prefix + 'Affine.txt')
         outputs['output_affine'] = abspath( self.inputs.initialTransform )
         outputs['output_warp'] = abspath( self.inputs.output_prefix + '1' + 'Warp.nii.gz')
-        outputs['output_invwarp'] = abspath( self.inputs.output_prefix + '1' + 'InverseWarp.nii.gz')
+        outputs['output_inversewarp'] = abspath( self.inputs.output_prefix + '1' + 'InverseWarp.nii.gz')
         return outputs
 
 if __name__ == '__main__':
