@@ -171,13 +171,14 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
 class AntsRegistrationInputSpec(ANTSCommandInputSpec):
-    dimension = traits.Enum(3, 2, argstr='%d', usedefault=True, desc='image dimension (2 or 3)', position=1)
-    # fixed_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
-    # moving_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
-    ###    masks =
+    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
     fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+    metric = traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes", mandatory=True, desc="")
 
+    # fixed_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
+    # moving_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
+    # masks = ???
     # out_postfix = traits.Str('_wimt', argstr='%s', usedefault=True,
     #                          desc=('Postfix that is prepended to all output '
     #                                'files (default = _wimt)'))
@@ -207,31 +208,27 @@ class AntsRegistrationOutputSpec(TraitedSpec):
     output_image = File(exists=True, desc='Warped image')
 
 class AntsRegistration(ANTSCommand):
-    """Warps an image from one space to another
-
+    """
     Examples
     --------
 
-    >>> from nipype.interfaces.ants import WarpImageMultiTransform
-    >>> wimt = WarpImageMultiTransform()
-    >>> wimt.inputs.moving_image = 'structural.nii'
-    >>> wimt.inputs.reference_image = 'ants_deformed.nii.gz'
-    >>> wimt.inputs.transformation_series = ['ants_Warp.nii.gz','ants_Affine.txt']
-    >>> wimt.cmdline
-    'WarpImageMultiTransform 3 structural.nii structural_wimt.nii -R ants_deformed.nii.gz ants_Warp.nii.gz ants_Affine.txt'
-
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
     """
-
     _cmd = 'antsRegistration'
     input_spec = AntsRegistrationInputSpec
     output_spec = AntsRegistrationOutputSpec
 
     def _format_arg(self, opt, spec, val):
         if opt == 'moving_image':
-            retval = ''
+            retval = []
             for ii in range(len(self.inputs.moving_image)):
-                retval += "-m 'CC[%s,%s,1,5]' " % (self.inputs.fixed_image[ii], self.inputs.moving_image[ii])
-            return retval
+                retval.append("--metric '%s[%s,%s,1,5]' " % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii]))
+            return " ".join(retval)
         return super(AntsRegistration, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
