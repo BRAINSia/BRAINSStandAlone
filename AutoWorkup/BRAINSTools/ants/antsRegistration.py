@@ -130,7 +130,8 @@ cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
     Nipype interface proposal:
 
     antsRegistration.inputs.dimension=3
-    antsRegistration.inputs.mask=[SUBJ_A_small_T2_mask.nii.gz,SUBJ_B_small_T2_mask.nii.gz]
+    antsRegistration.inputs.fixedMask=SUBJ_A_small_T2_mask.nii.gz
+    antsRegistration.inputs.movingMask=SUBJ_B_small_T2_mask.nii.gz
     antsRegistration.inputs.intialAffineTransform=20120430_1348_txfmv2fv_affine.mat
     antsRegistration.inputs.invertInitialAffineTransform=False
     antsRegistration.inputs.warpPrefix=20120430_1348_ANTS6_
@@ -175,9 +176,14 @@ class AntsRegistrationInputSpec(ANTSCommandInputSpec):
     fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     metric = traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes", mandatory=True, desc="")
-
-    # fixed_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
-    # moving_image_masks = InputMultiPath(argstr='%s', mandatory=True, copyfile=True, desc=(''))
+    fixed_image_mask = File(mandatory=True, desc=(''), exists=True)
+    moving_image_mask = File(argstr='%s', mandatory=True, desc=(''), exists=True)
+    initial_fixed_transform = File(argstr='%s', desc=(''), exists=True)
+    invert_initial_fixed_transform = traits.Bool(desc=(''), requires=["initial_fixed_transform"])
+    transform = traits.Str(argstr='--transform %s', mandatory = True)
+    n_iterations = traits.List(traits.Int(), argstr="%s")
+    convergence_threshold = traits.Float(requires=['n_iterations'])
+    convergence_window_size = traits.Int(requires=['n_iterations', 'convergence_threshold'])
     # masks = ???
     # out_postfix = traits.Str('_wimt', argstr='%s', usedefault=True,
     #                          desc=('Postfix that is prepended to all output '
@@ -227,8 +233,27 @@ class AntsRegistration(ANTSCommand):
         if opt == 'moving_image':
             retval = []
             for ii in range(len(self.inputs.moving_image)):
-                retval.append("--metric '%s[%s,%s,1,5]' " % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii]))
+                retval.append("--metric '%s[%s,%s,1,5]'" % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii]))
             return " ".join(retval)
+        elif opt == 'moving_image_mask':
+            return "--masks [%s,%s]"%(self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
+        elif opt == 'initial_fixed_transform':
+            if isdefined(self.inputs.invert_initial_fixed_transform) and self.inputs.invert_initial_fixed_transform:
+                return "--initial-moving-transform [%s, 1]"%self.inputs.initial_fixed_transform
+            else:
+                return "--initial-moving-transform %s"%self.inputs.initial_fixed_transform
+        elif opt == "n_iterations":
+            convergence_iter = "x".join([str(i) for i in self.inputs.n_iterations])
+            if isdefined(self.inputs.convergence_window_size):
+                return "--convergence [%s,%g,%d]"%(convergence_iter,
+                                                   self.inputs.convergence_threshold,
+                                                   self.inputs.convergence_window_size)
+            elif isdefined(self.inputs.convergence_threshold):
+                return "--convergence [%s,%g]"%(convergence_iter,
+                                                   self.inputs.convergence_threshold)
+            else:
+                return "--convergence %s"%(convergence_iter)
+                
         return super(AntsRegistration, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
