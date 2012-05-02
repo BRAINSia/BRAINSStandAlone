@@ -1,0 +1,1 @@
+StandardBRAINSBuildMacro(NAME MultiResolutionRegistration TARGET_LIBRARIES ${ITK_LIBRARIES})

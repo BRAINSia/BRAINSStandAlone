@@ -51,7 +51,9 @@ from BRAINSTools.GradientAnisotropicDiffusionImageFilter import *
 from BRAINSTools.GenerateSummedGradientImage import *
 from BRAINSTools.ANTSWrapper import *
 from BRAINSTools.WarpAllAtlas import *
-from BRAINSTools.ants.normalize import WarpImageMultiTransform
+from BRAINSTools.ants.normalize import WarpImageMultiTransform 
+
+
 
 
 #######################  HACK:  Needed to make some global variables for quick
