@@ -1,11 +1,12 @@
 #include "BRAINSCutExceptionStringHandler.h"
 #include "BRAINSCutVectorTrainingSet.h"
+#include "BRAINSCutDataHandler.h"
 #include "TrainingPrameters.h"
 
-class BRAINSCutTrainModel : public BRAINSCutPrimary
+class BRAINSCutTrainModel 
 {
 public:
-  BRAINSCutTrainModel( std::string netConfigurationFilename );
+  BRAINSCutTrainModel( BRAINSCutDataHandler & dataHandler );
 
   /** train */
   void InitializeNeuralNetwork( );
@@ -35,17 +36,17 @@ public:
 
   std::string GetANNVectorFilenamePrefix();
 
-  void SetIterationFromNetConfiguration();
+  void SetIteration();
 
-  void SetEpochIterationFromNetConfiguration();
+  void SetEpochIteration();
 
-  void SetDesiredErrorFromNetConfiguration();
+  void SetDesiredError();
 
-  void SetMaximumDataSizeFromNetConfiguration();
+  void SetMaximumDataSize();
 
-  void SetANNHiddenNodesNumberFromNetConfiguration();
+  void SetANNHiddenNodesNumber();
 
-  void SetActivatioinFunctionFromNetConfiguration();
+  void SetActivatioinFunction();
 
   void SetModelBasename();
 
@@ -77,18 +78,19 @@ public:
   float GetActivationMinMax();
 
   /** random trees */
-  void  SetMaxDepthFromNetConfiguration();
-  void  SetMinSampleCountFromNetConfiguration();
-  void  SetUseSurrogatesFromNetConfiguration();
-  void  SetCalcVarImportanceFromNetConfiguration();
-  void  SetMaxTreeCountFromNetConfiguration();
+  void  SetMaxDepth();
+  void  SetMinSampleCount();
+  void  SetUseSurrogates();
+  void  SetCalcVarImportance();
+  void  SetMaxTreeCount();
   void  SetRFErrorFilename();
   void  SetRFErrorFile();
 
   inline void appendToFile( std::string filename, std::string line);
 private:
-  /* train parameters */
-  TrainingParameters *TrainNetConfiguration;
+  BRAINSCutDataHandler myDataHandler;
+
+
 
   unsigned int trainIteration;
   unsigned int trainEpochIteration;
