@@ -1,48 +1,39 @@
 from nipype.interfaces.base import CommandLine, CommandLineInputSpec, TraitedSpec, File, Directory, traits, isdefined, InputMultiPath, OutputMultiPath
 import os
+from nipype.interfaces.slicer.base import SlicerCommandLine
+
 
 class BRAINSLmkTransformInputSpec(CommandLineInputSpec):
-    inputMovingLandmarks = File( exists = True,argstr = "--inputMovingLandmarks %s")
-    inputFixedLandmarks = File( exists = True,argstr = "--inputFixedLandmarks %s")
-    outputAffineTransform = traits.Either(traits.Bool, File(), hash_files = False,argstr = "--outputAffineTransform %s")
-    inputMovingVolume = File( exists = True,argstr = "--inputMovingVolume %s")
-    inputReferenceVolume = File( exists = True,argstr = "--inputReferenceVolume %s")
-    outputResampledVolume = traits.Either(traits.Bool, File(), hash_files = False,argstr = "--outputResampledVolume %s")
-    numberOfThreads = traits.Int( argstr = "--numberOfThreads %d")
+    inputMovingLandmarks = File(desc="Input Moving Landmark list file in fcsv,             ", exists=True, argstr="--inputMovingLandmarks %s")
+    inputFixedLandmarks = File(desc="Input Fixed Landmark list file in fcsv,             ", exists=True, argstr="--inputFixedLandmarks %s")
+    outputAffineTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="The filename for the estimated affine transform,             ", argstr="--outputAffineTransform %s")
+    inputMovingVolume = File(desc="The filename of input moving volume", exists=True, argstr="--inputMovingVolume %s")
+    inputReferenceVolume = File(desc="The filename of the reference volume", exists=True, argstr="--inputReferenceVolume %s")
+    outputResampledVolume = traits.Either(traits.Bool, File(), hash_files=False, desc="The filename of the output resampled volume", argstr="--outputResampledVolume %s")
+    numberOfThreads = traits.Int(desc="Explicitly specify the maximum number of threads to use.", argstr="--numberOfThreads %d")
 
 
 class BRAINSLmkTransformOutputSpec(TraitedSpec):
-    outputAffineTransform = File( exists = True)
-    outputResampledVolume = File( exists = True)
+    outputAffineTransform = File(desc="The filename for the estimated affine transform,             ", exists=True)
+    outputResampledVolume = File(desc="The filename of the output resampled volume", exists=True)
 
 
-class BRAINSLmkTransform(CommandLine):
+class BRAINSLmkTransform(SlicerCommandLine):
+    """title: Landmark Transform (BRAINS)
+
+category: Utilities.BRAINS
+
+description: 
+      This utility program estimates the affine transform to align the fixed landmarks to the moving landmarks, and then generate the resampled moving image to the same physical space as that of the reference image.
+    
+
+version: 1.0
+
+documentation-url: http://www.nitrc.org/projects/brainscdetector/
+
+"""
 
     input_spec = BRAINSLmkTransformInputSpec
     output_spec = BRAINSLmkTransformOutputSpec
     _cmd = " BRAINSLmkTransform "
     _outputs_filenames = {'outputResampledVolume':'outputResampledVolume.nii','outputAffineTransform':'outputAffineTransform.mat'}
-
-    def _list_outputs(self):
-        outputs = self.output_spec().get()
-        for name in outputs.keys():
-            coresponding_input = getattr(self.inputs, name)
-            if isdefined(coresponding_input):
-                if isinstance(coresponding_input, bool) and coresponding_input == True:
-                    outputs[name] = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    if isinstance(coresponding_input, list):
-                        outputs[name] = [os.path.abspath(inp) for inp in coresponding_input]
-                    else:
-                        outputs[name] = os.path.abspath(coresponding_input)
-        return outputs
-
-    def _format_arg(self, name, spec, value):
-        if name in self._outputs_filenames.keys():
-            if isinstance(value, bool):
-                if value == True:
-                    value = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    return ""
-        return super(BRAINSLmkTransform, self)._format_arg(name, spec, value)
-

@@ -1,45 +1,36 @@
 from nipype.interfaces.base import CommandLine, CommandLineInputSpec, TraitedSpec, File, Directory, traits, isdefined, InputMultiPath, OutputMultiPath
 import os
+from nipype.interfaces.slicer.base import SlicerCommandLine
+
 
 class GenerateSummedGradientImageInputSpec(CommandLineInputSpec):
-    inputVolume1 = File( exists = True,argstr = "--inputVolume1 %s")
-    inputVolume2 = File( exists = True,argstr = "--inputVolume2 %s")
-    outputFileName = traits.Either(traits.Bool, File(), hash_files = False,argstr = "--outputFileName %s")
-    MaximumGradient = traits.Bool( argstr = "--MaximumGradient ")
-    numberOfThreads = traits.Int( argstr = "--numberOfThreads %d")
+    inputVolume1 = File(desc="input volume 1, usally t1 image ", exists=True, argstr="--inputVolume1 %s")
+    inputVolume2 = File(desc="input volume 2, usally t2 image ", exists=True, argstr="--inputVolume2 %s")
+    outputFileName = traits.Either(traits.Bool, File(), hash_files=False, desc="(required) output file name ", argstr="--outputFileName %s")
+    MaximumGradient = traits.Bool(desc="If set this flag, it will compute maximum gradient between two input volumes instead of sum of it.", argstr="--MaximumGradient ")
+    numberOfThreads = traits.Int(desc="Explicitly specify the maximum number of threads to use.", argstr="--numberOfThreads %d")
 
 
 class GenerateSummedGradientImageOutputSpec(TraitedSpec):
-    outputFileName = File( exists = True)
+    outputFileName = File(desc="(required) output file name ", exists=True)
 
 
-class GenerateSummedGradientImage(CommandLine):
+class GenerateSummedGradientImage(SlicerCommandLine):
+    """title: GenerateSummedGradient
+
+category: Filtering.FeatureDetection
+
+description: Automatic FeatureImages using neural networks
+
+version:  1.0
+
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+
+contributor: Greg Harris, Eun Young Kim
+
+"""
 
     input_spec = GenerateSummedGradientImageInputSpec
     output_spec = GenerateSummedGradientImageOutputSpec
     _cmd = " GenerateSummedGradientImage "
     _outputs_filenames = {'outputFileName':'outputFileName'}
-
-    def _list_outputs(self):
-        outputs = self.output_spec().get()
-        for name in outputs.keys():
-            coresponding_input = getattr(self.inputs, name)
-            if isdefined(coresponding_input):
-                if isinstance(coresponding_input, bool) and coresponding_input == True:
-                    outputs[name] = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    if isinstance(coresponding_input, list):
-                        outputs[name] = [os.path.abspath(inp) for inp in coresponding_input]
-                    else:
-                        outputs[name] = os.path.abspath(coresponding_input)
-        return outputs
-
-    def _format_arg(self, name, spec, value):
-        if name in self._outputs_filenames.keys():
-            if isinstance(value, bool):
-                if value == True:
-                    value = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    return ""
-        return super(GenerateSummedGradientImage, self)._format_arg(name, spec, value)
-
