@@ -1,8 +1,8 @@
 #include "XMLConfigurationFileParser.h"
 #include "ApplyModel.h"
-#include "NeuralParams.h"
+#include "TrainingVectorConfigurationType.h"
 #include "TrainingPrameters.h"
-#include <XMLElementContainer.h>
+#include <ElementContainer.h>
 #include "BRAINSCutExceptionStringHandler.h"
 
 #define CheckDataSet()                              \
@@ -24,48 +24,47 @@ XMLConfigurationFileParser::StartElement(void *userData,
   // collect attributes
   //
 
-  //
-  // Use GetIfExist( ) instead of Get() for optional attributes
-  //
   StringMap attribMap;
   for( unsigned i = 0; atts[i] != 0; i += 2 )
     {
     attribMap[std::string(atts[i])] = std::string(atts[i + 1]);
     }
 
-  std::string Name(name);
+  //
+  // in case of sub-attribute
+  //
+  std::list<ElementContainer *> *stack =
+    static_cast<std::list<ElementContainer *> *>( userData );
 
-  std::list<XMLElementContainer *> *stack =
-    static_cast<std::list<XMLElementContainer *> *>( userData );
+  ElementContainer *current = *( stack->begin() );
 
-  XMLElementContainer *current = *( stack->begin() );
+  DataSet *         dataSet = static_cast<DataSet *>( current );
 
   //
-  // only one of these two dynamic casts will succeed, but
-  // do them here to avoid duplication below.
+  // name
   //
-  DataSet *         dataSet = dynamic_cast<DataSet *>( current );
-  BRAINSCutConfiguration *Local_netConfiguration = dynamic_cast<BRAINSCutConfiguration *>( current );
+  const std::string Name(name);
 
   if( Name == "AutoSegProcessDescription" )
     {
     // nothing to do, top level object is on the top of stack
     return;
     }
-  else if( Name == "DataSet" )
+  else if( Name == "DataSet"  )
     {
     DataSet *currentDataSet = new DataSet;
     try
       {
-      std::string currentDataSetName( attribMap.Get("DataSet", "Name") );
+      std::string currentDataSetName( attribMap.Get( Name.c_str() , "Name") );
       currentDataSet->SetAttribute<StringValue, std::string>("Name", currentDataSetName);
-      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get("DataSet", "Type") );
+      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get( Name.c_str() , "Type") );
       if( currentDataSet->GetAttribute<StringValue>("Type") == "Apply" )
         {
-        currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get("DataSet", "OutputDir") );
+        currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get( Name.c_str(), "OutputDir") );
         }
 
-      Local_netConfiguration->AddDataSet(currentDataSet);
+      myConfiguration->AddDataSet(currentDataSet);
+
       stack->push_front(currentDataSet);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
@@ -79,7 +78,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     try
       {
       ProbabilityMapList *mapList =
-        Local_netConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
+        myConfiguration->Get<ProbabilityMapList>("ProbabilityMapList");
       ProbabilityMapParser *map = new ProbabilityMapParser;
       std::string           structureID( attribMap.Get("ProbabilityMap",
                                                        "StructureID") );
@@ -134,9 +133,8 @@ XMLConfigurationFileParser::StartElement(void *userData,
     {
     try
       {
-
       RegistrationConfigurationParser *params =
-        Local_netConfiguration->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
+        myConfiguration->Get<RegistrationConfigurationParser>("RegistrationConfiguration");
       params->SetAttribute<StringValue>( "ImageTypeToUse",
                                          attribMap.Get("RegistrationConfiguration",
                                                        "ImageTypeToUse") );
@@ -213,30 +211,30 @@ XMLConfigurationFileParser::StartElement(void *userData,
       throw ex;
       }
     }
-  else if( Name == "NeuralNetParams" )
+  else if( Name == "TrainingVectorConfiguration" || Name=="NeuralNetParams" ) // TODO Change NeuralNet Param
     {
     try
       {
-      NeuralParams *np = new NeuralParams;
+      TrainingVectorConfigurationType *np = new TrainingVectorConfigurationType;
       np->SetAttribute<FloatValue>( "MaskSmoothingValue",
-                                    attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                   "MaskSmoothingValue") );
       np->SetAttribute<IntValue>( "GradientProfileSize",
-                                  attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                 "GradientProfileSize") );
       np->SetAttribute<StringValue>( "TrainingVectorFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TrainingVectorFilename") );
       np->SetAttribute<StringValue>( "TestVectorFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TestVectorFilename") );
       np->SetAttribute<StringValue>( "TrainingModelFilename",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "TrainingModelFilename") );
       np->SetAttribute<StringValue>( "Normalization",
-                                     attribMap.Get("NeuralNetParams",
+                                    attribMap.Get( Name.c_str(),
                                                    "Normalization") );
-      Local_netConfiguration->Add(np, Name);
+      myConfiguration->Add(np, "TrainingVectorConfiguration");
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -249,11 +247,9 @@ XMLConfigurationFileParser::StartElement(void *userData,
     try
       {
       TrainingParameters *ap = new TrainingParameters("RandomForestParameters");
-      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       ap->SetAttribute<IntValue>( "MaxDepth",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxDepth") );
-      std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
       ap->SetAttribute<IntValue>( "MinSampleCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MinSampleCount") );
@@ -266,7 +262,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "MaxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxTreeCount") );
-      Local_netConfiguration->Add(ap, Name);
+      myConfiguration->Add(ap, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -305,7 +301,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
       ap->SetAttribute<IntValue>( "NumberOfHiddenNodes",
                                   attribMap.Get("ANNParameters",
                                                 "NumberOfHiddenNodes") );
-      Local_netConfiguration->Add(ap, Name);
+      myConfiguration->Add(ap, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -325,7 +321,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
                                     attribMap.GetIfExist("ApplyModel",
                                                   "GaussianSmoothingSigma") );
 
-      Local_netConfiguration->Add(am, Name);
+      myConfiguration->Add(am, Name);
       }
     catch( BRAINSCutExceptionStringHandler& ex )
       {
@@ -346,8 +342,8 @@ void
 XMLConfigurationFileParser::EndElement(void *userData,
                                    const XML_Char *name)
 {
-  std::list<XMLElementContainer *> *stack =
-    static_cast<std::list<XMLElementContainer *> *>( userData );
+  std::list<ElementContainer *> *stack =
+    static_cast<std::list<ElementContainer *> *>( userData );
   if( std::string(name) == "DataSet" )
     {
     stack->pop_front();
@@ -355,20 +351,22 @@ XMLConfigurationFileParser::EndElement(void *userData,
 }
 
 BRAINSCutConfiguration *
-XMLConfigurationFileParser::GetNetConfiguration()
+XMLConfigurationFileParser::GetConfiguration()
 {
-  return netConfiguration;
+  return myConfiguration;
 }
 
+/*
 void
 XMLConfigurationFileParser::ReadXML()
 {
-  std::list<XMLElementContainer *> netConfigurationBuffer;
-  netConfigurationBuffer.push_front( netConfiguration );
+  std::list<ElementContainer *> myConfigurationBuffer;
+  myConfigurationBuffer.push_front( myConfiguration );
 
-  SetUserData( &netConfigurationBuffer);
+  SetUserData( &myConfigurationBuffer);
   Parse();
 }
+*/
 
 /**
  * Validation function merged into this class from GenerateProbability class
@@ -377,7 +375,7 @@ void
 XMLConfigurationFileParser::ValidateDataSets()
 {
   // HACK:  Needed to speed up testing.
-  // std::list<DataSet *> dataSets = netConfiguration->GetTrainDataSets();
+  // std::list<DataSet *> dataSets = myConfiguration->GetTrainDataSets();
 
   std::cout << " ***************************************************" << std::endl
             << " Validation has not been implimented yet" << std::endl
