@@ -192,51 +192,51 @@ cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
 
 Nipype interface proposal
 ants.inputs.dimensionality = 3 # [2,3]
-ants.inputs.maskImage = 'maskImageFileName'
+ants.inputs.mask_image = 'maskImageFileName'
 ===========================================
 ### Note: multiple metrics can be used ###
 ===========================================
-ants.inputs.imageMetric = ['CC','MI','PSE']
-                        = ['CrossCorrelation','MutualInformation','PointSetExpectation']
-                        = ['cross-correlation','mutual-information','point-set-expectation']
-ants.inputs.fixedImage = ['fixedImageFileName']
-ants.inputs.movingImage = ['movingImageFileName']
-ants.inputs.metricWeight = [0.3,0.4,0.3] # len() == number of metrics
+ants.inputs.image_metric = ['CC','MI','PSE']
+                         = ['CrossCorrelation','MutualInformation','PointSetExpectation']
+                         = ['cross-correlation','mutual-information','point-set-expectation']
+ants.inputs.fixed_image = ['fixedImageFileName']
+ants.inputs.moving_image = ['movingImageFileName']
+ants.inputs.metric_weight = [0.3,0.4,0.3] # len() == number of metrics
 ants.inputs.radius = [3] # Requires specific metrics
-ants.inputs.histogramBins = [25] # Requires specific metrics: MI & SMI
+ants.inputs.histogram_bins = [25] # Requires specific metrics: MI & SMI
 ===========================================
 # Requires specific metrics: PointSet-based
 ===========================================
-ants.inputs.pointSetPercentage = ... ### TODO: Find allowed values ###
-ants.inputs.pointSetSigma = ... ### TODO: Find allowed values ###
-ants.inputs.boundaryPointsOnly = False
-ants.inputs.kNeignborhood = ... ### TODO: Find allowed values ### Is this for kNN? Int or Float?
-ants.inputs.partialMatchingIterations = 50000 # Default:100000
+ants.inputs.point_set_percentage = ... ### TODO: Find allowed values ###
+ants.inputs.point_set_sigma = ... ### TODO: Find allowed values ###
+ants.inputs.boundary_points_only = False
+ants.inputs.k_neignborhood = ... ### TODO: Find allowed values ### Is this for kNN? Int or Float?
+ants.inputs.partial_matching_iterations = 50000 # Default:100000
 ===========================================
-ants.inputs.outputNaming = 'outputFilePrefix'
+ants.inputs.output_naming = 'outputFilePrefix'
                          = 'outputFileName.extension'
-ants.inputs.roiSize = [50,50,25] # In voxels!!!
-ants.inputs.roiOrigin = [10,12.15] # In voxels!!!
-ants.inputs.numberOfIterations = [100,100,20]
-ants.inputs.restrictDeformation = True
-ants.inputs.useAllMetricsForConvergence = True # Default: False
+ants.inputs.roi_size = [50,50,25] # In voxels!!!
+ants.inputs.roi_origin = [10,12.15] # In voxels!!!
+ants.inputs.number_of_iterations = [100,100,20]
+ants.inputs.restrict_deformation = True
+ants.inputs.use_all_metrics_for_convergence = True # Default: False
 ===========================================
 ### Note: multiple transformations can be used ###
 ===========================================
-ants.inputs.transformationModel = ['SyN'] # ['Diff', 'Elast', 'Exp', Greedy Exp', 'SyN']
-ants.inputs.transformationStepLength = [0.25]
-ants.inputs.transformationNumberOfTimeSteps = [3.0]
-ants.inputs.transformationDeltaTime = [0.0]
-ants.inputs.transformationSymmetryType = ... ### TODO: Find allowed values ###
+ants.inputs.transformation_model = ['SyN'] # ['Diff', 'Elast', 'Exp', Greedy Exp', 'SyN'] !-!-!-! 'Affine' !-!-!-!
+ants.inputs.transformation_gradient_step_length = [0.25]
+ants.inputs.transformation_number_of_time_steps = [3.0]
+ants.inputs.transformation_delta_time = [0.0]
+ants.inputs.transformation_symmetry_type = ... ### TODO: Find allowed values ###
 ===========================================
 ants.inputs.regularization = 'Gauss' # ['Gauss', 'DMFFD']
-ants.inputs.regularizationGradientFieldSigma = 3
-ants.inputs.regularizationDeformationFieldSigma = 0.5
-ants.inputs.regularizationTruncation = ... ### TODO: Find allowed values ###
+ants.inputs.regularization_gradient_field_sigma = 3
+ants.inputs.regularization_deformation_field_sigma = 0.5
+ants.inputs.regularization_truncation = ... ### TODO: Find allowed values ###
 ===========================================
-ants.inputs.initialAffine = 'initialAffineTransformFileName'
-ants.inputs.fixedImageInitialAffine = 'initialFixedImageAffineTransformFileName'
-ants.inputs.fixedImageInitialAffineReferenceImage = 'initialFixedImageAffineReferenceImageFileName'
+ants.inputs.initial_affine = 'initialAffineTransformFileName'
+ants.inputs.fixed_image_initial_affine = 'initialFixedImageAffineTransformFileName'
+ants.inputs.fixed_image_initial_affine_reference_image = 'initialFixedImageAffineReferenceImageFileName'
 ants.inputs.geodesic = 0 # [0,1,2]
                      = 'time-independent' ['time-independent', 'asymmetric', 'symmetric'] ### TODO: Discuss this feature with Hans ###
 ants.inputs.goFaster = True # This may be dependent on transformation type?
@@ -270,24 +270,86 @@ ants.inputs.subsamplingFactors = [...] # len() == 2 x (number of levels) <-- 2 =
    >>> os.chdir(datadir)
 
 """
-
+import os
+from glob import glob
 from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)
 from nipype.utils.filemanip import split_filename
 from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
-class AntsInputSpec(ANTSCommandInputSpec):
-    mask_image = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'fixed' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
-    dimension = traits.Enum(3, 2, argstr='%d', usedefault=True, desc='image dimension (2 or 3)', position=1)
+class ANTSInputSpec(ANTSCommandInputSpec):
+    # mask_image = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'fixed' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
+    dimension = traits.Enum(3, 2, argstr='%d', usedefault=True, position=1, desc='image dimension (2 or 3)')
+    image_metric = traits.List(traits.Enum('CC', 'MI', 'SMI', 'PR', 'SSD', 'MSQ', 'PSE'), mandatory=True, desc='')
+    fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=(''))
+    moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=(''))
+    metric_weight = traits.List(traits.Float(), requires=['image_metric'], desc='')
+    radius = traits.List(traits.Int(), requires=['image_metric'], desc='')
+    output_naming = traits.Str('out', usedefault=True, argstr='%s', mandatory=True, desc='')
+    transformation_model = traits.List(traits.Enum('Affine', 'Diff', 'Elast', 'Exp', 'Greedy Exp', 'SyN'), argstr='%s', mandatory=True, desc='')
+    transformation_gradient_step_length = traits.List(traits.Float(), requires=['transformation_model'], desc='')
+    transformation_number_of_time_steps = traits.List(traits.Float(), requires=['transformation_model'], desc='')
+    transformation_delta_time = traits.List(traits.Float(), requires=['transformation_model'], desc='')
+    number_of_iterations = traits.List(traits.Int(), argstr='--number-of-iterations %s', sep='x')
+    subsampling_factors = traits.List(traits.Int(), argstr='--subsampling-factors %s', sep='x')
+    gaussian_smoothing_sigmas = traits.List(traits.Int(), argstr='--gaussian-smoothing-sigmas %s', sep='x')
+    use_histogram_matching = traits.Bool(argstr='%s', default=True, usedefault=True)
 
-class AntsOutputSpec(TraitedSpec):
+class ANTSOutputSpec(TraitedSpec):
     pass
 
 class ANTS(ANTSCommand):
     _cmd = 'ANTS'
-    input_spec = AntsInputSpec
-    output_spec = AntsOutputSpec
+    input_spec = ANTSInputSpec
+    output_spec = ANTSOutputSpec
 
-    def _format_args(self, opt, spec, val):
+    def _image_metric_constructor(self):
+        retval = []
+        intensityBased = ['CC', 'MI', 'SMI', 'PR', 'SSD', 'MSQ']
+        pointSetBased = 'PSE'
+        for ii in range(len(self.inputs.moving_image)):
+            if self.inputs.image_metric[ii] in intensityBased:
+                retval.append('--image-metric %s[%s,%s,%g,%d]' % (self.inputs.image_metric[ii],
+                                                                  self.inputs.fixed_image[ii],
+                                                                  self.inputs.moving_image[ii],
+                                                                  self.inputs.metric_weight[ii],
+                                                                  self.inputs.radius[ii]))
+            elif self.inputs.image_metric[ii] == pointSetBased:
+                pass
+                # retval.append('--image-metric %s[%s, %s, ...'.format(self.inputs.image_metric[ii], self.inputs.fixed_image[ii], self.inputs.moving_image[ii], ...))
+        return ' '.join(retval)
+
+    def _transformation_constructor(self):
+        retval = []
+        for ii in range(len(self.inputs.transformation_model)):
+            if self.inputs.transformation_model[ii] == 'Affine':
+                retval.append('--transform-model Affine[%#.2g]' % (self.inputs.transformation_gradient_step_length[ii]))
+            elif self.inputs.transformation_model[ii] == 'Diff':
+                pass
+            elif self.inputs.transformation_model[ii] == 'Elast':
+                pass
+            elif self.inputs.transformation_model[ii] == 'Exp':
+                pass
+            elif self.inputs.transformation_model[ii] == 'Greedy Exp':
+                pass
+            elif self.inputs.transformation_model[ii] == 'SyN':
+                retval.append('--transform-model SyN[%#.2g,%#.2g,%#.2g]' % (self.inputs.transformation_gradient_step_length[ii],
+                                                                   self.inputs.transformation_number_of_time_steps[ii],
+                                                                   self.inputs.transformation_delta_time[ii]))
+        return ' '.join(retval)
+
+    def _format_arg(self, opt, spec, val):
+        if opt == 'moving_image':
+            return self._image_metric_constructor()
+        elif opt == 'output_naming':
+            return '--output-naming %s' % self.inputs.output_naming
+        elif opt == 'transformation_model':
+            return self._transformation_constructor()
+        elif opt == 'use_histogram_matching':
+            if self.inputs.use_histogram_matching:
+                return '--use-Histogram-Matching 0'
+            else:
+                return '--use-Histogram-Matching 1'
+
         return super(ANTS, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):

@@ -184,9 +184,9 @@ class AntsRegistrationInputSpec(ANTSCommandInputSpec):
     sampling_percentage = traits.Range(low=0.0, high=1.0, require=['metric'], desc='')
 
     fixed_image_mask = File(mandatory=True, desc=(''), exists=True)
-    moving_image_mask = File(argstr='%s', mandatory=True, desc=(''), exists=True)
-    initial_fixed_transform = File(argstr='%s', desc=(''), exists=True)
-    invert_initial_fixed_transform = traits.Bool(desc=(''), requires=["initial_fixed_transform"])
+    moving_image_mask = File(argstr='%s', mandatory=True, desc='', exists=True)
+    initial_fixed_transform = File(argstr='%s', desc='', exists=True)
+    invert_initial_fixed_transform = traits.Bool(desc='', requires=["initial_fixed_transform"])
     transform = traits.Str(argstr='--transform %s', mandatory = True)
     n_iterations = traits.List(traits.Int(), argstr="%s")
     convergence_threshold = traits.Float(requires=['n_iterations'])
