@@ -2,7 +2,6 @@
 #include "XMLConfigurationFileParser.h"
 #include "GenericTransformImage.h"
 
-
 /** constructors */
 BRAINSCutDataHandler
 ::BRAINSCutDataHandler( std::string modelConfigurationFilename )

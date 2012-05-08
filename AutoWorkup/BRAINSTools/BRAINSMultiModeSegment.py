@@ -1,48 +1,42 @@
 from nipype.interfaces.base import CommandLine, CommandLineInputSpec, TraitedSpec, File, Directory, traits, isdefined, InputMultiPath, OutputMultiPath
 import os
+from nipype.interfaces.slicer.base import SlicerCommandLine
+
 
 class BRAINSMultiModeSegmentInputSpec(CommandLineInputSpec):
-    inputVolumes = InputMultiPath(File(exists=True), argstr = "--inputVolumes %s...")
-    inputMaskVolume = File( exists = True,argstr = "--inputMaskVolume %s")
-    outputROIMaskVolume = traits.Either(traits.Bool, File(), hash_files = False,argstr = "--outputROIMaskVolume %s")
-    outputClippedVolumeROI = traits.Either(traits.Bool, File(), hash_files = False,argstr = "--outputClippedVolumeROI %s")
-    lowerThreshold = InputMultiPath(traits.Float, sep = ",",argstr = "--lowerThreshold %s")
-    upperThreshold = InputMultiPath(traits.Float, sep = ",",argstr = "--upperThreshold %s")
-    numberOfThreads = traits.Int( argstr = "--numberOfThreads %d")
+    inputVolumes = InputMultiPath(File(exists=True), desc="The input image volumes for finding the largest region filled mask.", argstr="--inputVolumes %s...")
+    inputMaskVolume = File(desc="The ROI for region to compute histogram levels.", exists=True, argstr="--inputMaskVolume %s")
+    outputROIMaskVolume = traits.Either(traits.Bool, File(), hash_files=False, desc="The ROI automatically found from the input image.", argstr="--outputROIMaskVolume %s")
+    outputClippedVolumeROI = traits.Either(traits.Bool, File(), hash_files=False, desc="The inputVolume clipped to the region of the brain mask.", argstr="--outputClippedVolumeROI %s")
+    lowerThreshold = InputMultiPath(traits.Float, desc="Lower thresholds on the valid histogram regions for each modality", sep=",", argstr="--lowerThreshold %s")
+    upperThreshold = InputMultiPath(traits.Float, desc="Upper thresholds on the valid histogram regions for each modality", sep=",", argstr="--upperThreshold %s")
+    numberOfThreads = traits.Int(desc="Explicitly specify the maximum number of threads to use.", argstr="--numberOfThreads %d")
 
 
 class BRAINSMultiModeSegmentOutputSpec(TraitedSpec):
-    outputROIMaskVolume = File( exists = True)
-    outputClippedVolumeROI = File( exists = True)
+    outputROIMaskVolume = File(desc="The ROI automatically found from the input image.", exists=True)
+    outputClippedVolumeROI = File(desc="The inputVolume clipped to the region of the brain mask.", exists=True)
 
 
-class BRAINSMultiModeSegment(CommandLine):
+class BRAINSMultiModeSegment(SlicerCommandLine):
+    """title: Segment based on rectangular region of joint histogram (BRAINS)
+
+category: Utilities.BRAINS
+
+description: This tool creates binary regions based on segmenting multiple image modalitities at once.
+  
+
+version: 2.4.1
+
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+
+contributor: Hans J. Johnson, hans-johnson -at- uiowa.edu, http://www.psychiatry.uiowa.edu
+
+acknowledgements: Hans Johnson(1,3,4); Gregory Harris(1), Vincent Magnotta(1,2,3);   (1=University of Iowa Department of Psychiatry, 2=University of Iowa Department of Radiology, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering)  
+
+"""
 
     input_spec = BRAINSMultiModeSegmentInputSpec
     output_spec = BRAINSMultiModeSegmentOutputSpec
     _cmd = " BRAINSMultiModeSegment "
     _outputs_filenames = {'outputROIMaskVolume':'outputROIMaskVolume.nii','outputClippedVolumeROI':'outputClippedVolumeROI.nii'}
-
-    def _list_outputs(self):
-        outputs = self.output_spec().get()
-        for name in outputs.keys():
-            coresponding_input = getattr(self.inputs, name)
-            if isdefined(coresponding_input):
-                if isinstance(coresponding_input, bool) and coresponding_input == True:
-                    outputs[name] = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    if isinstance(coresponding_input, list):
-                        outputs[name] = [os.path.abspath(inp) for inp in coresponding_input]
-                    else:
-                        outputs[name] = os.path.abspath(coresponding_input)
-        return outputs
-
-    def _format_arg(self, name, spec, value):
-        if name in self._outputs_filenames.keys():
-            if isinstance(value, bool):
-                if value == True:
-                    value = os.path.abspath(self._outputs_filenames[name])
-                else:
-                    return ""
-        return super(BRAINSMultiModeSegment, self)._format_arg(name, spec, value)
-

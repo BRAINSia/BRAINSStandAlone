@@ -1,5 +1,5 @@
-#ifndef BRAINSCutPrimary_h
-#define BRAINSCutPrimary_h
+#ifndef BRAINSCutUtilities_h
+#define BRAINSCutUtilities_h
 
 #include "BRAINSCutConfiguration.h"
 
@@ -76,79 +76,9 @@ const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
 
 std::string GetAtlasToSubjectRegistrationFilename( DataSet& subject);
 std::string GetSubjectToAtlasRegistrationFilename( DataSet& subject);
+WorkingImagePointer SmoothImage( const WorkingImagePointer image, const float GaussianValue);
+WorkingImagePointer ReadImageByFilename( const std::string  filename );
+DisplacementFieldType::Pointer GetDeformationField( std::string filename);
+GenericTransformType::Pointer GetGenericTransform( std::string filename);
 
-//
-// read/warp image
-//
-static
-WorkingImagePointer
-SmoothImage( const WorkingImagePointer image, const float GaussianValue)
-{
-  if( GaussianValue < 0 + FLOAT_TOLERANCE )
-    {
-    std::cout << "Gaussian value is less than tolerance. "
-              << "No smoothing occurs at this time"
-              << std::endl;
-    return image;
-    }
-  /*std::cout<<"Smooth Image with Gaussian value of :: "
-           << GaussianValue
-           <<std::endl;*/
-  typedef itk::SmoothingRecursiveGaussianImageFilter<WorkingImageType, WorkingImageType> SmoothingFilterType;
-  SmoothingFilterType::Pointer smoothingFilter = SmoothingFilterType::New();
-
-  smoothingFilter->SetInput( image);
-  smoothingFilter->SetSigma( GaussianValue );
-
-  smoothingFilter->Update();
-
-  return smoothingFilter->GetOutput();
-}
-
-static
-WorkingImagePointer
-ReadImageByFilename( const std::string  filename )
-{
-  WorkingImagePointer readInImage;
-
-  ReadInImagePointer inputImage = itkUtil::ReadImage<ReadInImageType>(filename.c_str() );
-  readInImage = itkUtil::ScaleAndCast<ReadInImageType,
-                                      WorkingImageType>(inputImage,
-                                                        ZeroPercentValue,
-                                                        HundredPercentValue);
-  return readInImage;
-}
-/* inline functions */
-
-static 
-inline
-DisplacementFieldType::Pointer
-GetDeformationField( std::string filename)
-{
-  const bool useTransform( filename.find(".mat") != std::string::npos );
-  if( useTransform )
-    {
-    return NULL;
-    }
-  typedef itk::ImageFileReader<DisplacementFieldType> DeformationReaderType;
-  DeformationReaderType::Pointer deformationReader = DeformationReaderType::New();
-  deformationReader->SetFileName( filename );
-  deformationReader->Update();
-
-  return deformationReader->GetOutput();
-}
-
-static
-inline
-GenericTransformType::Pointer
-GetGenericTransform( std::string filename)
-{
-  const bool useDeformation( filename.find(".mat") == std::string::npos );
-  if( useDeformation )
-    {
-    std::cout<<"return null deformation"<<std::endl;
-    return NULL;
-    }
-  return itk::ReadTransformFromDisk( filename );
-}
 #endif
