@@ -84,7 +84,7 @@ int main( int argc, char *argv[] )
   double pRef[3];
   if ( vertexLocation )
   {
-	  for ( unsigned int i=0; i<numberOfPoints; i++)
+	  for ( vtkIdType i=0; i<numberOfPoints; i++)
 	  {
 		  inputSurface->GetPoint(i,pInput);
 		  refSurface->GetPoint(i,pRef);
