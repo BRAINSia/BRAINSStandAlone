@@ -188,3 +188,60 @@ bash -x TestAtropos.sh
 
 
 """
+from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)
+from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
+
+class AtroposInputSpec(ANTSCommandInputSpec):
+    image_dimensionality = traits.Enum(2, 3, 4, argstr='--image-dimensionality %d', usedefault=False, desc='image dimension 2/3/4')
+    intensity_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc='')
+    mask_image = File(exists=True, argstr='--mask-image %s', mandatory=True, desc='')
+    initialization = traits.Enum('Random', 'Otsu', 'KMeans', 'PriorProbabilityImages', argstr='%s', mandatory=True, desc='')
+    number_of_tissue_classes = traits.Int(requires=['initialization'], desc='')
+    # ---- traits.Either()
+    initialization_file_format = traits.Str(requires=['number_of_tissue_classes'], desc='')
+    vector_image = File(requires=['number_of_tissue_classes'], desc='')
+    # ----
+    prior_weighting = traits.Float(requires=['number_of_tissue_classes'], desc=''))
+    prior_probability_threshold = traits.Float(requires=['prior_weighting'], desc='')))
+
+class AtroposOutputSpec(TraitedSpec):
+    pass
+
+class Atropos(ANTSCommand):
+    """
+    Examples
+    --------
+
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    """
+    _cmd = 'Atropos'
+    input_spec = AtroposInputSpec
+    output_spec = AtroposOutputSpec
+
+    def _return_file_list(self, val, longFlag):
+        retval = []
+        for index in range(len(val)):
+            retval.append('%s %s' %(longFlag, val[index]))
+        return ' '.join(retval)
+
+    def _initialization_constructor(self, method):
+        retval = ['--initialization']
+        count = self.inputs.number_of_tissue_classes
+        if method == 'Random':
+            retval.append('Random[%d]' % count)
+        return ' '.join(retval)
+
+    def _format_arg(self, opt, spec, val):
+        if opt == 'intensity_image':
+            return self._return_file_list(val, '--intensity-image')
+        elif opt == 'initialization':
+            return self._initialization_constructor(val)
+        return super(Atropos, self)._format_arg(opt, spec, val)
+
+    def _list_outputs(self):
+        pass
