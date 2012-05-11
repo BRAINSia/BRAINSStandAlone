@@ -195,14 +195,30 @@ class AtroposInputSpec(ANTSCommandInputSpec):
     image_dimensionality = traits.Enum(2, 3, 4, argstr='--image-dimensionality %d', usedefault=False, desc='image dimension 2/3/4')
     intensity_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc='')
     mask_image = File(exists=True, argstr='--mask-image %s', mandatory=True, desc='')
-    initialization = traits.Enum('Random', 'Otsu', 'KMeans', 'PriorProbabilityImages', argstr='%s', mandatory=True, desc='')
+    initialization = traits.Enum('Random', 'Otsu', 'KMeans', 'PriorProbabilityImages', 'PriorLabelImage', argstr='%s', mandatory=True, desc='')
     number_of_tissue_classes = traits.Int(requires=['initialization'], desc='')
-    # ---- traits.Either()
+    # TODO: cluster_centers =
     initialization_file_format = traits.Str(requires=['number_of_tissue_classes'], desc='')
     vector_image = File(requires=['number_of_tissue_classes'], desc='')
-    # ----
-    prior_weighting = traits.Float(requires=['number_of_tissue_classes'], desc=''))
-    prior_probability_threshold = traits.Float(requires=['prior_weighting'], desc='')))
+    prior_weighting = traits.Float(requires=['number_of_tissue_classes'], desc='')
+    prior_probability_threshold = traits.Float(requires=['prior_weighting'], desc='')
+    # TODO: label_image = File(exists=True, requires=['number_of_tissue_classes'], desc='')
+    likelihood_model = traits.Enum('Gaussian', 'HistogramParzenWindows', argstr='%s', desc='')
+    sigma = traits.Float(requires=['likelihood_model'], default=1.0, desc='')
+    number_of_bins = traits.Int(requires=['sigma'], default=32, desc='')
+    markov_random_field_smoothing_factor = traits.Float(argstr='%s', default=0.3, desc='')
+    markov_random_field_coefficient_image = traits.File(exists=True, argstr='%s', desc='')
+    markov_random_field_radius = traits.List(traits.Int(), requires=['markov_random_field_smoothing_factor'], desc='')
+    icm_use_asynchronous_update = traits.Bool(argstr='%s', desc='')
+    icm_maximum_number_of_iterations = traits.Int(requires=['icm_use_asynchronous_update'], desc='')
+    icm_code_image = traits.File(requires=['icm_maximum_number_of_iterations'], desc='')
+    convergence_number_of_iterations = traits.Int(argstr='%s', default=5, desc='')
+    convergence_threshold = traits.Float(default=0.001, desc='')
+    posterior_formulation = traits.Enum('Socrates', 'Plato', 'Aristotle', argstr='%s', desc='')
+    use_mixture_model_proportions = traits.Bool(requires=['posterior_formulation'], desc='')
+    initial_annealing_temperature = traits.Int(default=1, requires=['use_mixture_model_proportions'], desc='')
+    annealing_rate = traits.Int(default=1, requires=['initial_annealing_temperature'], desc='')
+    minimum_temperature = traits.Float(default=0.1, requires=['annealing_rate'], desc='')
 
 class AtroposOutputSpec(TraitedSpec):
     pass
@@ -230,17 +246,103 @@ class Atropos(ANTSCommand):
         return ' '.join(retval)
 
     def _initialization_constructor(self, method):
-        retval = ['--initialization']
         count = self.inputs.number_of_tissue_classes
-        if method == 'Random':
-            retval.append('Random[%d]' % count)
+        retval = ['--initialization %s[%d' % (method, count)]
+        if method in ('Random','Otsu'):
+            pass
+        elif method == 'KMeans':
+            if not self.inputs.cluster_centers is traits.Undefined:
+                pass # TODO: retval.append(', %s' % self.inputs.cluster_centers)
+        elif method =='PriorProbabilityImages':
+            ppi = []
+            if not self.inputs.vector_image is traits.Undefined:
+                ppi.append(',%s' % self.inputs.vector_image)
+            else:
+                ppi.append(',%s' % self.inputs.initialization_file_format)
+            ppi.append('%g' % self.inputs.prior_weighting)
+            if not self.inputs.prior_probability_threshold is traits.Undefined:
+                ppi.append('%g' % self.inputs.prior_probability_threshold)
+            retval.append(','.join(ppi))
+        elif method == 'PriorLabelImage':
+            pass # TODO
+        retval.append(']')
+        return ''.join(retval)
+
+    def _likelihood_model_constructor(self):
+        retval = ['--likelihood-model']
+        if self.inputs.likelihood_model == 'HistogramParzenWindows':
+            if not self.inputs.number_of_bins is traits.Undefined:
+                retval.append('HistogramParzenWindows[%g,%d]' % (self.inputs.sigma, self.inputs.number_of_bins))
+            elif not self.inputs.sigma is traits.Undefined:
+                retval.append('HistogramParzenWindows[%g]' % self.inputs.sigma)
+            else:
+                retval.append('HistogramParzenWindows')
+        elif self.inputs.likelihood_model == 'Gaussian':
+            retval.append('Gaussian')
         return ' '.join(retval)
+
+    def _mrf_constructor(self, value):
+        retval = ['--mrf']
+        if isinstance(value, float):
+            if not self.inputs.markov_random_field_radius is traits.Undefined:
+                radius = 'x'.join(['%g'% elem for elem in self.inputs.markov_random_field_radius])
+                retval.append('[%g,%s]' %(value, radius))
+            else:
+                retval.append('[%g]' % value)
+        elif isinstance(value, str):
+            if not self.inputs.markov_random_field_radius is traits.Undefined:
+                radius = 'x'.join(['%g'% elem for elem in self.inputs.markov_random_field_radius])
+                retval.append('[%s,%s]' %(value, radius))
+            else:
+                retval.append('[%s]' % value)
+        else:
+            retval.append('********')
+        return ' '.join(retval)
+
+    def _icm_constructor(self):
+        retval = ['--icm']
+        icm = []
+        if self.inputs.icm_use_asynchronous_update:
+            icm.append('%d' % self.inputs.icm_use_asynchronous_update)
+        if self.inputs.icm_maximum_number_of_iterations:
+            icm.append('%d' % self.inputs.icm_maximum_number_of_iterations)
+        if self.inputs.icm_code_image:
+            icm.append('%s' % self.inputs.icm_code_image)
+        icm = ','.join(icm)
+        icm = '[' + icm + ']'
+        retval.append('%s' % icm)
+        return ' '.join(retval)
+
+    def _convergence_constructor(self):
+        retval = ['--convergence']
+        if not self.inputs.convergence_threshold is traits.Undefined:
+            retval.append('[%d,%g]'% (self.inputs.convergence_number_of_iterations, self.inputs.convergence_threshold))
+        else:
+            retval.append('[%d]'% self.inputs.convergence_number_of_iterations)
+        return ' '.join(retval)
+
+    def _posterior_constructor(self):
+        retval = ['--posterior-formulation']
+        if not self.inputs.minimum_temperature is traits.Undefined:
+            retval.append('[%b,%d,%d,%g]' % (self.inputs.use_mixture_model_proportions,
+                                             ))
 
     def _format_arg(self, opt, spec, val):
         if opt == 'intensity_image':
             return self._return_file_list(val, '--intensity-image')
         elif opt == 'initialization':
             return self._initialization_constructor(val)
+        elif opt == 'likelihood_model':
+            return self._likelihood_model_constructor()
+        elif opt == 'markov_random_field_smoothing_factor' or opt == 'markov_random_field_coefficient_image':
+            return self._mrf_constructor(val)
+        elif opt == 'icm_use_asynchronous_update':
+            return self._icm_constructor()
+        elif opt == 'convergence_number_of_iterations':
+            return self._convergence_constructor()
+        elif opt == 'posterior_formulation':
+            return self._posterior_constructor()
+
         return super(Atropos, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
