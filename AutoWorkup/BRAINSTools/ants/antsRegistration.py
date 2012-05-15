@@ -172,7 +172,7 @@ from nipype.utils.filemanip import split_filename
 from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
 class AntsRegistrationInputSpec(ANTSCommandInputSpec):
-    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
+    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=False, desc='image dimension (2 or 3)')
     fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
 
