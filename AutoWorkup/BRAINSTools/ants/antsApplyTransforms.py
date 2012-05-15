@@ -95,3 +95,71 @@ OPTIONS:
     antsApplyTransforms.inputs.invertTransformsList=[0,1]
 
 """
+
+# Standard library imports
+import os
+from glob import glob
+
+# Local imports
+from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)
+from nipype.utils.filemanip import split_filename
+from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
+
+class AntsApplyTransformsInputSpec(ANTSCommandInputSpec):
+    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=False, desc='image dimension (2 or 3)')
+    input_file_name = File(argstr='--input %s', mandatory=True, desc=(''), exists=True)
+    reference_image = File(argstr='--reference-image %s', mandatory=True, desc=(''), exists=True)
+    output_warped_file_name = File(argstr='--output %s', mandatory=True, desc=(''))
+    print_out_composite_warp_file = traits.Enum(0, 1, requires=["output_warped_file_name"], desc=(''))
+    interpolation = traits.Str(argstr='--interpolation %s', mandatory = True)
+    default_value = traits.Int(argstr='--default-value %d', mandatory = True)
+    transforms = traits.List(File(exists=True), argstr='%s', mandatory=True, desc=(''))
+    invert_transforms_list = traits.List(traits.Enum(0, 1), requires=["transforms"])
+    
+class AntsApplyTransformsOutputSpec(TraitedSpec):
+    warped_image = File(exists=True, desc='Warped image')
+
+class AntsApplyTransforms(ANTSCommand):
+    """
+    Examples
+    --------
+
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    >>>
+    """
+    _cmd = '/ipldev/scratch/johnsonhj/src/ANTS-Darwin-clang/bin/antsApplyTransforms'
+    input_spec = AntsApplyTransformsInputSpec
+    output_spec = AntsApplyTransformsOutputSpec
+    
+    def _getTransformFileNames(self):
+        retval = []
+        for ii in range(len(self.inputs.transforms)):
+            if isdefined(self.inputs.invert_transforms_list):
+                if len(self.inputs.transforms) == len(self.inputs.invert_transforms_list):
+                    retval.append("--transform [%s,%s]"%(self.inputs.transforms[ii], self.inputs.invert_transforms_list[ii]))
+                else:
+                    raise Exception("ERROR: The useInverse list must have the same number of entries as the transformsFileName list.")
+            else:                    
+                retval.append("--transform %s"%(self.inputs.transforms[ii]))    
+        return " ".join(retval)
+        
+    def _getOutputWarpedFileName(self):
+        if isdefined(self.inputs.print_out_composite_warp_file):
+            return "--output [%s,%s]"%(self.inputs.output_warped_file_name, self.inputs.print_out_composite_warp_file)
+        else:
+            return "--output %s"%(self.inputs.output_warped_file_name)
+
+    def _format_arg(self, opt, spec, val):
+        if opt == "output_warped_file_name":
+            return self._getOutputWarpedFileName()
+        elif opt == "transforms":
+            return self._getTransformFileNames()
+        return super(AntsApplyTransforms, self)._format_arg(opt, spec, val)
+
+    def _list_outputs(self):
+        outputs = self._outputs().get()
+        outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_file_name)
