@@ -127,31 +127,6 @@ cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
 //OPTIONAL INTERFACE FOR MULTI_MODAL_REGISTRATION:
 #    -m 'CC[SUBJ_A_T2.nii.gz,SUBJ_B_T2.nii.gz,1,5]' \
 
-    Nipype interface proposal:
-
-    antsRegistration.inputs.dimension=3
-    antsRegistration.inputs.fixedMask=SUBJ_A_small_T2_mask.nii.gz
-    antsRegistration.inputs.movingMask=SUBJ_B_small_T2_mask.nii.gz
-    antsRegistration.inputs.intialAffineTransform=20120430_1348_txfmv2fv_affine.mat
-    antsRegistration.inputs.invertInitialAffineTransform=False
-    antsRegistration.inputs.warpPrefix=20120430_1348_ANTS6_
-    antsRegistration.inputs.movingResampledImage=BtoA.nii.gz ## Optional
-    antsRegistration.inputs.fixedResampledImage=AtoB.nii.gz  ## Optional
-    antsRegistration.inputs.metricName='CC'                  ## This is a family of interfaces, CC,MeanSquares,Demons,GC,MI,Mattes
-    antsRegistration.inputs.fixedVolumesList=[SUBJ_A_T1_resampled.nii.gz,SUBJ_A_T2.nii.gz]
-    antsRegistration.inputs.movingVolumesList=[SUBJ_B_T1_resampled.nii.gz,SUBJ_B_T2.nii.gz]
-    antsRegistration.inputs.metricWeight=1
-    antsRegistration.inputs.radiusOrBins=1                   ## for CC,MeanSquares,Demons,GC this is the radius and defaults to 1, for MI and Mattes, it is the number of Bins and defaults to 64
-    antsRegistration.inputs.transformType='SyN'
-    antsRegistration.inputs.transformGradientStep=0.25
-    antsRegistration.inputs.transformUpdateFieldVariance=3.0
-    antsRegistration.inputs.transformTotalFieldVariance=0.0
-    antsRegistration.inputs.convergenceIterations=[100, 70, 20]
-    antsRegistration.inputs.convergenceThreshold=1e-6
-    antsRegistration.inputs.convergenceWindowSize=10
-    antsRegistration.inputs.smoothing=[0,0,0]
-    antsRegistration.inputs.useHistogramMatching=True
-
 =======================================================================
 
   Change directory to provide relative paths for doctests
@@ -167,112 +142,90 @@ import os
 from glob import glob
 
 # Local imports
-from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)
+from nipype.interfaces.base import (CommandLine, CommandLineInputSpec,
+                                    InputMultiPath, traits, TraitedSpec,
+                                    OutputMultiPath, isdefined,
+                                    File, Directory)
 from nipype.utils.filemanip import split_filename
-from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
+#from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
-class AntsRegistrationInputSpec(ANTSCommandInputSpec):
+#class antsRegistrationInputSpec(ANTSCommandInputSpec):
+class antsRegistrationInputSpec(CommandLineInputSpec):
     dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=False, desc='image dimension (2 or 3)')
     fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
 
     metric = traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes", mandatory=True, desc="")
     # TODO: Metric has not yet been implemented in the executable
-    metric_weight = traits.Int(requires=['metric'], default=1, desc="Note that the metricWeight is currently not used. Rather, it is a temporary place holder until multivariate metrics are available for a single stage.")
-    radius = traits.Int(requires=['metric'], desc='')
+    metric_weight = traits.Int(1,requires=['metric'], usedefault=True, desc="Note that the metricWeight is currently not used. Rather, it is a temporary place holder until multivariate metrics are available for a single stage.")
+    radius = traits.Int(5,requires=['metric'], usedefault=True,desc='')
     sampling_strategy = traits.Enum("Regular", "Random", requires=['metric'], default='Regular', desc='')
     sampling_percentage = traits.Range(low=0.0, high=1.0, require=['metric'], desc='')
-    fixed_image_mask = File(mandatory=True, desc=(''), exists=True)
-    moving_image_mask = File(argstr='%s', mandatory=True, desc='', exists=True)
-    initial_fixed_transform = File(argstr='%s', desc='', exists=True)
-    invert_initial_fixed_transform = traits.Bool(desc='', requires=["initial_fixed_transform"])
-    transform = traits.Str(argstr='--transform %s', mandatory = True)
+    fixed_image_mask = File(mandatory=False, desc=(''), requires=['moving_image_mask'], exists=True)
+    moving_image_mask = File(argstr='%s', mandatory=False, desc='', requires=['fixed_image_mask'], exists=True)
+    initial_moving_transform = File(argstr='%s', desc='', exists=True)
+    invert_initial_moving_transform = traits.Bool(desc='', requires=["initial_moving_transform"])
+    transform = traits.Str(argstr='--transform "%s"', mandatory = True)
     n_iterations = traits.List(traits.Int(), argstr="%s")
-    convergence_threshold = traits.Float(requires=['n_iterations'])
-    convergence_window_size = traits.Int(requires=['n_iterations', 'convergence_threshold'])
+    convergence_threshold = traits.Float(1e-6,requires=['n_iterations'],usedefault=True)
+    convergence_window_size = traits.Int(10,requires=['n_iterations', 'convergence_threshold'],usedefault=True)
     shrink_factors = traits.List(traits.Int(), argstr="--shrink-factors %s", sep='x')
     smoothing_sigmas = traits.List(traits.Int(), argstr="--smoothing-sigmas %s", sep='x')
     use_histogram_matching = traits.Bool(argstr="--use-histogram-matching")
-    output_warped_image = traits.Either(traits.Bool, File(), hash_files=False, desc="")
-    output_inverted_warped_image = traits.Either(traits.Bool, File(), hash_files=False, requires=['output_warped_image'], desc="")
     output_transform_prefix = traits.Str("transform", usedefault=True, argstr="%s", desc="")
+    output_warped_image = traits.Either(traits.Bool, File(), hash_files=False, desc="")
+    output_inverse_warped_image = traits.Either(traits.Bool, File(), hash_files=False, requires=['output_warped_image'], desc="")
 
-class AntsRegistrationOutputSpec(TraitedSpec):
-    warped_image = File(exists=True, desc='Warped image')
-    inverted_warped_image = File(exists=True, desc='Inverted warped image')
+class antsRegistrationOutputSpec(TraitedSpec):
     warped_transform = File(exists=True, desc='Warp transform')
-    inverted_warped_transform = File(exists=True, desc='Inverted warp transform')
+    inverse_warp_transform = File(exists=True, desc='Inverse warp transform')
+    warped_image = File(exists=True, desc='Warped image')
+    inverse_warped_image = File(exists=True, desc='Inverse warped image')
 
-class AntsRegistration(ANTSCommand):
+#class antsRegistration(ANTSCommand):
+class antsRegistration(CommandLine):
     """
     Examples
     --------
-
-    >>>
-    >>>
-    >>>
-    >>>
-    >>>
     >>>
     """
     _cmd = 'antsRegistration'
-    input_spec = AntsRegistrationInputSpec
-    output_spec = AntsRegistrationOutputSpec
+    input_spec = antsRegistrationInputSpec
+    output_spec = antsRegistrationOutputSpec
 
     def _format_arg(self, opt, spec, val):
         if opt == 'moving_image':
             retval = []
             for ii in range(len(self.inputs.moving_image)):
-                retval.append("--metric '%s[%s,%s,1,5]'" % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii]))
+                retval.append('--metric "%s[%s,%s,%d,%d]"' % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii],self.inputs.metric_weight,self.inputs.radius))
             return " ".join(retval)
         elif opt == 'moving_image_mask':
-            return "--masks [%s,%s]"%(self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
-        elif opt == 'initial_fixed_transform':
-            if isdefined(self.inputs.invert_initial_fixed_transform) and self.inputs.invert_initial_fixed_transform:
-                return "--initial-moving-transform [%s, 1]"%self.inputs.initial_fixed_transform
+            return '--masks "[%s,%s]"' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
+        elif opt == 'initial_moving_transform':
+            if isdefined(self.inputs.invert_initial_moving_transform) and self.inputs.invert_initial_moving_transform:
+                return '--initial-moving-transform "[%s,1]"' % self.inputs.initial_moving_transform
             else:
-                return "--initial-moving-transform %s"%self.inputs.initial_fixed_transform
+                return '--initial-moving-transform "[%s,0]"' % self.inputs.initial_moving_transform
         elif opt == "n_iterations":
             convergence_iter = "x".join([str(i) for i in self.inputs.n_iterations])
-            if isdefined(self.inputs.convergence_window_size):
-                return "--convergence [%s,%g,%d]"%(convergence_iter,
-                                                   self.inputs.convergence_threshold,
-                                                   self.inputs.convergence_window_size)
-            elif isdefined(self.inputs.convergence_threshold):
-                return "--convergence [%s,%g]"%(convergence_iter,
-                                                   self.inputs.convergence_threshold)
-            else:
-                return "--convergence %s"%(convergence_iter)
+            return '--convergence "[%s,%g,%d]"' % (convergence_iter,
+                                                self.inputs.convergence_threshold,
+                                                self.inputs.convergence_window_size)
         elif opt == 'output_transform_prefix':
-            if isdefined(self.inputs.output_inverted_warped_image) and self.inputs.output_inverted_warped_image:
-                return '--output [%s, %s, %s]' %(self.inputs.output_transform_prefix, self._getOutputWarpedImageFileName(), self._getOutputWarpedImageFileName(inverted=True))
+            if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
+                return '--output "[%s,%s,%s]"' % (self.inputs.output_transform_prefix, self.inputs.output_warped_image, self.inputs.output_inverse_warped_image )
             elif isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
-                return '--output [%s, %s]' %(self.inputs.output_transform_prefix, self._getOutputWarpedImageFileName())
+                return '--output "[%s,%s]"'     % (self.inputs.output_transform_prefix, self.inputs.output_warped_image )
             else:
                 return '--output %s' % self.inputs.output_transform_prefix
-
-        return super(AntsRegistration, self)._format_arg(opt, spec, val)
-
-    def _getOutputWarpedImageFileName(self, inverted=False):
-        value = self.inputs.output_warped_image
-        _, fixedName, ext = split_filename(self.inputs.fixed_image[0])
-        _, movingName, __ = split_filename(self.inputs.moving_image[0])
-        if inverted:
-            defaultName = '%s_to_%s%s' % (fixedName, movingName, ext)
-        else:
-            defaultName = '%s_to_%s%s' % (movingName, fixedName, ext)
-        if isinstance(value, bool):
-            if value == True:
-                return defaultName
-        else:
-            return value
+        return super(antsRegistration, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
         outputs = self._outputs().get()
         outputs['warped_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1Warp.nii.gz')
-        outputs['inverted_warped_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1InverseWarp.nii.gz')
+        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1InverseWarp.nii.gz')
         if isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
-            outputs['warped_image'] = os.path.abspath(self._getOutputWarpedImageFileName())
-        if isdefined(self.inputs.output_inverted_warped_image) and self.inputs.output_inverted_warped_image:
-            outputs['inverted_warped_image'] = os.path.abspath(self._getOutputWarpedImageFileName(inverted=True))
+            outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_image)
+        if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
+            outputs['inverse_warped_image'] = os.path.abspath(self.inputs.output_inverse_warped_image)
         return outputs
