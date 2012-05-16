@@ -87,7 +87,7 @@ extern std::vector<CorrectIntensityImageType::Pointer> CorrectBias(
   const ByteImageType::Pointer currentForegroundMask, const std::vector<FloatImageType::Pointer> & probImages,
   const std::vector<bool> & probUseForBias, const FloatingPrecision sampleSpacing, const int DebugLevel, const std::string& OutputDebugDir);
 
-extern template class std::vector<FloatImagePointerType> DuplicateImageList<FloatImageType>(
+extern template std::vector<FloatImagePointerType> DuplicateImageList<FloatImageType>(
   const std::vector<FloatImagePointerType> & );
 
 extern template std::vector<ShortImageType::Pointer> DuplicateImageList<ShortImageType>(
