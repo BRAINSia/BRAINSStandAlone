@@ -151,6 +151,15 @@ BRAINSCutCreateVector
                    std::string subjectROIBinaryFilename,
                    int roiNumber)
 {
+  if( !itksys::SystemTools::FileExists( subjectROIBinaryFilename.c_str(), false ) )
+    {
+    std::cout << " Subject binary file of "
+              << roiName
+              << " named as " << subjectROIBinaryFilename
+              << " does not exist. "
+              << std::endl;
+    exit(EXIT_FAILURE);
+    }
   WorkingImagePointer subjectROIBinaryImage = ReadImageByFilename( subjectROIBinaryFilename );
 
   itk::ImageRegionIterator<WorkingImageType> it( deformedROIs.find( roiName )->second,
