@@ -217,7 +217,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     {
     image = volOrig;
     }
-
+      
   landmarksConstellationDetector myDetector;
     {
     // a little abuse of the duplicator here
@@ -226,7 +226,13 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     duplicator->Update();
     // The detector will use the output image after the Hough eye detector
     myDetector.SetVolOrig( duplicator->GetOutput() );
+        
+    // The detector also needs the original input if it has to fix a bad estimation of the MSP
+    duplicator->SetInputImage( image );
+    duplicator->Update();
+    myDetector.SetOriginalInput( duplicator->GetOutput() );
     }
+    
   myDetector.SetInputTemplateModel( myModel );
   myDetector.SetLlsMatrices( this->m_LlsMatrices );
   myDetector.SetLlsMeans( this->m_LlsMeans );
@@ -379,8 +385,11 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
       }
 
       {
+        image = myDetector.GetOriginalInput(); // image -> myDetector(modification May happen) -> image
+          
         {
-        const SImageType * constImage( this->m_OriginalInputImage.GetPointer() );
+        //const SImageType * constImage( this->m_OriginalInputImage.GetPointer() );
+        const SImageType * constImage( image.GetPointer() );
 
         ResampleIPFilterPointer resampleIPFilter = ResampleIPFilterType::New();
         resampleIPFilter->SetInputImage( constImage );
@@ -391,10 +400,11 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
         }
 
         {
-        this->m_OutputResampledImage = TransformResample<SImageType, SImageType>
-            ( image, MakeIsoTropicReferenceImage(), BackgroundFillValue,
-            GetInterpolatorFromString<SImageType>(this->m_InterpolationMode),
-            this->m_VersorTransform.GetPointer() );
+        this->m_OutputResampledImage = TransformResample<SImageType, SImageType> ( image, 
+                                                                                   MakeIsoTropicReferenceImage(), 
+                                                                                   BackgroundFillValue,
+                                                                                   GetInterpolatorFromString<SImageType>(this->m_InterpolationMode),
+                                                                                   this->m_VersorTransform.GetPointer() );
         }
 
         {
