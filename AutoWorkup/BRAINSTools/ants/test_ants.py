@@ -10,8 +10,8 @@ moving = testDir + '/SUBJ_B_T1_resampled.nii.gz'
 
 test = ants.ANTS()
 test.inputs.dimension = 3
-test.inputs.output_naming = 'OrigANTS_20120430_1348_ANTS6_'
-test.inputs.image_metric = ['CC']
+test.inputs.output_transform_prefix = 'OrigANTS_20120430_1348_ANTS6_'
+test.inputs.metric = ['CC']
 test.inputs.fixed_image = [fixed]
 test.inputs.moving_image = [moving]
 test.inputs.metric_weight = [1.0]
@@ -23,7 +23,7 @@ test.inputs.number_of_time_steps = 3.0
 test.inputs.delta_time = 0.0
 test.inputs.number_of_iterations = [1,1,1]
 test.inputs.subsampling_factors = [3,2,1]
-test.inputs.gaussian_smoothing_sigmas = [0,0,0]
+test.inputs.smoothing_sigmas = [0,0,0]
 test.inputs.use_histogram_matching = False
 
 result = test.run()

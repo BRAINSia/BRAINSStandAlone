@@ -174,7 +174,6 @@ OPTIONS:
 
 How to run the test case:
 
-
 cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
 /ipldev/scratch/johnsonhj/src/ANTS-Darwin-clang/bin/ANTS \
     3 \
@@ -192,11 +191,11 @@ cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
 
 Nipype interface proposal
 ants.inputs.dimensionality = 3 # [2,3]
-ants.inputs.mask_image = 'maskImageFileName'
+ants.inputs.fixed_image_mask = 'maskImageFileName'
 ===========================================
 ### Note: multiple metrics can be used ###
 ===========================================
-ants.inputs.image_metric = ['CC','MI','PSE']
+ants.inputs.metric = ['CC','MI','PSE']
                          = ['CrossCorrelation','MutualInformation','PointSetExpectation']
                          = ['cross-correlation','mutual-information','point-set-expectation']
 ants.inputs.fixed_image = ['fixedImageFileName']
@@ -213,7 +212,7 @@ ants.inputs.boundary_points_only = False
 ants.inputs.k_neignborhood = ... ### TODO: Find allowed values ### Is this for kNN? Int or Float?
 ants.inputs.partial_matching_iterations = 50000 # Default:100000
 ===========================================
-ants.inputs.output_naming = 'outputFilePrefix'
+ants.inputs.output_transform_prefix = 'outputFilePrefix'
                          = 'outputFileName.extension'
 ants.inputs.roi_size = [50,50,25] # In voxels!!!
 ants.inputs.roi_origin = [10,12.15] # In voxels!!!
@@ -270,40 +269,54 @@ ants.inputs.subsamplingFactors = [...] # len() == 2 x (number of levels) <-- 2 =
    >>> os.chdir(datadir)
 
 """
+
+# Standard library imports
 import os
 from glob import glob
-from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)
-from nipype.utils.filemanip import split_filename
-from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
-class ANTSInputSpec(ANTSCommandInputSpec):
-    # mask_image = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'fixed' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
-    dimension = traits.Enum(3, 2, argstr='%d', usedefault=True, position=1, desc='image dimension (2 or 3)')
-    image_metric = traits.List(traits.Enum('CC', 'MI', 'SMI', 'PR', 'SSD', 'MSQ', 'PSE'), mandatory=True, desc='')
-    fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=(''))
-    moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=(''))
-    metric_weight = traits.List(traits.Float(), requires=['image_metric'], desc='')
-    radius = traits.List(traits.Int(), requires=['image_metric'], desc='')
-    output_naming = traits.Str('out', usedefault=True, argstr='%s', mandatory=True, desc='')
+# Local imports
+from nipype.interfaces.base import (CommandLine, CommandLineInputSpec,
+                                    InputMultiPath, traits, TraitedSpec,
+                                    OutputMultiPath, isdefined,
+                                    File, Directory)
+from nipype.utils.filemanip import split_filename
+#from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
+
+#class ANTSInputSpec(ANTSCommandInputSpec):
+class ANTSInputSpec(CommandLineInputSpec):
+    dimension = traits.Enum(3, 2, argstr='%d', usedefault=False, position=1, desc='image dimension (2 or 3)')
+    fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+    moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+
+    metric = traits.List(traits.Enum('CC', 'MI', 'SMI', 'PR', 'SSD', 'MSQ', 'PSE'), mandatory=True, desc='')
+
+    metric_weight = traits.List(traits.Float(), requires=['metric'], desc='')
+    radius = traits.List(traits.Int(), requires=['metric'], desc='')
+
+    output_transform_prefix = traits.Str('out', usedefault=True, argstr='%s', mandatory=True, desc='')
     transformation_model = traits.Enum('Diff', 'Elast', 'Exp', 'Greedy Exp', 'SyN', argstr='%s', mandatory=True, desc='')
     gradient_step_length = traits.Float(requires=['transformation_model'], desc='')
     number_of_time_steps = traits.Float(requires=['gradient_step_length'], desc='')
     delta_time = traits.Float(requires=['number_of_time_steps'], desc='')
     symmetry_type = traits.Float(requires=['delta_time'], desc='')
-    number_of_iterations = traits.List(traits.Int(), argstr='--number-of-iterations %s', sep='x')
-    subsampling_factors = traits.List(traits.Int(), argstr='--subsampling-factors %s', sep='x')
-    gaussian_smoothing_sigmas = traits.List(traits.Int(), argstr='--gaussian-smoothing-sigmas %s', sep='x')
+
     use_histogram_matching = traits.Bool(argstr='%s', default=True, usedefault=True)
+    number_of_iterations = traits.List(traits.Int(), argstr='--number-of-iterations %s', sep='x')
+    smoothing_sigmas = traits.List(traits.Int(), argstr='--gaussian-smoothing-sigmas %s', sep='x')
+    subsampling_factors = traits.List(traits.Int(), argstr='--subsampling-factors %s', sep='x')
     affine_gradient_descent_option = traits.List(traits.Float(), argstr='%s')
+    # fixed_image_mask = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'fixed' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
+    # moving_image_mask = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'moving' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
 
 class ANTSOutputSpec(TraitedSpec):
     affine_transform = File(exists=True, desc='Affine transform file')
-    warping_deformation_field = File(exists=True, desc='Warping deformation field')
-    inverse_warping_deformation_field = File(exists=True, desc='Inverse warping deformation field')
+    warp_transform = File(exists=True, desc='Warping deformation field')
+    inverse_warp_transform = File(exists=True, desc='Inverse warping deformation field')
     metaheader = File(exists=True, desc='VTK metaheader .mhd file')
     metaheader_raw = File(exists=True, desc='VTK metaheader .raw file')
 
-class ANTS(ANTSCommand):
+#class ANTS(ANTSCommand):
+class ANTS(CommandLine):
     _cmd = 'ANTS'
     input_spec = ANTSInputSpec
     output_spec = ANTSOutputSpec
@@ -313,13 +326,13 @@ class ANTS(ANTSCommand):
         intensityBased = ['CC', 'MI', 'SMI', 'PR', 'SSD', 'MSQ']
         pointSetBased = ['PSE', 'JTB']
         for ii in range(len(self.inputs.moving_image)):
-            if self.inputs.image_metric[ii] in intensityBased:
-                retval.append('--image-metric %s[%s,%s,%g,%d]' % (self.inputs.image_metric[ii], self.inputs.fixed_image[ii],
+            if self.inputs.metric[ii] in intensityBased:
+                retval.append('--image-metric %s[%s,%s,%g,%d]' % (self.inputs.metric[ii], self.inputs.fixed_image[ii],
                                                                   self.inputs.moving_image[ii], self.inputs.metric_weight[ii],
                                                                   self.inputs.radius[ii]))
-            elif self.inputs.image_metric[ii] == pointSetBased:
+            elif self.inputs.metric[ii] == pointSetBased:
                 pass
-                # retval.append('--image-metric %s[%s, %s, ...'.format(self.inputs.image_metric[ii], self.inputs.fixed_image[ii], self.inputs.moving_image[ii], ...))
+                # retval.append('--image-metric %s[%s, %s, ...'.format(self.inputs.metric[ii], self.inputs.fixed_image[ii], self.inputs.moving_image[ii], ...))
         return ' '.join(retval)
 
     def _transformation_constructor(self):
@@ -359,24 +372,24 @@ class ANTS(ANTSCommand):
     def _format_arg(self, opt, spec, val):
         if opt == 'moving_image':
             return self._image_metric_constructor()
-        elif opt == 'output_naming':
-            return '--output-naming %s' % self.inputs.output_naming
+        elif opt == 'output_transform_prefix':
+            return '--output-naming %s' % self.inputs.output_transform_prefix
         elif opt == 'transformation_model':
             return self._transformation_constructor()
         elif opt == 'use_histogram_matching':
             if self.inputs.use_histogram_matching:
-                return '--use-Histogram-Matching 0'
-            else:
                 return '--use-Histogram-Matching 1'
+            else:
+                return '--use-Histogram-Matching 0'
         elif opt == 'affine_gradient_descent_option':
             return self._affine_gradient_descent_option_constructor()
         return super(ANTS, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['affine_transform'] = os.path.abspath(self.inputs.output_naming + 'Affine.txt')
-        outputs['warping_deformation_field'] = os.path.abspath(self.inputs.output_naming + 'Warp.nii.gz')
-        outputs['inverse_warping_deformation_field'] = os.path.abspath(self.inputs.output_naming + 'InverseWarp.nii.gz')
-        outputs['metaheader'] = os.path.abspath(self.inputs.output_naming + 'velocity.mhd')
-        outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_naming + 'velocity.raw')
+        outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Affine.txt')
+        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Warp.nii.gz')
+        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'InverseWarp.nii.gz')
+        outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
+        outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')
         return outputs
