@@ -11,9 +11,16 @@ BABC_T1_average=$2
 BABC_T2_average=$3
 OUTPUT_SYNTHESIZED_IMAGE=$4
 
-mri_ms_LDA -lda 1 2 \
+WM_LABEL=1
+GM_LABEL=2
+WeightsFile=ThisSubjectOptimalWeights.txt
+
+## This call has an output of the weights file, and is used in imperically estimate the best weights
+## --weight is an OUTPUT in this case
+mri_ms_LDA \
+  -lda ${WM_LABEL} ${GM_LABEL} \
   -label ${BABC_TissueMask} \
-  -weight ThisSubjectOptimalWeights.txt \
+  -weight ${WeightsFile} \
   ${BABC_T1_average} \
   ${BABC_T2_average}
 
@@ -21,9 +28,14 @@ mri_ms_LDA -lda 1 2 \
 # Usually, the optimal weighting can be computed from a set of training subjects, and then the optimal weights can be used to process new data.
 # Suppose the weights are computed, mri_ms_LDA can be used to apply them to new MEF data as follows:
 
-mri_ms_LDA -lda 1 2 \
-  -weight ThisSubjectOptimalWeights.txt \
-  -W -synth ${OUTPUT_SYNTHESIZED_IMAGE} \
+
+##  Use the pre-computed weights to create a synthesized output image where the two specidified classes are maximally separated
+##  --weight is and INPUT in this case!
+mri_ms_LDA \
+  -lda ${WM_LABEL} ${GM_LABEL} \
+  -weight ${WeightsFile} \
+  -W \
+  -synth ${OUTPUT_SYNTHESIZED_IMAGE} \
   ${BABC_T1_average} \
   ${BABC_T2_average}
 
