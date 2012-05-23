@@ -21,9 +21,9 @@ from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath,
 class MS_LDAInputSpec(FSTraitedSpec):
     lda_labels = traits.List(traits.Int(), argstr='-lda %s', mandatory=True, minlen=2, maxlen=2, sep=' ', position=1,
                              desc='pair of class labels to optimize')
-    weight_file = traits.File(argstr='-weight %s', mandatory=True, position=2, desc='filename for the LDA weights (input or output)')
+    weight_file = traits.File(exists=False, argstr='-weight %s', mandatory=True, position=2, desc='filename for the LDA weights (input or output)')
     output_synth = traits.File(exists=False, argstr='-synth %s', mandatory=True, position=3, desc='filename for the synthesized output volume')
-    label_file = traits.File(exists=True, argstr='-label %s', position=4, desc='filename of the label volume')
+    label_file = traits.File(exists=True, argstr='-label %s', mandatory=True,    position=4, desc='filename of the label volume')
     mask_file = traits.File(exists=True, argstr='-mask %s', position=5, desc='filename of the brain mask volume')
     shift = traits.Int(argstr='-shift %d', position=6, desc='shift all values equal to the given value to zero')
     conform = traits.Bool(argstr='-conform', position=7, desc='Conform the input volumes (brain mask typically already conformed)')
@@ -32,7 +32,7 @@ class MS_LDAInputSpec(FSTraitedSpec):
 
 class MS_LDAOutputSpec(TraitedSpec):
     weight_file = File(exists=True, desc='')
-    vol_synth_file = File(exists=True, desc='')
+    output_synth = File(exists=True, desc='')
 
 class MS_LDA(FSCommand):
     """Perform LDA reduction on the intensity space of an arbitrary # of FLASH images
@@ -57,7 +57,7 @@ class MS_LDA(FSCommand):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['vol_synth_file'] = os.path.abspath(self.inputs.output_synth)
+        outputs['output_synth'] = os.path.abspath(self.inputs.output_synth)
         if not isdefined(self.inputs.use_weights) or self.inputs.use_weights is False:
             outputs['weight_file'] = os.path.abspath(self.inputs.weight_file)
         return outputs
