@@ -5,11 +5,10 @@
 # testing data to be separate from
 # the source tree.
 #
-# NOTE:  This is not a global solution
-#        for any developer.  Only members
-#        of the Iowa PINC lab have access
-#        to generate data in this way.
-#
+# NOTE: This is not a global solution
+#       for any developer.  Only members
+#       of the Iowa PINC lab have access
+#       to generate data in this way.
 #
 import hashlib
 import os
