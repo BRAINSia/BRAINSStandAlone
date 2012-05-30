@@ -217,7 +217,7 @@ else:
   print("no xml filename is given to process")
 
 
-subprocess.call(["/ipldev/scratch/eunyokim/src/BRAINS20111028/build-Darwin-Debug/lib/BRAINSCut" +
+subprocess.call(["/Users/eunyokim/src/build/lib/BRAINSCut" +
                  " --applyModel " +
                  " --netConfiguration " + args.xmlFilename +
                  " --modelFilename " + args.modelFilename +
