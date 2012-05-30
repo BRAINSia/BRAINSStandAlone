@@ -168,6 +168,7 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     invert_initial_moving_transform = traits.Bool(desc='', requires=["initial_moving_transform"])
     transform = traits.Str(argstr='--transform "%s"', mandatory = True)
 
+    use_estimate_learning_rate_once = traits.Bool(argstr="--use-estimate-learning-rate-once")
     use_histogram_matching = traits.Bool(argstr="--use-histogram-matching")
     number_of_iterations = traits.List(traits.Int(), argstr="%s")
     smoothing_sigmas = traits.List(traits.Int(), argstr="--smoothing-sigmas %s", sep='x')
