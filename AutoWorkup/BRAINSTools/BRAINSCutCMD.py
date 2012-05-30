@@ -1,3 +1,9 @@
+
+#
+# TODO
+# :: copy model file into md5 repository
+# :: connect input/output in the BAW
+
 import argparse
 import subprocess
 
@@ -137,6 +143,9 @@ def xmlGenerator( args ):
 
 
 ##
+## main
+##
+
 brainscutParser = argparse.ArgumentParser( description ='BRAINSCut command line argument parser')
 
 #
