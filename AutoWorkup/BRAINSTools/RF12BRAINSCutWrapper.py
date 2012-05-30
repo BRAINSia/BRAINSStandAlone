@@ -15,13 +15,18 @@ from nipype.interfaces.base import ( File, TraitedSpec, Interface, CommandLineIn
 ### CommandLine
 class RF12BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
     ### subject specific
-    subjectT1Filename = File( desc="Subject T1 Volume", exists=True, mandatory=True, rgstr="--inputSubjectT1Filename %s")
-    subjectT2Filename = File( desc="Subject T2 Volume", exists=True, mandatory=True, rgstr="--inputSubjectT2Filename %s")
-    subjectSGFilename = File( desc="Subject SG Volume", exists=True, mandatory=True, rgstr="--inputSubjectSGFilename %s")
+    inputSubjectT1Filename = File( desc="Subject T1 Volume", exists=True, mandatory=True, rgstr="--inputSubjectT1Filename %s")
+    inputSubjectT2Filename = File( desc="Subject T2 Volume", exists=True, mandatory=True, rgstr="--inputSubjectT2Filename %s")
+    inputSubjectSGFilename = File( desc="Subject SG Volume", exists=True, mandatory=True, rgstr="--inputSubjectSGFilename %s")
     
     ### model specific
     modelFilename = File( desc="modelFilename", exists=True, mandatory=True, rgstr="--modelFilename %s")
     trainingVectorFilename = File( desc="training vectof file name", exists=False, mandatory=False, rgstr="--trainingVectorFilename %s")
+    inputTemplateT1 = File( desc="Atlas Template T1 image", exists=False, mandatory=False, rgstr="--inputTemplateT1 %s")
+    inputTemplateRhoFilename = File( desc="Atlas Template rho image", exists=False, mandatory=False, rgstr="--inputTemplateRhoFilename %s")
+    inputTemplatePhiFilename = File( desc="Atlas Template phi image", exists=False, mandatory=False, rgstr="--inputTemplatePhiFilename %s")
+    inputTemplateThetaFilename = File( desc="Atlas Template theta image", exists=False, mandatory=False, rgstr="--inputTemplateThetaFilename %s")
+    deformationFromTemplateToSubject = File( desc="Atlas To subject Deformation", exists=False, mandatory=False, rgstr="--deformationFromTemplateToSubject %s")
 
     ### probability maps
     probabilityMapsLeftAccumben = File( desc="Spatial probability map of left accumben", exists=True, mandatory=True, rgstr="--probabilityMapsLeftAccumben %s")
@@ -42,27 +47,46 @@ class RF12BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
     probabilityMapsLeftThalamus = File( desc="Spatial probability map of left thalamus", exists=True, mandatory=True, rgstr="--probabilityMapsLeftThalamus %s")
     probabilityMapsRightThalamus = File( desc="Spatial probability map of right thalamus", exists=True, mandatory=True, rgstr="--probabilityMapsRightThalamus %s")
 
+    xmlFilename = File( desc = "Net configuration xml file", exists = True, mandatory = True, rgstr="--xmlFilename %s")
+
+    outputBinaryLeftAccumben = File( desc = "Output binary file of left accumben", exists = True, mandatory = True, rgstr="--outputBinaryLeftAccumben %s")
+    outputBinaryRightAccumben = File( desc = "Output binary file of right accumben", exists = True, mandatory = True, rgstr="--outputBinaryRightAccumben %s")
+
+    outputBinaryLeftCaudate = File( desc = "Output binary file of left caudate", exists = True, mandatory = True, rgstr="--outputBinaryLeftCaudate %s")
+    outputBinaryRightCaudate = File( desc = "Output binary file of right caudate", exists = True, mandatory = True, rgstr="--outputBinaryRightCaudate %s")
+
+    outputBinaryLeftGlobus = File( desc = "Output binary file of left globus", exists = True, mandatory = True, rgstr="--outputBinaryLeftGlobus %s")
+    outputBinaryRightGlobus = File( desc = "Output binary file of right globus", exists = True, mandatory = True, rgstr="--outputBinaryRightGlobus %s")
+
+    outputBinaryLeftHippocampus = File( desc = "Output binary file of left hippocampus", exists = True, mandatory = True, rgstr="--outputBinaryLeftHippocampus %s")
+    outputBinaryRightHippocampus = File( desc = "Output binary file of right hippocampus", exists = True, mandatory = True, rgstr="--outputBinaryRightHippocampus %s")
+
+    outputBinaryLeftPutamen = File( desc = "Output binary file of left putamen", exists = True, mandatory = True, rgstr="--outputBinaryLeftPutamen %s")
+    outputBinaryRightPutamen = File( desc = "Output binary file of right putamen", exists = True, mandatory = True, rgstr="--outputBinaryRightPutamen %s")
+
+    outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True, rgstr="--outputBinaryLeftThalamus %s")
+    outputBinaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = True, mandatory = True, rgstr="--outputBinaryRightThalamus %s")
 
 class RF12BRAINSCutWrapperCLOutputSpec(CommandLineInputSpec):
     xmlFilename = File( desc = "Net configuration xml file", exists = True, mandatory = True)
 
-    binaryLeftAccumben = File( desc = "Output binary file of left accumben", exists = True, mandatory = True)
-    binaryRightAccumben = File( desc = "Output binary file of right accumben", exists = True, mandatory = True)
+    outputBinaryLeftAccumben = File( desc = "Output binary file of left accumben", exists = True, mandatory = True)
+    outputBinaryRightAccumben = File( desc = "Output binary file of right accumben", exists = True, mandatory = True)
 
-    binaryLeftCaudate = File( desc = "Output binary file of left caudate", exists = True, mandatory = True)
-    binaryRightCaudate = File( desc = "Output binary file of right caudate", exists = True, mandatory = True)
+    outputBinaryLeftCaudate = File( desc = "Output binary file of left caudate", exists = True, mandatory = True)
+    outputBinaryRightCaudate = File( desc = "Output binary file of right caudate", exists = True, mandatory = True)
 
-    binaryLeftGlobus = File( desc = "Output binary file of left globus", exists = True, mandatory = True)
-    binaryRightGlobus = File( desc = "Output binary file of right globus", exists = True, mandatory = True)
+    outputBinaryLeftGlobus = File( desc = "Output binary file of left globus", exists = True, mandatory = True)
+    outputBinaryRightGlobus = File( desc = "Output binary file of right globus", exists = True, mandatory = True)
 
-    binaryLeftHippocampus = File( desc = "Output binary file of left hippocampus", exists = True, mandatory = True)
-    binaryRightHippocampus = File( desc = "Output binary file of right hippocampus", exists = True, mandatory = True)
+    outputBinaryLeftHippocampus = File( desc = "Output binary file of left hippocampus", exists = True, mandatory = True)
+    outputBinaryRightHippocampus = File( desc = "Output binary file of right hippocampus", exists = True, mandatory = True)
 
-    binaryLeftPutamen = File( desc = "Output binary file of left putamen", exists = True, mandatory = True)
-    binaryRightPutamen = File( desc = "Output binary file of right putamen", exists = True, mandatory = True)
+    outputBinaryLeftPutamen = File( desc = "Output binary file of left putamen", exists = True, mandatory = True)
+    outputBinaryRightPutamen = File( desc = "Output binary file of right putamen", exists = True, mandatory = True)
 
-    binaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True)
-    binaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = True, mandatory = True)
+    outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True)
+    outputBinaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = True, mandatory = True)
 
 
 class RF12BRAINSCutWrapper(CommandLine):
