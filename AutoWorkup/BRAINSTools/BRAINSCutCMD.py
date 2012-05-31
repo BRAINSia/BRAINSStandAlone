@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # TODO
 # :: copy model file into md5 repository
@@ -29,8 +30,8 @@ def xmlGenerator( args ):
     outputStream.write( "      <Image Type=\"SG\" Filename=\"na\" />\n")
 
 
-    if args.inputTemplateBrainMask != "NA":
-        outputStream.write( "      <Mask Type=\"RegistrationROI\" Filename=\""+args.inputTemplateBrainMask+"\" />\n")
+    #if args.inputTemplateBrainMask != "NA" :
+    #    outputStream.write( "      <Mask Type=\"RegistrationROI\" Filename=\""+args.inputTemplateBrainMask+"\" />\n")
 
     outputStream.write( "      <SpatialLocation Type=\"rho\" Filename=\""+args.inputTemplateRhoFilename+"\" />\n")
     outputStream.write( "      <SpatialLocation Type=\"phi\" Filename=\""+args.inputTemplatePhiFilename+"\" />\n")
@@ -96,14 +97,14 @@ def xmlGenerator( args ):
     addProbabilityMapElement( args.probabilityMapsLeftAccumben,    "l_accumben", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftCaudate,     "l_caudate", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftPutamen,     "l_putamen", outputStream);
-    addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_glbous", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_globus", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftThalamus,    "l_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftHippocampus, "l_hippocampus", outputStream);
 
     addProbabilityMapElement( args.probabilityMapsRightAccumben,   "r_accumben", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightCaudate,    "r_caudate", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightPutamen,    "r_putamen", outputStream);
-    addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_glbous", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_globus", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightThalamus,   "r_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightHippocampus,"r_hippocampus", outputStream);
 
@@ -129,10 +130,13 @@ def xmlGenerator( args ):
     outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
     outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n")
 
-    if args.inputSubjectBrainMaskFilename != "NA":
-        outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
+    #if args.inputSubjectBrainMaskFilename != "NA":
+    #    outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
 
-    outputStream.write( "    <Registration SubjToAtlasRegistrationFilename=\""+args.deformationFromSubjectToTemplate+"\" \n")
+    if not args.deformationFromSubjectToTemplate is None:
+        outputStream.write( '    <Registration SubjToAtlasRegistrationFilename="'+args.deformationFromSubjectToTemplate+'"\n')
+    else:
+        outputStream.write( '    <Registration SubjToAtlasRegistrationFilename="" \n')
     outputStream.write( "       AtlasToSubjRegistrationFilename=\""+args.deformationFromTemplateToSubject+"\" \n")
     outputStream.write( "       ID=\""+registrationID+"\" /> \n")
     outputStream.write( "  </DataSet>\n")
@@ -216,7 +220,7 @@ else:
     print("no xml filename is given to process")
 
 
-subprocess.call(["/Users/eunyokim/src/build/lib/BRAINSCut" +
+subprocess.call(["BRAINSCut" +
                  " --applyModel " +
                  " --netConfiguration " + args.xmlFilename +
                  " --modelFilename " + args.modelFilename +
