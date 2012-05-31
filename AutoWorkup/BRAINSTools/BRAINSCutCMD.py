@@ -7,138 +7,138 @@ import argparse
 import subprocess
 
 def addProbabilityMapElement( probabilityMap, maskName, outputStream ):
-  outputStream.write( "  <ProbabilityMap StructureID    = \""+ maskName + "\" \n") 
-  outputStream.write( "      Gaussian       = \"0.5\"\n") 
-  outputStream.write( "      GenerateVector = \"true\"\n") 
-  outputStream.write( "      Filename       = \""+ probabilityMap+"\"\n") 
-  outputStream.write( "   />\n") 
+    outputStream.write( "  <ProbabilityMap StructureID    = \""+ maskName + "\" \n")
+    outputStream.write( "      Gaussian       = \"0.5\"\n")
+    outputStream.write( "      GenerateVector = \"true\"\n")
+    outputStream.write( "      Filename       = \""+ probabilityMap+"\"\n")
+    outputStream.write( "   />\n")
 
 
 def xmlGenerator( args ):
-  outputStream = open( args.xmlFilename, 'w')
-  registrationID="BSpline"
+    outputStream = open( args.xmlFilename, 'w')
+    registrationID="BSpline"
 
-  outputStream.write( "<AutoSegProcessDescription>\n" )
+    outputStream.write( "<AutoSegProcessDescription>\n" )
 
-  #
-  # template
-  #
-  outputStream.write( "  <DataSet Name=\"template\" Type=\"Atlas\" >\n")
-  outputStream.write( "      <Image Type=\"T1\" Filename=\""+args.inputTemplateT1+"\" />\n")
-  outputStream.write( "      <Image Type=\"T2\" Filename=\"na\" />\n") 
-  outputStream.write( "      <Image Type=\"SG\" Filename=\"na\" />\n") 
+    #
+    # template
+    #
+    outputStream.write( "  <DataSet Name=\"template\" Type=\"Atlas\" >\n")
+    outputStream.write( "      <Image Type=\"T1\" Filename=\""+args.inputTemplateT1+"\" />\n")
+    outputStream.write( "      <Image Type=\"T2\" Filename=\"na\" />\n")
+    outputStream.write( "      <Image Type=\"SG\" Filename=\"na\" />\n")
 
- 
-  if args.inputTemplateBrainMask != "NA":
-    outputStream.write( "      <Mask Type=\"RegistrationROI\" Filename=\""+args.inputTemplateBrainMask+"\" />\n")
 
-  outputStream.write( "      <SpatialLocation Type=\"rho\" Filename=\""+args.inputTemplateRhoFilename+"\" />\n") 
-  outputStream.write( "      <SpatialLocation Type=\"phi\" Filename=\""+args.inputTemplatePhiFilename+"\" />\n") 
-  outputStream.write( "      <SpatialLocation Type=\"theta\" Filename=\""+args.inputTemplateThetaFilename+"\" />\n") 
-  outputStream.write( "  </DataSet>\n") 
+    if args.inputTemplateBrainMask != "NA":
+        outputStream.write( "      <Mask Type=\"RegistrationROI\" Filename=\""+args.inputTemplateBrainMask+"\" />\n")
 
-  #
-  # Registration 
-  #
-  outputStream.write( "  <RegistrationConfiguration \n")
-  outputStream.write( "          ImageTypeToUse  = \"T1\" \n")
-  outputStream.write( "          ID              = \""+registrationID+"\" \n")
-  outputStream.write( "          BRAINSROIAutoDilateSize= \"1\" \n")
-  outputStream.write( "   />\n")
+    outputStream.write( "      <SpatialLocation Type=\"rho\" Filename=\""+args.inputTemplateRhoFilename+"\" />\n")
+    outputStream.write( "      <SpatialLocation Type=\"phi\" Filename=\""+args.inputTemplatePhiFilename+"\" />\n")
+    outputStream.write( "      <SpatialLocation Type=\"theta\" Filename=\""+args.inputTemplateThetaFilename+"\" />\n")
+    outputStream.write( "  </DataSet>\n")
 
-  #
-  # training vector configuration  (feature vector)
-  #
+    #
+    # Registration
+    #
+    outputStream.write( "  <RegistrationConfiguration \n")
+    outputStream.write( "          ImageTypeToUse  = \"T1\" \n")
+    outputStream.write( "          ID              = \""+registrationID+"\" \n")
+    outputStream.write( "          BRAINSROIAutoDilateSize= \"1\" \n")
+    outputStream.write( "   />\n")
 
-  outputStream.write( "   <NeuralNetParams MaskSmoothingValue     = \"0.0\" \n") 
-  outputStream.write( "          GradientProfileSize    = \"1\"\n") 
-  outputStream.write( "          TrainingVectorFilename = \""+args.trainingVectorFilename+"\" \n") 
-  outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\" \n") 
-  outputStream.write( "          TestVectorFilename     = \"na\" \n") 
-  outputStream.write( "          Normalization          = \""+args.vectorNormalization+"\" \n")
-  outputStream.write( "   />\n") 
+    #
+    # training vector configuration  (feature vector)
+    #
 
-  #
-  # random forest parameters
-  #
-  outputStream.write( "   <RandomForestParameters \n")
-  outputStream.write( "      MaxDepth= \"-1\" \n")     #dummy
-  outputStream.write( "      MaxTreeCount= \"-1\" \n") # dummy
-  outputStream.write( "      MinSampleCount= \"5\"\n")
-  outputStream.write( "      UseSurrogates= \"false\" \n")
-  outputStream.write( "      CalcVarImportance= \"false\"\n")
-  outputStream.write( "      />\n")
+    outputStream.write( "   <NeuralNetParams MaskSmoothingValue     = \"0.0\" \n")
+    outputStream.write( "          GradientProfileSize    = \"1\"\n")
+    outputStream.write( "          TrainingVectorFilename = \""+args.trainingVectorFilename+"\" \n")
+    outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\" \n")
+    outputStream.write( "          TestVectorFilename     = \"na\" \n")
+    outputStream.write( "          Normalization          = \""+args.vectorNormalization+"\" \n")
+    outputStream.write( "   />\n")
 
-  #
-  # ANN Parameters
-  #
-  outputStream.write( "   <ANNParameters Iterations             = \"10\" \n") 
-  outputStream.write( "                     MaximumVectorsPerEpoch = \"10000\"\n") 
-  outputStream.write( "                     EpochIterations        = \"100\"\n") 
-  outputStream.write( "                     ErrorInterval          = \"1\"\n") 
-  outputStream.write( "                     DesiredError           = \"0.000001\"\n") 
-  outputStream.write( "                     NumberOfHiddenNodes    = \"60\"\n") 
-  outputStream.write( "                     ActivationSlope        = \"1.0\"\n") 
-  outputStream.write( "                     ActivationMinMax       = \"1.0\"\n") 
-  outputStream.write( "    />\n") 
+    #
+    # random forest parameters
+    #
+    outputStream.write( "   <RandomForestParameters \n")
+    outputStream.write( "      MaxDepth= \"-1\" \n")     #dummy
+    outputStream.write( "      MaxTreeCount= \"-1\" \n") # dummy
+    outputStream.write( "      MinSampleCount= \"5\"\n")
+    outputStream.write( "      UseSurrogates= \"false\" \n")
+    outputStream.write( "      CalcVarImportance= \"false\"\n")
+    outputStream.write( "      />\n")
 
-  #
-  # apply conditions
-  #
-  outputStream.write( "<ApplyModel         CutOutThresh           = \"0.05\"\n") 
-  outputStream.write( "                    MaskThresh             = \"0.4\" \n") 
-  outputStream.write( "                    GaussianSmoothingSigma = \"0.0\" \n")
-  outputStream.write( "   />\n") 
+    #
+    # ANN Parameters
+    #
+    outputStream.write( "   <ANNParameters Iterations             = \"10\" \n")
+    outputStream.write( "                     MaximumVectorsPerEpoch = \"10000\"\n")
+    outputStream.write( "                     EpochIterations        = \"100\"\n")
+    outputStream.write( "                     ErrorInterval          = \"1\"\n")
+    outputStream.write( "                     DesiredError           = \"0.000001\"\n")
+    outputStream.write( "                     NumberOfHiddenNodes    = \"60\"\n")
+    outputStream.write( "                     ActivationSlope        = \"1.0\"\n")
+    outputStream.write( "                     ActivationMinMax       = \"1.0\"\n")
+    outputStream.write( "    />\n")
 
-  #
-  # add probability maps (ROIs)
-  #
-  addProbabilityMapElement( args.probabilityMapsLeftAccumben,    "l_accumben", outputStream);
-  addProbabilityMapElement( args.probabilityMapsLeftCaudate,     "l_caudate", outputStream);
-  addProbabilityMapElement( args.probabilityMapsLeftPutamen,     "l_putamen", outputStream);
-  addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_glbous", outputStream);
-  addProbabilityMapElement( args.probabilityMapsLeftThalamus,    "l_thalamus", outputStream);
-  addProbabilityMapElement( args.probabilityMapsLeftHippocampus, "l_hippocampus", outputStream);
+    #
+    # apply conditions
+    #
+    outputStream.write( "<ApplyModel         CutOutThresh           = \"0.05\"\n")
+    outputStream.write( "                    MaskThresh             = \"0.4\" \n")
+    outputStream.write( "                    GaussianSmoothingSigma = \"0.0\" \n")
+    outputStream.write( "   />\n")
 
-  addProbabilityMapElement( args.probabilityMapsRightAccumben,   "r_accumben", outputStream);
-  addProbabilityMapElement( args.probabilityMapsRightCaudate,    "r_caudate", outputStream);
-  addProbabilityMapElement( args.probabilityMapsRightPutamen,    "r_putamen", outputStream);
-  addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_glbous", outputStream);
-  addProbabilityMapElement( args.probabilityMapsRightThalamus,   "r_thalamus", outputStream);
-  addProbabilityMapElement( args.probabilityMapsRightHippocampus,"r_hippocampus", outputStream);
+    #
+    # add probability maps (ROIs)
+    #
+    addProbabilityMapElement( args.probabilityMapsLeftAccumben,    "l_accumben", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftCaudate,     "l_caudate", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftPutamen,     "l_putamen", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_glbous", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftThalamus,    "l_thalamus", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftHippocampus, "l_hippocampus", outputStream);
 
-  # 
-  # subject
-  #
-  outputStream.write( "  <DataSet Name=\"subject\" Type=\"Apply\"") 
-  outputStream.write( "      OutputDir=\"./\" >\n")
-  outputStream.write( "    <Image Type=\"T1\" Filename=\""+args.inputSubjectT1Filename+"\" />\n") 
-  outputStream.write( "    <Image Type=\"T2\" Filename=\""+args.inputSubjectT2Filename+"\" />\n") 
-  outputStream.write( "    <Image Type=\"SG\" Filename=\""+args.inputSubjectSGFilename+"\" />\n") 
+    addProbabilityMapElement( args.probabilityMapsRightAccumben,   "r_accumben", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightCaudate,    "r_caudate", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightPutamen,    "r_putamen", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_glbous", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightThalamus,   "r_thalamus", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightHippocampus,"r_hippocampus", outputStream);
 
-  outputStream.write( "    <Mask Type=\"l_accumben\" Filename=\""+args.outputBinaryLeftAccumben+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_accumben\" Filename=\""+args.outputBinaryRightAccumben+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"l_putamen\" Filename=\""+args.outputBinaryLeftPutamen+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_putamen\" Filename=\""+args.outputBinaryRightPutamen+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"l_globus\" Filename=\""+args.outputBinaryLeftGlobus+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_globus\" Filename=\""+args.outputBinaryRightGlobus+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"l_thalamus\" Filename=\""+args.outputBinaryLeftThalamus+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n") 
-  outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n") 
+    #
+    # subject
+    #
+    outputStream.write( "  <DataSet Name=\"subject\" Type=\"Apply\"")
+    outputStream.write( "      OutputDir=\"./\" >\n")
+    outputStream.write( "    <Image Type=\"T1\" Filename=\""+args.inputSubjectT1Filename+"\" />\n")
+    outputStream.write( "    <Image Type=\"T2\" Filename=\""+args.inputSubjectT2Filename+"\" />\n")
+    outputStream.write( "    <Image Type=\"SG\" Filename=\""+args.inputSubjectSGFilename+"\" />\n")
 
-  if args.inputSubjectBrainMaskFilename != "NA":
-    outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_accumben\" Filename=\""+args.outputBinaryLeftAccumben+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_accumben\" Filename=\""+args.outputBinaryRightAccumben+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_putamen\" Filename=\""+args.outputBinaryLeftPutamen+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_putamen\" Filename=\""+args.outputBinaryRightPutamen+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_globus\" Filename=\""+args.outputBinaryLeftGlobus+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_globus\" Filename=\""+args.outputBinaryRightGlobus+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_thalamus\" Filename=\""+args.outputBinaryLeftThalamus+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n")
+    outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
+    outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n")
 
-  outputStream.write( "    <Registration SubjToAtlasRegistrationFilename=\""+args.deformationFromSubjectToTemplate+"\" \n") 
-  outputStream.write( "       AtlasToSubjRegistrationFilename=\""+args.deformationFromTemplateToSubject+"\" \n") 
-  outputStream.write( "       ID=\""+registrationID+"\" /> \n")
-  outputStream.write( "  </DataSet>\n") 
+    if args.inputSubjectBrainMaskFilename != "NA":
+        outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
 
-  outputStream.write( "</AutoSegProcessDescription>\n" )
-  outputStream.close()
+    outputStream.write( "    <Registration SubjToAtlasRegistrationFilename=\""+args.deformationFromSubjectToTemplate+"\" \n")
+    outputStream.write( "       AtlasToSubjRegistrationFilename=\""+args.deformationFromTemplateToSubject+"\" \n")
+    outputStream.write( "       ID=\""+registrationID+"\" /> \n")
+    outputStream.write( "  </DataSet>\n")
+
+    outputStream.write( "</AutoSegProcessDescription>\n" )
+    outputStream.close()
 
 
 ##
@@ -211,9 +211,9 @@ args=brainscutParser.parse_args()
 
 print( args )
 if args.xmlFilename != "":
-  xmlGenerator( args )
+    xmlGenerator( args )
 else:
-  print("no xml filename is given to process")
+    print("no xml filename is given to process")
 
 
 subprocess.call(["/Users/eunyokim/src/build/lib/BRAINSCut" +
