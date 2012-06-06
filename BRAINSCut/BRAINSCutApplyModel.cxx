@@ -28,6 +28,8 @@ BRAINSCutApplyModel
   myDataHandler.SetTrainingVectorConfiguration(); // this has to be before gradient size
   myDataHandler.SetGradientSize();
 
+  myDataHandler.SetNormalization();
+
   gaussianSmoothingSigma = myDataHandler.GetGaussianSmoothingSigma();
   trainIteration   = myDataHandler.GetTrainIteration();
   applyDataSetList = myDataHandler.GetApplyDataSet();
@@ -162,7 +164,7 @@ BRAINSCutApplyModel
                                                          imagesOfInterest.front(),
                                                          deformedROIs.find( currentROIName )->second,
                                                          ANNContinuousOutputFilename, 
-                                                         0.0F );
+                                                         1.0F );
           mask = PostProcessingANN( ANNContinuousOutputFilename,
                                                     annOutputThreshold);
         }
@@ -172,7 +174,7 @@ BRAINSCutApplyModel
                                                          imagesOfInterest.front(),
                                                          deformedROIs.find( currentROIName )->second,
                                                          ANNContinuousOutputFilename, 
-                                                         roiIDsOrderNumber );
+                                                         roiIDsOrderNumber+1 );
           mask = PostProcessingRF( ANNContinuousOutputFilename );
         }
 
@@ -429,12 +431,17 @@ BRAINSCutApplyModel
       }
     else if( method == "RandomForest")
       {
-      scalarType response=openCVRandomForest.predict( openCVInputFeature );
-      resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),
-                                 response ) );
-      //std::cout<<"--> "<<response<<std::endl;
+        scalarType response=openCVRandomForest.predict( openCVInputFeature );
+        // make binary input
+        /*if( response > 0.5F )
+        {
+          response = 1.0F;
+        }*/
+        resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),
+                                   response ) );
+        //std::cout<<"--> "<<response<<std::endl;
+        }
       }
-    }
 }
 
 inline void
@@ -540,9 +547,9 @@ BRAINSCutApplyModel
   imgIt.GoToBegin();
   while( !imgIt.IsAtEnd() )
     {
-    if( imgIt.Value() > (HundredPercentValue - FLOAT_TOLERANCE) )
+    if( imgIt.Value() >= (HundredPercentValue - FLOAT_TOLERANCE) )
       {
-      ANNContinuousOutputImage->SetPixel( imgIt.GetIndex(), labelValue+1.0F );
+      ANNContinuousOutputImage->SetPixel( imgIt.GetIndex(), labelValue );
       }
     ++imgIt;
     }
