@@ -52,9 +52,7 @@ public:
 
   scalarType *            ReadBufferFromFileStream( std::ifstream& fileStream );
 
-  std::ios::off_type *    ShufflingOrder();
-
-  void                    ShuffleVectors( );
+  void                    RandomizeTrainingVector( );
 
   pairedTrainingSetType * GetTrainingDataSet();
 
