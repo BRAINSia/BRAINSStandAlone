@@ -37,7 +37,7 @@ main(int argc, char *argv[])
   // define image with type of voxel
   //
   typedef double PixelType;
-  const int Dimension = 3;
+  const unsigned int Dimension = 3;
   typedef itk::Image<PixelType, Dimension> InputImageType;
 
   // there has to be two input volumes and label volume
@@ -173,7 +173,10 @@ main(int argc, char *argv[])
     bool imageInBoundary=true;
     for( unsigned int dimIndex = 0; dimIndex < Dimension ; dimIndex++)
       {
-      if( currentIndexOfY[ dimIndex ] > imageInYSize[ dimIndex ] ) imageInBoundary=false;
+      if( currentIndexOfY[ dimIndex ] > imageInYSize[ dimIndex ] )
+        {
+        imageInBoundary=false;
+        }
       }
 
     if( imageInBoundary )

@@ -382,7 +382,7 @@ VersorTransformType::Pointer ConvertToVersorRigid3D(RigidTransformType::Pointer 
 
   VT->SetFixedParameters( RT->GetFixedParameters() );
 
-  itk::Matrix<double, 3, 3>           R = RT->GetRotationMatrix();
+  itk::Matrix<double, 3, 3>           R = RT->GetMatrix();
   RigidTransformType::TranslationType T = RT->GetTranslation();
 
   VersorTransformType::ParametersType p;
@@ -555,8 +555,8 @@ RigidTransformType::Pointer computeTmspFromPoints(
   AlignMSPTransform->SetRotation(PlaneNormalAttitude, PlaneNormalBank, PlaneNormalHeading);
     {
     // Clean up the rotation to make it orthogonal:
-    const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( AlignMSPTransform->GetRotationMatrix() );
-    AlignMSPTransform->SetRotationMatrix( CleanedOrthogonalized );
+    const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( AlignMSPTransform->GetMatrix() );
+    AlignMSPTransform->SetMatrix( CleanedOrthogonalized );
     }
   AlignMSPTransform->SetTranslation(CenterOffset);
   if( LMC::globalverboseFlag )

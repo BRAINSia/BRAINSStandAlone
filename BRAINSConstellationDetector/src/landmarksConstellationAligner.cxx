@@ -85,8 +85,8 @@ RigidTransformType::Pointer computeTmspFromPoints(SImageType::PointType RP,
 	AlignMSPTransform->SetRotation(PlaneNormalAttitude, PlaneNormalBank, PlaneNormalHeading);
     {
 		// Clean up the rotation to make it orthogonal:
-		const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( AlignMSPTransform->GetRotationMatrix() );
-		AlignMSPTransform->SetRotationMatrix( CleanedOrthogonalized );
+		const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( AlignMSPTransform->GetMatrix() );
+		AlignMSPTransform->SetMatrix( CleanedOrthogonalized );
     }
 	AlignMSPTransform->SetTranslation(CenterOffset);
 	
@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
 		VersorTransformType::Pointer finalTransform = VersorTransformType::New();
 		finalTransform->SetFixedParameters( ZeroCenteredTransform->GetFixedParameters() );
 		itk::Versor<double> versorRotation;
-		const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( ZeroCenteredTransform->GetRotationMatrix() );
+		const itk::Matrix<double,3,3> & CleanedOrthogonalized = itk::Orthogonalize3DRotationMatrix( ZeroCenteredTransform->GetMatrix() );
 		versorRotation.Set( CleanedOrthogonalized );
 		finalTransform->SetRotation( versorRotation );
 		finalTransform->SetTranslation( ZeroCenteredTransform->GetTranslation() );

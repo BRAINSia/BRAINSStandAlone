@@ -205,7 +205,7 @@ void TimeSeriesVersorRigidFilter::Update()
               << ", offset: " << transform->GetOffset()
               << "." << std::endl;
 
-    TransformType::MatrixType matrix = transform->GetRotationMatrix();
+    TransformType::MatrixType matrix = transform->GetMatrix();
     TransformType::OffsetType offset = transform->GetOffset();
 
     std::cout << "Matrix = " << std::endl << matrix << std::endl;

@@ -240,7 +240,7 @@ BRAINSCutGenerateProbability
   PointerToOutputImage->SetMetaDataDictionary( PreInitializedImage->GetMetaDataDictionary() );
   itk::ImageRegionIterator<WorkingImageType> bbri( PointerToOutputImage,
                                                     PointerToOutputImage->GetLargestPossibleRegion() );
-  bbri = bbri.Begin();
+  bbri.GoToBegin();
   while( !bbri.IsAtEnd() )
     {
     // Zeroing voxel signal intensity values

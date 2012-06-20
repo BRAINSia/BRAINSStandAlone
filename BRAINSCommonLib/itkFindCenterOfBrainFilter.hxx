@@ -112,7 +112,7 @@ FindCenterOfBrainFilter<TInputImage, TMaskImage>
     MaskIteratorType ItPixel( LFFimage, LFFimage->GetLargestPossibleRegion() );
 
     typename MaskImageType::PointType PixelPhysicalPoint;
-    ItPixel.Begin();
+    ItPixel.GoToBegin();
     LFFimage->TransformIndexToPhysicalPoint(ItPixel.GetIndex(), PixelPhysicalPoint);
     maxSIDirection = PixelPhysicalPoint[m_Axis];
     for( ; !ItPixel.IsAtEnd(); ++ItPixel )
@@ -148,7 +148,7 @@ FindCenterOfBrainFilter<TInputImage, TMaskImage>
 
     typename MaskImageType::PointType PixelPhysicalPoint;
     PixelPhysicalPoint.Fill(0.0);
-    for( ItPixel.Begin(); !ItPixel.IsAtEnd(); ++ItPixel )
+    for( ItPixel.GoToBegin(); !ItPixel.IsAtEnd(); ++ItPixel )
       {
       if( ItPixel.Get() != 0 )
         {
@@ -332,7 +332,7 @@ FindCenterOfBrainFilter<TInputImage, TMaskImage>
     typedef typename itk::ImageRegionIteratorWithIndex<TInputImage> TInputIteratorType;
     TInputIteratorType ClippedImagePixel( this->m_TrimmedImage, this->m_TrimmedImage->GetLargestPossibleRegion() );
 
-    ClippedImagePixel.Begin();
+    ClippedImagePixel.GoToBegin();
     while( ( !ClippedImagePixel.IsAtEnd() ) )
       {
       typename TInputImage::PointType currLoc;

@@ -12,7 +12,7 @@ QuadEdgeMeshSplitFilter() : Superclass(), m_StartCellId( 0 ), m_Area( 0. )
 {
   this->Superclass::SetNumberOfRequiredInputs( 1 );
   this->SetNumberOfRequiredOutputs( 2 );
-  this->SetNumberOfOutputs( 2 );
+  this->SetNumberOfIndexedOutputs( 2 );
   this->SetNthOutput( 0, OutputMeshType::New() );
   this->SetNthOutput( 1, OutputMeshType::New() );
 }
