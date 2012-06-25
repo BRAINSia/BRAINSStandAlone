@@ -75,9 +75,10 @@ fi.inputs.function_str = functionString
 fi.inputs.ignore_exception = True
 
 #buildtemplateparallel.connect([( BeginANTS,fi, [((['warp_transform', 'affine_transform']),  'out')]),])
-ANTSintroduction.connect( BeginANTS, 'warp_transform', fi, 'arg1')
-ANTSintroduction.connect( BeginANTS, 'affine_transform', fi, 'arg2')
-ANTSintroduction.connect( fi, 'out', wimtdeformed, 'transformation_series' )
+#ANTSintroduction.connect( BeginANTS, 'warp_transform', fi, 'arg1')
+#ANTSintroduction.connect( BeginANTS, 'affine_transform', fi, 'arg2')
+#ANTSintroduction.connect( fi, 'out', wimtdeformed, 'transformation_series' )
+ANTSintroduction.connect( BeginANTS, 'wimtdeformed_transformation_list', wimtdeformed, 'transformation_series' )
 
 ##Connect InitAvgImages to BeginANTS
 buildtemplateparallel.connect( InitAvgImages, "average_image", ANTSintroduction, "BeginANTS.fixed_image" )
@@ -189,4 +190,4 @@ buildtemplateparallel.connect( InitAvgImages, 'average_image', ANTSintroduction,
 #    print args.outputVolume
 #    print args.inputVolumes
 
-buildtemplateparallel.write_graph(graph2use='exec')
+buildtemplateparallel.write_graph(graph2use='hierarchical')
