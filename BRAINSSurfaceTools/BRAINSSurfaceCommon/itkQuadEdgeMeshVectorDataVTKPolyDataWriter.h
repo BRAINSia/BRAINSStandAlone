@@ -98,7 +98,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkQuadEdgeMeshVectorDataVTKPolyDataWriter.txx"
+#include "itkQuadEdgeMeshVectorDataVTKPolyDataWriter.hxx"
 #endif
 
 #endif

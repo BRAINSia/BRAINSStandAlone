@@ -121,7 +121,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkIcosahedralRegularSphereMeshSource.txx"
+#include "itkIcosahedralRegularSphereMeshSource.hxx"
 #endif
 
 #endif //_itkIcosahedralRegularSphereMeshSource_h

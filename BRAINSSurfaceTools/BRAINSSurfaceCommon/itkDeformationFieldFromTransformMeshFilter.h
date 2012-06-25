@@ -103,7 +103,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDeformationFieldFromTransformMeshFilter.txx"
+#include "itkDeformationFieldFromTransformMeshFilter.hxx"
 #endif
 
 #endif

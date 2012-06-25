@@ -118,7 +118,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkQuadEdgeMeshGenerateDeformationFieldFilter.txx"
+#include "itkQuadEdgeMeshGenerateDeformationFieldFilter.hxx"
 #endif
 
 #endif

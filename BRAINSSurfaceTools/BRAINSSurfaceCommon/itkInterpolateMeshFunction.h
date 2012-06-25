@@ -42,7 +42,7 @@ namespace itk
 template <class TInputMesh >
 class ITK_EXPORT InterpolateMeshFunction :
   public MeshFunction< TInputMesh,
-    ITK_TYPENAME NumericTraits<typename TInputMesh::PixelType>::RealType >
+     typename NumericTraits<typename TInputMesh::PixelType>::RealType >
 {
 public:
   /** Standard class typedefs. */
@@ -129,7 +129,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkInterpolateMeshFunction.txx"
+#include "itkInterpolateMeshFunction.hxx"
 #endif
 
 #endif
