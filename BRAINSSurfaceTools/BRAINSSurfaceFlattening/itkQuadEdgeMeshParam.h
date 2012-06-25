@@ -185,6 +185,6 @@ private:
 
 } // end namespace itk
 
-#include "itkQuadEdgeMeshParam.txx"
+#include "itkQuadEdgeMeshParam.hxx"
 
 #endif

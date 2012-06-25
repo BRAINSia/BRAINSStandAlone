@@ -155,7 +155,7 @@ int main( int argc, char * argv [] )
 	  resampleFilter->SetInput (referenceMesh);
 	  resampleFilter->SetReferenceMesh (deformedFixedMesh);
 	  resampleFilter->Update();
-
+std::cout<<"stop here!!!!"<<std::endl;
 	  resampledMesh = resampleFilter->GetOutput();
 	  resampledMesh->DisconnectPipeline();
 

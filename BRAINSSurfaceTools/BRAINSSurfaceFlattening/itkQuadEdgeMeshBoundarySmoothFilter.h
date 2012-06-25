@@ -157,7 +157,7 @@ namespace itk
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkQuadEdgeMeshBoundarySmoothFilter.txx"
+#include "itkQuadEdgeMeshBoundarySmoothFilter.hxx"
 #endif
 
 #endif

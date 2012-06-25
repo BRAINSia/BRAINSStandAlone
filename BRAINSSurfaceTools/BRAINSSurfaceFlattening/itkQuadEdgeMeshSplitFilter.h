@@ -119,5 +119,5 @@ namespace itk
   };
 }
 
-#include "itkQuadEdgeMeshSplitFilter.txx"
+#include "itkQuadEdgeMeshSplitFilter.hxx"
 #endif

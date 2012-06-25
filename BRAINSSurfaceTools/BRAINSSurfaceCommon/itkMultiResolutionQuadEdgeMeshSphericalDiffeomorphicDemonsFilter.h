@@ -298,7 +298,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkMultiResolutionQuadEdgeMeshSphericalDiffeomorphicDemonsFilter.txx"
+#include "itkMultiResolutionQuadEdgeMeshSphericalDiffeomorphicDemonsFilter.hxx"
 #endif
 
 #endif

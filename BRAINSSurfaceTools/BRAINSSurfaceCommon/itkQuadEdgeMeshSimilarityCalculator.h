@@ -132,7 +132,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkQuadEdgeMeshSimilarityCalculator.txx"
+#include "itkQuadEdgeMeshSimilarityCalculator.hxx"
 #endif
 
 #endif
