@@ -12,6 +12,7 @@ images = ['{0}01_T1_half.nii.gz'.format(imagedir), '{0}02_T1_half.nii.gz'.format
 
 #WORKFLOW: Creating overall workflow:
 buildtemplateparallel = pe.Workflow(name='buildtemplateparallel')
+ANTSintroduction = pe.Workflow(name='ANTSintroduction')
 
 #NODE: InitAvgImages - Average the initial images
 InitAvgImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
@@ -68,26 +69,28 @@ AvgHalfDeformedImages.inputs.normalize = 1
 ########################
 ##### CONNECTIONS ######
 ########################
-
-##Connect InitAvgImages to BeginANTS
-buildtemplateparallel.connect( InitAvgImages, "average_image", BeginANTS, "fixed_image" )
-buildtemplateparallel.connect( infosource, "subject_image", BeginANTS, 'moving_image' )
-
-#Connections to get inputs to WarpImageMultiTransform Deformed
-#buildtemplateparallel.connect( BeginANTS,['warp_transform', BeginANTS.outputs.affine_transform], wimtdeformed, 'transformation_series' )
-
 functionString = 'def func(arg1, arg2): return [arg1, arg2]'
 fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender')
 fi.inputs.function_str = functionString
 fi.inputs.ignore_exception = True
 
 #buildtemplateparallel.connect([( BeginANTS,fi, [((['warp_transform', 'affine_transform']),  'out')]),])
-buildtemplateparallel.connect( BeginANTS, 'warp_transform', fi, 'arg1')
-buildtemplateparallel.connect( BeginANTS, 'affine_transform', fi, 'arg2')
-buildtemplateparallel.connect( fi, 'out', wimtdeformed, 'transformation_series' )
-buildtemplateparallel.connect( infosource, "subject_image", wimtdeformed, 'moving_image' )
-buildtemplateparallel.connect( InitAvgImages, 'average_image', wimtdeformed, 'reference_image' )
+ANTSintroduction.connect( BeginANTS, 'warp_transform', fi, 'arg1')
+ANTSintroduction.connect( BeginANTS, 'affine_transform', fi, 'arg2')
+ANTSintroduction.connect( fi, 'out', wimtdeformed, 'transformation_series' )
 
+##Connect InitAvgImages to BeginANTS
+buildtemplateparallel.connect( InitAvgImages, "average_image", ANTSintroduction, "BeginANTS.fixed_image" )
+buildtemplateparallel.connect( infosource, "subject_image", ANTSintroduction, "BeginANTS.moving_image" )
+buildtemplateparallel.connect( infosource, "subject_image", ANTSintroduction, "wimtdeformed.moving_image" )
+buildtemplateparallel.connect( InitAvgImages, 'average_image', ANTSintroduction, "wimtdeformed.reference_image" )
+
+#Connections to get inputs to WarpImageMultiTransform Deformed
+#buildtemplateparallel.connect( BeginANTS,['warp_transform', BeginANTS.outputs.affine_transform], wimtdeformed, 'transformation_series' )
+
+
+
+#
 #Connect wimtdeformed to AvgHalfDeformedImages
 #buildtemplateparallel.connect( wimtdeformed, 'outputs', AvgHalfDeformedImages, 'images' )
 
