@@ -215,7 +215,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkNodeScalarGradientCalculator.txx"
+#include "itkNodeScalarGradientCalculator.hxx"
 #endif
 
 #endif

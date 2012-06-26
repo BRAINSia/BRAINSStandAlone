@@ -145,6 +145,6 @@ private:
 
 };
 }
-#include "itkQuadEdgeMeshBorderTransform.txx"
+#include "itkQuadEdgeMeshBorderTransform.hxx"
 
 #endif

@@ -94,7 +94,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkTriangleBasisSystemCalculator.txx"
+#include "itkTriangleBasisSystemCalculator.hxx"
 #endif
 
 #endif

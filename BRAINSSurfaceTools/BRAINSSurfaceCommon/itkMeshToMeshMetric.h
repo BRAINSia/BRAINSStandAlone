@@ -184,7 +184,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkMeshToMeshMetric.txx"
+#include "itkMeshToMeshMetric.hxx"
 #endif
 
 #endif

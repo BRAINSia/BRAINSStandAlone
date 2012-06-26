@@ -153,7 +153,7 @@ private:
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkResampleQuadEdgeMeshFilter.txx"
+#include "itkResampleQuadEdgeMeshFilter.hxx"
 #endif
 
 #endif
