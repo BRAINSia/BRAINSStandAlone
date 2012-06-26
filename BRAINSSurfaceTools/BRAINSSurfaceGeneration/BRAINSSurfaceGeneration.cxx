@@ -119,7 +119,6 @@ int main( int argc, char **argv )
 	  vtkTransform * transformIJKtoRAS = NULL;
 	  transformIJKtoRAS = vtkTransform::New();
 	  transformIJKtoRAS->SetMatrix(reader->GetRasToIjkMatrix());
-	  //transformIJKtoRAS->GetMatrix()->Print(std::cout);
 	  transformIJKtoRAS->Inverse();
 
 	  vtkSmartPointer<vtkImageMarchingCubes> marchingcubes =
@@ -240,7 +239,6 @@ int main( int argc, char **argv )
   }
 
   //write the output surface
-  //typedef itk::QuadEdgeMeshScalarDataVTKPolyDataWriter< MeshType >  WriterType;
   typedef itk::VTKPolyDataWriter< MeshType >  WriterType;
   WriterType::Pointer writer = WriterType::New();
   writer->SetInput( mesh );
