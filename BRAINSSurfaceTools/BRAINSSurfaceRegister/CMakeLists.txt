@@ -17,8 +17,12 @@ add_subdirectory( SurfaceLabelCleanUp )
 add_subdirectory( WarpQuadEdgeMesh )
 add_subdirectory( ProbabilityLabels )
 add_subdirectory( ResampleQuadEdgeMesh )
+<<<<<<< HEAD
 add_subdirectory( QuadEdgeMeshSimilarity )
 
 if(BUILD_TESTING)
     add_subdirectory(TestSuite)
 endif(BUILD_TESTING)
+=======
+add_subdirectory( QuadEdgeMeshSimilarity )
+>>>>>>> -m 'add tests for AssignArray and QuadEdgeMeshClampScalars'
