@@ -22,4 +22,3 @@ add_subdirectory( QuadEdgeMeshSimilarity )
 if(BUILD_TESTING)
     add_subdirectory(TestSuite)
 endif(BUILD_TESTING)
-
