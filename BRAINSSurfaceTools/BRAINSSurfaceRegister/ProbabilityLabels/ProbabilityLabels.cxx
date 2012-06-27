@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "vtkPolyDataReader.h"
@@ -43,33 +43,33 @@ int main( int argc, char * argv[] )
         std::cout<<"Calculate the label probabilities."<<std::endl;
     }
     std::cout<<"------------------------------------------"<<std::endl;
-    
+
     //read the first surface to get the idea about
     //label array, number of points, number of labels
     vtkSmartPointer<vtkPolyDataReader> polyDataReader = vtkSmartPointer<vtkPolyDataReader>::New();
     polyDataReader->SetFileName(inputMeshList[0].c_str());
-    polyDataReader->Update();  
-    
+    polyDataReader->Update();
+
     //save it to templateMesh
     vtkSmartPointer<vtkPolyData> templateMesh = vtkSmartPointer<vtkPolyData>::New();
     templateMesh->DeepCopy(polyDataReader->GetOutput());
-    
+
     int numOfPoints = templateMesh->GetNumberOfPoints();
     double labelRange[2];
     templateMesh->GetPointData()->GetScalars()->GetRange(labelRange);
     int startLabel = int(labelRange[0]);
     int endLabel = int(labelRange[1]);
     int numOfLabels = endLabel - startLabel + 1;
-    
+
     //number of surfaces
     int numOfMeshes = inputMeshList.size();
     std::cout<<"number of meshes: "<<numOfMeshes<<std::endl;
-    
+
     //to keep all of the labels
     //using a 2D array of the size: numberOfSurfaces x numberOfPoints
     vtkSmartPointer< vtkDenseArray<float> > vertexLabels = vtkSmartPointer< vtkDenseArray<float> >::New();
     vertexLabels -> Resize(numOfMeshes,numOfPoints);
-  
+
     //read surfaces one by one
     //and keep label arrays in vertexLabels (size numberOfSurfaces x numberOfPoints)
     for (int i=0;i<numOfMeshes;i++)
@@ -78,7 +78,7 @@ int main( int argc, char * argv[] )
         //include the first one (template)
 	    polyDataReader->SetFileName(inputMeshList[i].c_str());
 	    polyDataReader->Update();
-        
+
         int nPoints = polyDataReader->GetOutput()->GetNumberOfPoints();
 
 		if ( nPoints != numOfPoints )
@@ -95,28 +95,28 @@ int main( int argc, char * argv[] )
              vertexLabels->SetValue(i, j,polyDataReader->GetOutput()->GetPointData()->GetScalars()->GetTuple1(j));
          }
     }
-    
+
     //if mostLikely is ON
-    
+
     if (mostLikely) {
         //look at each column of vertexLabels
         //calculate frequency of each label between [startLabel,endLabel]
         //to save frequencies of labels at each point
         int *frequency = new int[numOfLabels];
-        
+
         //create a new array to keep the most likely labels
         vtkSmartPointer<vtkIntArray> mostLikelyArray = vtkSmartPointer<vtkIntArray>::New();
         mostLikelyArray -> SetNumberOfComponents(1);
         mostLikelyArray -> SetNumberOfTuples(numOfPoints);
         mostLikelyArray -> SetName("MostLikelyLabel");
-        
+
         //create a new array to keep the number of different labels
         //happen at each point
         vtkSmartPointer<vtkIntArray> labelNumArray = vtkSmartPointer<vtkIntArray>::New();
         labelNumArray -> SetNumberOfComponents(1);
         labelNumArray -> SetNumberOfTuples(numOfPoints);
         labelNumArray -> SetName("NumOfLabels");
-        
+
         //go throught all meshes for one point
         for (int j=0; j<numOfPoints; j++) {
             //clean up frequency array
@@ -145,8 +145,8 @@ int main( int argc, char * argv[] )
             mostLikelyArray->SetTuple1(j,label_m);
             labelNumArray->SetTuple1(j,label_count);
         }
-        
-        
+
+
         //set the mostLikelyArray to be the scalars
         //overwrite what the template had
         templateMesh->GetPointData()->SetScalars(mostLikelyArray);
@@ -174,12 +174,12 @@ int main( int argc, char * argv[] )
             //probability for point j, label i
             labelPercentageArray->SetTuple1(j,double(count)/double(numOfMeshes));
         }
-        
+
         //keep each label's probability using the label value
         char arrayName[20];
         sprintf(arrayName,"%d",i);
         labelPercentageArray->SetName(arrayName);
-        
+
         templateMesh->GetPointData()->AddArray(labelPercentageArray);
     }
     //write outSurface

@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -35,9 +35,9 @@
 #include "SurfaceColorCLP.h"
 
 int main( int argc, char * argv[] )
-{ 
+{
     PARSE_ARGS;
-    
+
     std::cout<<"---------------------------------------------------"<<std::endl;
     std::cout<<"Apply "<<numOfLabels<<" labels from: "<<std::endl;
     std::cout<<labelMapFile<<std::endl;
@@ -61,9 +61,9 @@ int main( int argc, char * argv[] )
 
     // transform the surface into ITK image coordinates
     vtkSmartPointer<vtkTransform> rasOrientation = vtkSmartPointer<vtkTransform>::New();
-    const double orientationMatrix[16] = { -1,  0, 0, 0, 
-					   0, -1, 0, 0, 
-					  0,  0, 1, 0, 
+    const double orientationMatrix[16] = { -1,  0, 0, 0,
+					   0, -1, 0, 0,
+					  0,  0, 1, 0,
 					  0,  0, 0, 0  };
     rasOrientation->SetMatrix( orientationMatrix );
 
@@ -158,7 +158,7 @@ int main( int argc, char * argv[] )
 
 			subregion.SetIndex( substart );
             subregion.SetSize( subsize );
-			
+
 			ConstIteratorType it( image, subregion );
 
 			int *counter = new int[numOfLabels];
@@ -223,7 +223,7 @@ int main( int argc, char * argv[] )
         surface -> GetPointData()->AddArray(label);
         surface -> GetPointData()->SetActiveScalars("LabelValue");
     }
-    
+
 
     // Put the surface back into its original orientation
     vtkSmartPointer<vtkTransformPolyDataFilter> revertedSurface = vtkSmartPointer<vtkTransformPolyDataFilter>::New();

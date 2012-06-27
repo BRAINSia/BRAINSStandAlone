@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "vtkPolyDataReader.h"
@@ -32,7 +32,7 @@ int main( int argc, char * argv[] )
 
 
   PARSE_ARGS;
-    
+
   std::cout<<"-----------------------------------------------"<<std::endl;
   std::cout<<"Input Surface: "<<std::endl;
   std::cout<<inputSurfaceFile<<std::endl;
@@ -45,7 +45,7 @@ int main( int argc, char * argv[] )
   }
   std::cout<<std::endl;
   std::cout<<"-----------------------------------------------"<<std::endl;
-    
+
   // Create all of the classes we will need
   vtkSmartPointer<vtkPolyDataReader> reader =
       vtkSmartPointer<vtkPolyDataReader>::New();
@@ -78,21 +78,21 @@ int main( int argc, char * argv[] )
   surface_in = reader->GetOutput();
 
   vtkDataArray *labelArray = surface_in->GetPointData()->GetScalars();
-    
+
   std::string labelName = labelArray->GetName();
-    
+
   if ((labelArray == NULL)||(labelName != "LabelValue"))
   {
       std::cerr<<"There is no labelarray on the input surface. ";
       std::cerr<<"Quit."<<std::endl;
       return 1;
   }
- 
+
   //go through each label in absentLabel
  for (unsigned int i=0; i<nAbsentLabels; i++)
  {
 	 label = labelList[i];
-     
+
      //std::cout<<"remove label: "<<label<<std::endl;
 
      //analyze each label in the list
@@ -108,7 +108,7 @@ int main( int argc, char * argv[] )
          connect -> Update();
 
          int nRegions = connect -> GetNumberOfExtractedRegions ();
-  
+
          //look at each region
          for (int j = 0; j<nRegions; j++)
          {
@@ -121,9 +121,9 @@ int main( int argc, char * argv[] )
              island->BuildLinks();
 
              ncells = island -> GetNumberOfCells();
-             
+
              //std::cout<<"label "<<label<<" has "<<ncells<<" cells."<<std::endl;
-	
+
 		     //look at each point's LabelValue
 		     //find out another label with maximum # of points having "not the Label",
 		     //set the non-label to all of the points on the island.
@@ -178,7 +178,7 @@ int main( int argc, char * argv[] )
                      labelArray->SetTuple1(pid_orig, newLabel);
 				 }
 			 }
-			 
+
 		 }
 	 }
  }

@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "itkQuadEdgeMeshTraits.h"
@@ -45,7 +45,7 @@ int main( int argc, char * argv [] )
   std::cout<<outputMeshFile<<std::endl;
   std::cout<<"Interpolation Type: "<<interpolateType<<std::endl;
   std::cout<<"-----------------------------------------------"<<std::endl;
-    
+
   typedef float      PixelType;
   const unsigned int Dimension = 3;
 
@@ -62,7 +62,7 @@ int main( int argc, char * argv [] )
   ReaderType::Pointer inputMeshReader = ReaderType::New();
   inputMeshReader->SetFileName( fixedMeshFile.c_str() );
   inputMeshReader->Update( );
-    
+
   ReaderType::Pointer referenceMeshReader = ReaderType::New();
   referenceMeshReader->SetFileName( movingMeshFile.c_str() );
   referenceMeshReader->Update( );
@@ -88,7 +88,7 @@ int main( int argc, char * argv [] )
   ResamplingFilterType::Pointer resampler = ResamplingFilterType::New();
 
   resampler->SetTransform( transform );
-    
+
   //set the interpolation type
   if (interpolateType == "Nearest") {
       resampler->SetInterpolator( interpolator_n );
@@ -97,16 +97,16 @@ int main( int argc, char * argv [] )
   {
       resampler->SetInterpolator( interpolator_l );
   }
-  
+
   resampler->SetInput (referenceMeshReader->GetOutput());
   resampler->SetReferenceMesh (deformedMeshReader->GetOutput());
 
   resampler->Update();
 
   //assign scalars from deformed mesh to fixed mesh
-  typedef itk::AssignScalarValuesQuadEdgeMeshFilter< 
-                                    MeshType, 
-                                    MeshType, 
+  typedef itk::AssignScalarValuesQuadEdgeMeshFilter<
+                                    MeshType,
+                                    MeshType,
                                     MeshType >    AssignFilterType;
 
   AssignFilterType::Pointer   assignFilter  = AssignFilterType::New();
@@ -121,7 +121,7 @@ int main( int argc, char * argv [] )
   WriterType::Pointer writer = WriterType::New();
   writer->SetInput( assignFilter->GetOutput());
   writer->SetFileName(outputMeshFile.c_str());
-  writer->Update(); 
+  writer->Update();
 
   return 0;
 }

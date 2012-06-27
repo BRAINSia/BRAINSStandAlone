@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "vtkPolyDataReader.h"
@@ -25,7 +25,7 @@
 #include "vtkStringArray.h"
 #include "vtkFieldData.h"
 
-#include <iostream> // I/O 
+#include <iostream> // I/O
 #include <fstream> // file I/O
 #include <iomanip>  // format manipulation
 
@@ -39,10 +39,10 @@ int main( int argc, char * argv[] )
     vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
     reader->SetFileName(inputSurfaceFile.c_str());
     reader->Update();
-    
+
     vtkSmartPointer<vtkPolyData> surface_in = reader->GetOutput();
     int nPoints = surface_in->GetNumberOfPoints();
-    
+
     //check the labelArray
     vtkDataArray *labelArray = surface_in->GetPointData()->GetScalars();
     std::string arrayName = labelArray->GetName();
@@ -51,7 +51,7 @@ int main( int argc, char * argv[] )
         std::cerr<<"Quit."<<std::endl;
         return 1;
     }
-    
+
     //calculate frequencies for labels between min and max
     double labelRange[2];
     labelArray->GetRange(labelRange);
@@ -65,7 +65,7 @@ int main( int argc, char * argv[] )
         int label_i = labelArray->GetTuple1(i);
         frequency[label_i] += 1;
     }
-    
+
     //go through labels with non-zero frequencies
     int newLabel = 0;
     for (int i=0; i<nLabels; i++) {
@@ -75,13 +75,13 @@ int main( int argc, char * argv[] )
         }
     }
     std::cout<<"there are "<<newLabel<<" labels"<<std::endl;
-    
+
     //transform labelArray
     for (int i=0; i<nPoints; i++) {
         int label_i = labelArray->GetTuple1(i);
         labelArray->SetTuple1(i, labelTransform[label_i]);
     }
-    
+
     vtkSmartPointer<vtkStringArray> nameArray = vtkSmartPointer<vtkStringArray>::New();
     if (labelNameFile != "") {
         //attach label names from an external file
@@ -105,13 +105,13 @@ int main( int argc, char * argv[] )
             }
         }
     }
-    
+
     vtkSmartPointer<vtkFieldData> fd = vtkSmartPointer<vtkFieldData>::New();
     fd->AddArray(nameArray);
-    
+
     surface_in->SetFieldData(fd);
-    
-    
+
+
     //write out the surface
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
 

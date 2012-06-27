@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 #include "itkConvertVTKToQuadEdgeMeshFilter.h"
 #include "itkQuadEdgeMeshVTKPolyDataReader.h"
@@ -25,7 +25,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkPointData.h"
 
-#include <iostream> // I/O 
+#include <iostream> // I/O
 #include <fstream> // file I/O
 #include <iomanip>  // format manipulation
 
@@ -42,13 +42,13 @@ int main( int argc, char * argv [] )
         std::cout<<"Also output the average indices across labels."<<std::endl;
     }
     std::cout<<"--------------------------------------------"<<std::endl;
-    
+
     //use vtk to get the range of labels for both inputs
     //and take care of label arrays if they are not saved as scalars
     vtkSmartPointer<vtkPolyDataReader> vtkReader1 = vtkSmartPointer<vtkPolyDataReader>::New();
     vtkReader1->SetFileName(inputSurfaceFile1.c_str());
     vtkReader1->Update();
-    
+
     vtkPolyData *inputSurface1 = vtkReader1->GetOutput();
     int numOfPoints = inputSurface1->GetNumberOfPoints();
     vtkDataArray *labelArray1;
@@ -66,11 +66,11 @@ int main( int argc, char * argv [] )
     }
     double labelRange1[2];
     labelArray1->GetRange(labelRange1);
-    
+
     vtkSmartPointer<vtkPolyDataReader> vtkReader2 = vtkSmartPointer<vtkPolyDataReader>::New();
     vtkReader2->SetFileName(inputSurfaceFile2.c_str());
     vtkReader2->Update();
-    
+
     vtkPolyData *inputSurface2 = vtkReader2->GetOutput();
     if (inputSurface2->GetNumberOfPoints() != numOfPoints) {
         std::cerr<<"Number of points on surface2 is different from surface1."<<std::endl;
@@ -101,21 +101,21 @@ int main( int argc, char * argv [] )
     //set labelArray as scalars
     inputSurface1->GetPointData()->SetActiveScalars(labelName1.c_str());
     inputSurface2->GetPointData()->SetActiveScalars(labelName2.c_str());
-    
+
     //convert vtk polydata to itk QuadEdgeMesh
     //use integer as pixelType of QuadEdgeMesh
-    
+
     typedef int      MeshPixelType;
     const unsigned int Dimension = 3;
 
     typedef itk::QuadEdgeMesh< MeshPixelType, Dimension >   MeshType;
 
     typedef itk::ConvertVTKToQuadEdgeMeshFilter<MeshType> convertFilterType;
-    
+
     convertFilterType::Pointer convertor1 = convertFilterType::New();
     convertor1->SetPolyData(inputSurface1);
     convertor1->Update();
-    
+
     convertFilterType::Pointer convertor2 = convertFilterType::New();
     convertor2->SetPolyData(inputSurface2);
     convertor2->Update();
@@ -134,7 +134,7 @@ int main( int argc, char * argv [] )
     int startLabel = int(labelRange1[0]);
     int endLabel = int(labelRange1[1]);
     int numOfLabels = endLabel - startLabel + 1;
-    
+
     //go through labels
     std::ofstream similarity_out;
     similarity_out.open(outputSimilarityFile.c_str(),std::ofstream::app);

@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "vtkPolyDataReader.h"
@@ -39,7 +39,7 @@ int main( int argc, char * argv[] )
         std::cerr << "No output file specified" << std::endl;
         return 1;
     }
-    
+
     if (getArrayName == "scalars")
     {
         std::cout<<"----------------------------------------------------"<<std::endl;
@@ -71,7 +71,7 @@ int main( int argc, char * argv[] )
 	vtkPolyData *source = s_reader->GetOutput();
 
 	vtkSmartPointer<vtkPolyDataReader> t_reader = vtkSmartPointer<vtkPolyDataReader>::New();
-	t_reader->SetFileName(targetSurfaceFile.c_str());	
+	t_reader->SetFileName(targetSurfaceFile.c_str());
 	t_reader->Update();
 
 	vtkPolyData *target = t_reader->GetOutput();
@@ -92,7 +92,7 @@ int main( int argc, char * argv[] )
 		std::cout<<"there is no label array in the source."<<std::endl;
 		return 1;
 	}
-    
+
     //set new name to the label
     label->SetName(setArrayName.c_str());
 

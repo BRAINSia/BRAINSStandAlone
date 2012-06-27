@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "itkQuadEdgeMeshVTKPolyDataReader.h"
@@ -83,7 +83,7 @@ int main( int argc, char * argv [] )
 
   //set up deformed fixed mesh reader
   InputMeshReaderType::Pointer deformedFixedMeshReader = InputMeshReaderType::New();
-  
+
   //set up reference mesh reader
   InputMeshReaderType::Pointer referenceMeshReader = InputMeshReaderType::New();
 
@@ -111,9 +111,9 @@ int main( int argc, char * argv [] )
   AddScalarsFilterType::Pointer addFilter = AddScalarsFilterType::New();
 
   //set up Assign Scalar Filter
-  typedef itk::AssignScalarValuesQuadEdgeMeshFilter< 
-                                    MeshType, 
-                                    MeshType, 
+  typedef itk::AssignScalarValuesQuadEdgeMeshFilter<
+                                    MeshType,
+                                    MeshType,
                                     MeshType >    AssignFilterType;
 
   AssignFilterType::Pointer   assignFilter  = AssignFilterType::New();
@@ -123,14 +123,14 @@ int main( int argc, char * argv [] )
   MeshType::Pointer deformedFixedMesh = MeshType::New();
   MeshType::Pointer referenceMesh = MeshType::New();
   MeshType::Pointer resampledMesh = MeshType::New();
-  
+
   MeshType::Pointer outputMesh = MeshType::New();
   MeshType::Pointer newMesh = MeshType::New();
 
   InputMeshReaderType::Pointer inputWithScalarsReader = InputMeshReaderType::New();
   inputWithScalarsReader->SetFileName(templateSphereFile.c_str());
   inputWithScalarsReader->Update();
-    
+
   outputMesh = inputWithScalarsReader->GetOutput();
   outputMesh -> DisconnectPipeline();
 

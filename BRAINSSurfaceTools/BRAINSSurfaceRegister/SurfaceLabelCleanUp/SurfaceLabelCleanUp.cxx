@@ -1,19 +1,19 @@
 /*=========================================================================
- 
+
  Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
  Module:    $RCSfile: $
  Language:  C++
  Date:      $Date: 2011/07/09 14:53:40 $
  Version:   $Revision: 1.0 $
- 
+
  Copyright (c) University of Iowa Department of Radiology. All rights reserved.
  See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
  for details.
- 
+
  This software is distributed WITHOUT ANY WARRANTY; without even
  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  PURPOSE.  See the above copyright notices for more information.
- 
+
  =========================================================================*/
 
 #include "vtkPolyDataReader.h"
@@ -34,7 +34,7 @@ void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh);
 
 int main( int argc, char * argv[] )
 {
- 
+
     PARSE_ARGS
     std::cout<<"---------------------------------------------------"<<std::endl;
     std::cout<<"Input Surface: "<<std::endl;
@@ -47,7 +47,7 @@ int main( int argc, char * argv[] )
     vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
     reader->SetFileName(inputSurfaceFile.c_str());
     reader->Update();
-    
+
     vtkSmartPointer<vtkPolyData> surface_in = reader->GetOutput();
     vtkDataArray *labelArray = surface_in->GetPointData()->GetScalars();
     std::string arrayName = labelArray->GetName();
@@ -57,13 +57,13 @@ int main( int argc, char * argv[] )
         std::cerr<<"Quit."<<std::endl;
         return 1;
     }
-    
+
     bool change=true;
     int iter=0;
     //iterate until no change in either SurfaceConnectivity or RemoveIsolatedPoints
     while (change && iter<10) {
-        change = false; 
-         
+        change = false;
+
         //clean up extra connected regions
         int numConnectedCells = SurfaceConnectivityCells(surface_in);
         int numConnectedPoints = SurfaceConnectivityPoints(surface_in);
@@ -77,12 +77,12 @@ int main( int argc, char * argv[] )
             iter += 1;
         }
     }
-    
+
     vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
     writer -> SetInput (surface_in);
     writer -> SetFileName (outputSurfaceFile.c_str());
     writer -> Update();
-    
+
     return 0;
 }
 
@@ -96,16 +96,16 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
 {
     //initialize number of changes made in this function
     int numChanges = 0;
-    
+
     //ready for GetPointCells
     mesh->BuildLinks();
-    
+
     vtkDataArray *labelArray = mesh->GetPointData()->GetScalars();
-    
+
     //label range
     double labelRange[2];
     labelArray->GetRange(labelRange);
-    
+
     //set up an array to keep frequency of each label
     int nLabels = int(labelRange[1]-labelRange[0]+1);
     int *neighborLabels = new int[nLabels];
@@ -114,20 +114,20 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
     vtkSmartPointer<vtkPolyData> island = vtkSmartPointer<vtkPolyData>::New();
     for (int i=0; i<nLabels; i++) {
         int label_i = labelRange[0] + i;
-        
+
         // mask out the label regions first
-        // mask filter keeps the number of points 
+        // mask filter keeps the number of points
         mask -> SetInput(mesh);
         mask -> LabelOnlyOn();
         mask -> SetLabel(label_i);
         mask -> Update();
-        
+
         // extract connected regions for the masked regions
         connect -> SetInput(mask->GetOutput());
         connect -> ColorRegionsOn();
         connect -> SetExtractionModeToAllRegions();
         connect -> Update();
-        
+
         int nRegions = connect -> GetNumberOfExtractedRegions ();
         //std::cout<<"Label: "<<label_i<<" has "<<nRegions<<" regions."<<std::endl;
         int largestId = connect->GetLargestRegionId();
@@ -139,23 +139,23 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                 connect -> InitializeSpecifiedRegionList();
                 connect -> AddSpecifiedRegion (j);
                 connect -> SetExtractionModeToSpecifiedRegions ();
-                
+
                 island = connect -> GetOutput();
                 island -> Update();
                 island -> BuildLinks();
-                
+
                 int ncells = island -> GetNumberOfCells();
-                
+
                 //look at each point's LabelValue
                 //if it has maximum # of not being "the Label",
                 //set the non-label to all of the points on the island.
-                
+
                 //clean up neighborLabels first
                 for (int ii=0; ii<nLabels; ii++)
                 {
                     neighborLabels[ii] = 0;
                 }
-                
+
                 vtkIdType  npts;
                 vtkIdType *pts;
                 double pt[3];
@@ -165,7 +165,7 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                 for (int ii = 0; ii<ncells; ii++)
                 {
                     island -> GetCellPoints(ii, npts, pts);
-                    
+
                     //decide if the point is on the border
                     //check neighbor cells of each edge
                     vtkSmartPointer<vtkIdList> edgeCells0 = vtkSmartPointer<vtkIdList>::New();
@@ -176,7 +176,7 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                     island->GetCellEdgeNeighbors(ii, pts[1], pts[2], edgeCells2);
                     //if any edge has zero neighbors
                     //the edge is on the border
-                    
+
                     int pId_orig;
                     if (edgeCells0->GetNumberOfIds()==0) {
                         island->GetPoint(pts[0],pt);
@@ -203,16 +203,16 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                         borderIds->InsertUniqueId(pId_orig);
                     }
                 }
-                    
+
                 //find neighbor Ids for the island
                 vtkSmartPointer<vtkIdList> neighborIds = vtkSmartPointer<vtkIdList>::New();
                 for (int jj=0; jj<borderIds->GetNumberOfIds(); jj++) {
                     //look at the cells of border point on original surface
                     int pId_orig = borderIds->GetId(jj);
                     vtkSmartPointer<vtkIdList> cellIds = vtkSmartPointer<vtkIdList>::New();
-                    
+
                     mesh->GetPointCells(pId_orig, cellIds);
-                    
+
                     for (int cell_i=0; cell_i<cellIds->GetNumberOfIds(); cell_i++) {
                         mesh->GetCellPoints(cellIds->GetId(cell_i), npts, pts);
                         for (int cellp=0; cellp<npts; cellp++) {
@@ -222,7 +222,7 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                         }
                     }
                 }
-                    
+
                 //add neighbor labels
                 for (int neighbor_i=0; neighbor_i<neighborIds->GetNumberOfIds(); neighbor_i++) {
                     int label_n = labelArray->GetTuple1(neighborIds->GetId(neighbor_i));
@@ -231,7 +231,7 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                         neighborLabels[label_n-int(labelRange[0])] += 1;
                     }
                 }
-                
+
                 //find the newLabel to be the one in neighborLabels with
                 //maximum frequency
                 int newLabel = label_i;
@@ -242,18 +242,18 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
                         newLabel = ii + labelRange[0];
                     }
                 }
-                
+
                 if (newLabel != label_i)
                 {
                     numChanges += 1;
                 }
-                
+
                 //if found newLabel, assign it to all of the points of the island
                 //on mesh
                 for (int ii = 0; ii<ncells; ii++)
                 {
                     island -> GetCellPoints(ii, npts, pts);
-                    
+
                     for (int jj = 0; jj<npts; jj++)
                     {
                         //get each point
@@ -277,16 +277,16 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
 {
     //initialize number of changes made in this function
     int numChanges = 0;
-    
+
     //ready for GetPointCells
     mesh->BuildLinks();
-    
+
     vtkDataArray *labelArray = mesh->GetPointData()->GetScalars();
-    
+
     //label range
     double labelRange[2];
     labelArray->GetRange(labelRange);
-    
+
     //set up an array to keep frequency of each label
     int nLabels = int(labelRange[1]-labelRange[0]+1);
     int *neighborLabels = new int[nLabels];
@@ -295,19 +295,19 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
     vtkSmartPointer<vtkPolyData> island = vtkSmartPointer<vtkPolyData>::New();
     for (int i=0; i<nLabels; i++) {
         int label_i = labelRange[0] + i;
-        
+
         // mask out the label regions first
-        // mask filter keeps the number of points 
+        // mask filter keeps the number of points
         mask -> SetInput(mesh);
         mask -> SetLabel(label_i);
         mask -> Update();
-        
+
         // extract connected regions for the masked regions
         connect -> SetInput(mask->GetOutput());
         connect -> ColorRegionsOn();
         connect -> SetExtractionModeToAllRegions();
         connect -> Update();
-        
+
         int nRegions = connect -> GetNumberOfExtractedRegions ();
         //std::cout<<"Label: "<<label_i<<" has "<<nRegions<<" regions."<<std::endl;
         int largestId = connect->GetLargestRegionId();
@@ -319,23 +319,23 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
                 connect -> InitializeSpecifiedRegionList();
                 connect -> AddSpecifiedRegion (j);
                 connect -> SetExtractionModeToSpecifiedRegions ();
-                
+
                 island = connect -> GetOutput();
                 island -> Update();
                 island -> BuildLinks();
-                
+
                 int ncells = island -> GetNumberOfCells();
-                
+
                 //look at each point's LabelValue
                 //if it has maximum # of not being "the Label",
                 //set the non-label to all of the points on the island.
-                
+
                 //clean up neighborLabels first
                 for (int ii=0; ii<nLabels; ii++)
                 {
                     neighborLabels[ii] = 0;
                 }
-                
+
                 vtkIdType  npts;
                 vtkIdType *pts;
                 double pt[3];
@@ -345,7 +345,7 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
                 for (int ii = 0; ii<ncells; ii++)
                 {
                     island -> GetCellPoints(ii, npts, pts);
-                    
+
                     //decide if the point is on the border
                     //by checking it's label
                     for (int jj=0; jj<npts; jj++) {
@@ -357,15 +357,15 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
                             borderIds->InsertUniqueId(pid_orig);
                         }
                     }
-         
+
                 }
-                
+
                 //add neighbor labels
                 for (int ii=0; ii<borderIds->GetNumberOfIds(); ii++) {
                     int label_ii = labelArray->GetTuple1(borderIds->GetId(ii));
                     neighborLabels[label_ii-int(labelRange[0])] += 1;
                 }
-                
+
                 //find the newLabel to be the one in neighborLabels with
                 //maximum frequency
                 int newLabel = label_i;
@@ -376,18 +376,18 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
                         newLabel = ii + labelRange[0];
                     }
                 }
-                
+
                 if (newLabel != label_i)
                 {
                     numChanges += 1;
                 }
-                
+
                 //if found newLabel, assign it to all of the points of the island
                 //on mesh
                 for (int ii = 0; ii<ncells; ii++)
                 {
                     island -> GetCellPoints(ii, npts, pts);
-                    
+
                     for (int jj = 0; jj<npts; jj++)
                     {
                         //get each point
@@ -408,33 +408,33 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
 {
     //initialize number of changes made in this function
     int numChanges = 0;
-    
+
     vtkDataArray *labelArray = mesh->GetPointData()->GetScalars();
     //mesh to get ready for GetPointCells
     mesh->BuildLinks();
-    
+
     //label range
     double labelRange[2];
     labelArray->GetRange(labelRange);
-    
+
     // number of labels
     int nLabels = int(labelRange[1]-labelRange[0]+1);
     int *neighborLabels = new int[nLabels]; //keep neighbor labels
     vtkSmartPointer<vtkMaskLabel> mask = vtkSmartPointer<vtkMaskLabel>::New();
-    
+
     for (int i=0; i<nLabels; i++) {
         int label_i = labelRange[0] + i;
-        
+
         // mask out the label regions first
-        // mask filter keeps the number of points 
+        // mask filter keeps the number of points
         mask -> SetInput(mesh);
         mask -> SetLabel(label_i);
         mask -> Update();
-        
+
         vtkPolyData *labelMask_i = mask->GetOutput();
         //labelMask_i->BuildLinks();
         int ncells = labelMask_i->GetNumberOfCells();
-        
+
         //go throught the cells
         for (int j=0; j<ncells; j++)
         {
@@ -443,7 +443,7 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
             double pt[3];
             labelMask_i->GetCellPoints(j,npts,pts);
             // go through each point of the cell
-            for (int jj=0; jj<npts; jj++) 
+            for (int jj=0; jj<npts; jj++)
             {
                 //point Ids are different on labelMask_i
                 //go by the physical location
@@ -451,17 +451,17 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
                 int pid_orig = mesh->FindPoint(pt[0], pt[1], pt[2]);
                 //get the label of it through original Id
                 int label_jj = labelArray->GetTuple1(pid_orig);
-                
+
                 //if center point has the same label as the mask label
-                if (label_jj == label_i) 
+                if (label_jj == label_i)
                 {
                     //go to its cells
                     vtkSmartPointer<vtkIdList> cellIds = vtkSmartPointer<vtkIdList>::New();
                     mesh->GetPointCells(pid_orig,cellIds);
-                    
+
                     //check the labels of each point belongs to cellIds
                     int nCells_jj = cellIds->GetNumberOfIds();
-                    
+
                     vtkIdType *pts_ii;
                     vtkIdType npts_ii;
                     vtkIdType cellId_ii;
@@ -479,7 +479,7 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
                         //which are neighbor points of pid_orig
                         for (int ni=0; ni<npts_ii; ni++)
                         {
-                            
+
                             //keep the neighbor Id if label is different with the center
                             if (pts_ii[ni] != pid_orig)
                             {
@@ -497,7 +497,7 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
                             nAliens += 1;
                         }
                     }
-                    
+
                     //find the newLabel to be the one in neighborLabels with
                     //maximum frequency
                     int newLabel = label_i;
@@ -508,11 +508,11 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
                             newLabel = ii + int(labelRange[0]);
                         }
                     }
-                    
+
                     int nNeighbors = neighborIds->GetNumberOfIds();
-                    
+
                     //if surrounded by nCells_jj points that is different with mask label
-                    if (nNeighbors == nAliens) 
+                    if (nNeighbors == nAliens)
                     {
                         labelArray->SetTuple1(pid_orig,newLabel);
                         numChanges += 1;
@@ -531,15 +531,15 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
 // there is not return for this function
 void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh)
 {
-    
+
     mesh->BuildLinks();//ready for GetPointCells
-    
+
     vtkDataArray *labelArray = mesh->GetPointData()->GetScalars();
-    
+
     //label range
     double labelRange[2];
     labelArray->GetRange(labelRange);
-    
+
     // number of labels
     int nLabels = int(labelRange[1]-labelRange[0]+1);
     int *neighborLabels = new int[nLabels]; //keep neighbor labels
@@ -552,17 +552,17 @@ void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh)
         vtkSmartPointer<vtkMaskLabel> mask = vtkSmartPointer<vtkMaskLabel>::New();
         for (int i=0; i<nLabels; i++) {
             int label_i = labelRange[0] + i;
-            
+
             // mask out the label regions first
-            // mask filter keeps the number of points 
+            // mask filter keeps the number of points
             mask -> SetInput(mesh);
             mask -> SetLabel(label_i);
             mask -> LabelOnlyOn();
             mask -> Update();
-            
+
             vtkPolyData *mask_i = mask->GetOutput();
             mask_i -> BuildLinks();
-            //get point original Ids (on surface_in) for 
+            //get point original Ids (on surface_in) for
             //tip points on borders
             int nCells = mask_i->GetNumberOfCells();
             vtkSmartPointer<vtkIdList> tipIds = vtkSmartPointer<vtkIdList>::New();
@@ -603,11 +603,11 @@ void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh)
                     tipIds->InsertUniqueId(pId_orig);
                 }
             }
-            
+
             //change labels for tip points
             //by finding the max number of neighbor labels
             int nTips = tipIds->GetNumberOfIds();
-            
+
             for (int j=0; j<nTips; j++) {
                 //clean up neighborLabels first
                 for (int ii=0; ii<nLabels; ii++)
@@ -645,14 +645,14 @@ void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh)
                         newLabel = ii + labelRange[0];
                     }
                 }
-                
+
                 if (newLabel != label_i) {
                     //set new label to the tip point
                     labelArray->SetTuple1(tId, newLabel);
                     change += 1;
                 }
             }
-        }  
+        }
         iter += 1;
     }
 }
