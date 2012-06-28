@@ -5,6 +5,7 @@ import antsAverageImages
 import ants
 from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
+from nipype.interfaces.io import DataGrabber
 
 imagedir = '/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/'
 images = ['{0}01_T1_half.nii.gz'.format(imagedir), '{0}02_T1_half.nii.gz'.format(imagedir), '{0}03_T1_half.nii.gz'.format(imagedir)]
@@ -13,37 +14,48 @@ images = ['{0}01_T1_half.nii.gz'.format(imagedir), '{0}02_T1_half.nii.gz'.format
 #WORKFLOW: Creating overall workflow:
 buildtemplateparallel = pe.Workflow(name='buildtemplateparallel')
 ANTSintroduction = pe.Workflow(name='ANTSintroduction')
+SUTT = pe.Workflow(name = 'SUTT')
 
 #NODE: InitAvgImages - Average the initial images
 InitAvgImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
 InitAvgImages.inputs.images = images
 InitAvgImages.inputs.dimension = 3
-InitAvgImages.inputs.output_average_image = 'MYtemplate.nii.gz'
+InitAvgImages.inputs.output_average_image = '/IPLlinux/raid0/homes/jforbes/git/BRAINSStandAlone/AutoWorkup/BRAINSTools/ants/MYtemplate.nii.gz'
 InitAvgImages.inputs.normalize = 1
-print InitAvgImages.outputs
-
-#Create ANTSintroduction workflow:
-#ANTSintroduction = pe.Workflow(name='ANTSintroduction')
-
+#InitAvgImages.base_dir = "/IPLlinux/raid0/homes/jforbes/git/BRAINSStandAlone/AutoWorkup/BRAINSTools/ants/"
+#print InitAvgImages.inputs
+#print InitAvgImages.output_dir()
+InitAvgImages.run()
+print '-'*50
+print InitAvgImages.get_output('average_image')
+print '-'*50
 
 #NODE: BeginANTS - produces warped, inverse warped, and affine images
-BeginANTS=pe.Node(interface=ants.ANTS(), name = 'BeginANTS')
+BeginANTS=pe.MapNode(interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
 BeginANTS.inputs.dimension = 3
 BeginANTS.inputs.output_transform_prefix = 'MY'
 BeginANTS.inputs.metric = ['CC']
-#BeginANTS.inputs.moving_image = images[0]
+BeginANTS.inputs.moving_image = images
 BeginANTS.inputs.metric_weight = [1.0]
 BeginANTS.inputs.radius = [5]
-BeginANTS.inputs.affine_gradient_descent_option = [0.25]
 BeginANTS.inputs.transformation_model = 'SyN'
 BeginANTS.inputs.gradient_step_length = 0.25
-BeginANTS.inputs.number_of_time_steps = 3.0
-BeginANTS.inputs.delta_time = 0.0
-BeginANTS.inputs.number_of_iterations = [1, 1, 1]
-BeginANTS.inputs.subsampling_factors = [3, 2, 1]
-BeginANTS.inputs.smoothing_sigmas = [0, 0, 0]
-BeginANTS.inputs.use_histogram_matching = False
-print BeginANTS.inputs
+BeginANTS.inputs.number_of_iterations = [50, 35, 15]
+BeginANTS.inputs.use_histogram_matching = True
+BeginANTS.inputs.mi_option = [32, 16000]
+BeginANTS.inputs.regularization = 'Gauss'
+BeginANTS.inputs.regularization_gradient_field_sigma = 3
+BeginANTS.inputs.regularization_deformation_field_sigma = 0
+BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
+
+BeginANTS.outputs.transformList = 'wimtdeformed_transformation_list'
+BeginANTS.outputs.warpTransformList = 'warp_transform'
+BeginANTS.outputs.affineList = 'affine_transform'
+BeginANTS.outputs.inverseList = 'inverse_warp_transform'
+
+
+##InitAvgImages.run()
+#BeginANTS.set_input('fixed_image', InitAvgImages.get_output('average_image'))
 
 #Introducing iterables:
 
@@ -54,46 +66,50 @@ infosource.iterables = ( 'subject_image', images)
 
 
 #NODE: wimtdeformed - Forward Warp Image Multi Transform to produce deformed images
-wimtdeformed = pe.Node( interface = WarpImageMultiTransform(), name = 'wimtdeformed')
-#wimtdeformed.inputs.transformation_series = [BeginANTS.outputs.warp_transform, BeginANTS.outputs.affine_transform]
-wimtdeformed.inputs.moving_image = images[0]
-print wimtdeformed.outputs
+wimtdeformed = pe.Node( interface = WarpImageMultiTransform(), name = 'wimtdeformed') #iterfield=['transformation_series', 'moving_image']
+##wimtdeformed.inputs.moving_image = images
+
 
 #NODE: AvgHlafDeformedImages -  Creates an average image of the three halfDeformed images
 AvgHalfDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgHalfDeformedImages')
 AvgHalfDeformedImages.inputs.dimension = 3
-AvgHalfDeformedImages.inputs.output_average_image = 'MYtemplate.nii.gz'
+AvgHalfDeformedImages.inputs.output_average_image = '~/MYtemplate.nii.gz'
 AvgHalfDeformedImages.inputs.normalize = 1
-#AvgHalfDeformedImages.inputs.images = ['MY01_T1_halfdeformed.nii.gz', 'MY02_T1_halfdeformed.nii.gz', 'MY03_T1_halfdeformed.nii.gz']
+
+#functionString = 'def func(arg1, arg2): return [arg1, arg2]'
+#fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender')
+#fi.inputs.function_str = functionString
+#fi.inputs.ignore_exception = True
+
+deform_list = list()
+functionString = 'def ListAppender(arg): deform_list.append(arg) return deform_list'
+ListAppender = pe.Node(interface=util.Function(input_names=['arg'], output_names=['out']), name='ListAppender')
+ListAppender.inputs.function_str = functionString
+ListAppender.inputs.ignore_exception = True
+
 
 ########################
 ##### CONNECTIONS ######
 ########################
-functionString = 'def func(arg1, arg2): return [arg1, arg2]'
-fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender')
-fi.inputs.function_str = functionString
-fi.inputs.ignore_exception = True
-
-#buildtemplateparallel.connect([( BeginANTS,fi, [((['warp_transform', 'affine_transform']),  'out')]),])
+#Connect BeginANTS to wimtdeformed:
 #ANTSintroduction.connect( BeginANTS, 'warp_transform', fi, 'arg1')
 #ANTSintroduction.connect( BeginANTS, 'affine_transform', fi, 'arg2')
 #ANTSintroduction.connect( fi, 'out', wimtdeformed, 'transformation_series' )
 ANTSintroduction.connect( BeginANTS, 'wimtdeformed_transformation_list', wimtdeformed, 'transformation_series' )
-
-##Connect InitAvgImages to BeginANTS
-buildtemplateparallel.connect( InitAvgImages, "average_image", ANTSintroduction, "BeginANTS.fixed_image" )
-buildtemplateparallel.connect( infosource, "subject_image", ANTSintroduction, "BeginANTS.moving_image" )
 buildtemplateparallel.connect( infosource, "subject_image", ANTSintroduction, "wimtdeformed.moving_image" )
 buildtemplateparallel.connect( InitAvgImages, 'average_image', ANTSintroduction, "wimtdeformed.reference_image" )
 
-#Connections to get inputs to WarpImageMultiTransform Deformed
-#buildtemplateparallel.connect( BeginANTS,['warp_transform', BeginANTS.outputs.affine_transform], wimtdeformed, 'transformation_series' )
+
+##Connect InitAvgImages to BeginANTS
+buildtemplateparallel.connect( InitAvgImages, "average_image", ANTSintroduction, "BeginANTS.fixed_image" )
+#buildtemplateparallel.connect( infosource, "subject_image", ANTSintroduction, "BeginANTS.moving_image" )
 
 
-
-#
 #Connect wimtdeformed to AvgHalfDeformedImages
-#buildtemplateparallel.connect( wimtdeformed, 'outputs', AvgHalfDeformedImages, 'images' )
+#buildtemplateparallel.connect(ANTSintroduction, "wimtdeformed.output_images", AvgHalfDeformedImages, 'images' )
+####SUTT.connect( ListAppender, 'out', AvgHalfDeformedImages, 'images' )
+####buildtemplateparallel.connect( ANTSintroduction, "wimtdeformed.output_images", SUTT, "ListAppender.arg")
+
 
 ##NODE: wimtinverse - Inverse Warp Image Multi Transform
 ##NEED TO FIGURE OUT HOW THIS IS USED, ITERABLES PROBABLY NEED TO BE INVOLVED
@@ -141,9 +157,7 @@ buildtemplateparallel.connect( InitAvgImages, 'average_image', ANTSintroduction,
 #
 #
 #####CONNECTIONS####
-#
 
-#
 ##connect BeginANTS to AvgHalfWarpImages
 #workflow.connect( BeginANTS, 'warp_transform', AvgHalfWarpImages, 'images' )
 #
@@ -190,4 +204,24 @@ buildtemplateparallel.connect( InitAvgImages, 'average_image', ANTSintroduction,
 #    print args.outputVolume
 #    print args.inputVolumes
 
+#dg = DataGrabber(infields=['subject_id'], outfields=['affine','warp','inversewarp'])
+#dg.inputs.base_directory = '.'
+#dg.inputs.template = '%s/*%s'
+#dg.inputs.template_args['affine'] = [['subject_id','Affine.txt']]
+#dg.inputs.template_args['warp'] = [['subject_id','warp.nii.gz']]
+#dg.inputs.template_args['inversewarp'] = [['subject_id','inversewarp.nii.gz']]
+#dg.inputs.subject_id = 's1'
+
+#buildtemplateparallel.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
+
+print 'number of subnodes:'
+print BeginANTS.get_subnodes()
+print '-'*50
+
+print '*'*50
+print BeginANTS.outputs
+print '*'*50
+
+
 buildtemplateparallel.write_graph(graph2use='hierarchical')
+buildtemplateparallel.write_graph(graph2use='exec')
