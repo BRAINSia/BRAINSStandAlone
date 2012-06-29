@@ -307,7 +307,7 @@ class ANTSInputSpec(CommandLineInputSpec):
     affine_gradient_descent_option = traits.List(traits.Float(), argstr='%s')
 
     mi_option = traits.List(traits.Int(), argstr='--MI-option %s', sep='x')
-    regularization = traits.Enum('Gauss', 'DMFFD', argstr='%s', mandatory=True, desc='')
+    regularization = traits.Enum('Gauss', 'DMFFD', argstr='%s', desc='')
     regularization_gradient_field_sigma = traits.Float(requires=['regularization'], desc='')
     regularization_deformation_field_sigma = traits.Float(requires=['regularization'], desc='')
     number_of_affine_iterations = traits.List(traits.Int(), argstr='--number-of-affine-iterations %s', sep='x')
@@ -406,6 +406,6 @@ class ANTS(CommandLine):
         outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Warp.nii.gz')
         outputs['wimtdeformed_transformation_list'] = [outputs['warp_transform'], outputs['affine_transform']]
         outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'InverseWarp.nii.gz')
-        outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
-        outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')
+        #outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
+        #outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')
         return outputs
