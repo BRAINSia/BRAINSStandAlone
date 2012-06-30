@@ -5,22 +5,22 @@ static std::string LocalFormatErrorStringWrapper(const std::string & errorString
   std::string buildErrorString("****ERROR**** [BRAINSCutExceptionStringHandler]:: ");
   buildErrorString += errorString;
   buildErrorString += "\n";
-  return buildErrorString
+  return buildErrorString;
 }
 
-BRAINSCutExceptionStringHandler
+  BRAINSCutExceptionStringHandler
 ::BRAINSCutExceptionStringHandler(const std::string & errorString)
 {
-    this->m_ErrorString = LocalFormatErrorStringWrapper(errorString);
+  this->m_ErrorString = LocalFormatErrorStringWrapper(errorString);
 }
 
-BRAINSCutExceptionStringHandler
+  BRAINSCutExceptionStringHandler
 ::BRAINSCutExceptionStringHandler(const char *errorString)
 {
-    this->m_ErrorString = LocalFormatErrorStringWrapper(errorString);
+  this->m_ErrorString = LocalFormatErrorStringWrapper(errorString);
 }
 
-const std::string & 
+const std::string &
 BRAINSCutExceptionStringHandler
 ::Error() const
 {

@@ -90,7 +90,7 @@ BRAINSCutTrainModel
   SetRFErrorFile();
 }
 
-inline void
+void
 BRAINSCutTrainModel
 ::TrainWithUpdate( neuralNetType& myTrainer, bool update, pairedTrainingSetType& currentTrainData )
 {
@@ -114,7 +114,7 @@ BRAINSCutTrainModel
                    updateOption);
 }
 
-inline void
+void
 BRAINSCutTrainModel
 ::SaveRFTrainModelAtIteration( CvRTrees& myTrainer, int depth, int NTrees)
 {
@@ -133,7 +133,7 @@ BRAINSCutTrainModel
     }
 }
 
-inline void
+void
 BRAINSCutTrainModel
 ::SaveANNTrainModelAtIteration( neuralNetType& myTrainer, unsigned int No)
 {
@@ -154,7 +154,7 @@ BRAINSCutTrainModel
   myTrainer.save( filename.c_str() );
 }
 
-inline void
+void
 BRAINSCutTrainModel
 ::writeRFTrainInformation( CvRTrees& myTrainer, 
                            int depth, 
@@ -179,7 +179,7 @@ BRAINSCutTrainModel
   appendToFile( RFErrorFilename, line );
 }
 
-inline void
+void
 BRAINSCutTrainModel
 ::appendToFile( std::string filename, std::string line )
 {
@@ -195,16 +195,17 @@ BRAINSCutTrainModel
    filestr<<line<<std::endl;
    filestr.close();
 }
-inline void
+
+void
 BRAINSCutTrainModel
-::printANNTrainInformation( neuralNetType& myTrainer, unsigned int No )
+::printANNTrainInformation( neuralNetType& /*NOT USED myTrainer */, unsigned int No )
 {
-  //std::cout << " Error, " << myTrainer.get_MSE()
-  //          << " Iteration, " << No 
-  //          << std::endl;
+  std::cout << " Error, " << " NOT_COMPUTED " /* myTrainer.get_MSE() This needs to be instumented again */
+            << " Iteration, " << No
+            << std::endl;
 }
 
-inline int *
+int *
 BRAINSCutTrainModel
 ::GetANNLayerStructureArray()
 {
