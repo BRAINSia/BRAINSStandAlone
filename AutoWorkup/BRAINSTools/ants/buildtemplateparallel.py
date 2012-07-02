@@ -21,7 +21,7 @@ buildtemplateparallel.config['execution'] = {
                                      #'stop_on_first_crash':'true',
                                      #'stop_on_first_rerun': 'true',
                                      'stop_on_first_crash':'true',
-                                     'stop_on_first_rerun': 'true',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
+                                     'stop_on_first_rerun': 'false',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
                                      'hash_method': 'timestamp',
                                      'single_thread_matlab':'true',       ## Multi-core 2011a  multi-core for matrix multiplication.
                                      'remove_unnecessary_outputs':'false',
@@ -92,6 +92,28 @@ MultiplyWarpImage.inputs.dimension = 3
 MultiplyWarpImage.inputs.second_input = 0.25
 MultiplyWarpImage.inputs.output_product_image = 'MYtemplatewarp.nii.gz'
 
+#NODE: Warptemplates - Warps all of the templates to produce a new MYtemplatewarp.nii.gz
+Warptemplates = pe.Node( interface = WarpImageMultiTransform(), name = 'Warptemplates' )
+Warptemplates.inputs.invert_affine = [0]
+
+#NODE: WarpAll - Warp Everything together...
+WarpAll = pe.Node( interface = WarpImageMultiTransform(), name = 'WarpAll' )
+#WarpAll.inputs.invert_affine = [1]
+
+functionString = 'def func(arg1, arg2, arg3, arg4, arg5): return [arg1, arg2, arg3, arg4, arg5]'
+fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2', 'arg3', 'arg4', 'arg5'], output_names=['out']), name='ListAppender')
+fi.inputs.function_str = functionString
+fi.inputs.ignore_exception = True
+
+buildtemplateparallel.connect( AvgAffineTransform, 'affine_transform', fi, 'arg1')
+buildtemplateparallel.connect( Warptemplates, 'output_images', fi, 'arg2')
+buildtemplateparallel.connect( Warptemplates, 'output_images', fi, 'arg3')
+buildtemplateparallel.connect( Warptemplates, 'output_images', fi, 'arg4')
+buildtemplateparallel.connect( Warptemplates, 'output_images', fi, 'arg5')
+
+buildtemplateparallel.connect( fi, 'out', WarpAll, 'transformation_series' )
+
+
 ################# CONNECTIONS #################
 
 #Connect BeginANTS to wimtdeformed:
@@ -112,6 +134,19 @@ buildtemplateparallel.connect( BeginANTS, 'warp_transform', AvgHalfWarpImages, '
 
 #connect AvgHalfWarpImages to MultiplyWarpImage
 buildtemplateparallel.connect( AvgHalfWarpImages, 'average_image', MultiplyWarpImage, 'first_input' )
+
+#connect AvgHalfDeformedImages to Warptemplates
+buildtemplateparallel.connect( AvgHalfDeformedImages, 'average_image', Warptemplates, 'reference_image' )
+
+#connect AvgHalfWarpImages to Warptemplates
+buildtemplateparallel.connect( MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image' )
+
+#connect AvgAffineTransform to Warptemplates
+buildtemplateparallel.connect( AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series' )
+
+#connect AvgHalfDeformedImages to WarpAll
+buildtemplateparallel.connect( AvgHalfDeformedImages, 'average_image', WarpAll, 'moving_image' )
+buildtemplateparallel.connect( AvgHalfDeformedImages, 'average_image', WarpAll, 'reference_image' )
 
 ################### RUN #####################
 
