@@ -2,10 +2,13 @@ import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 import antsAverageImages
+import antsAverageAffineTransform
+import antsMultiplyImages
 import ants
 from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
+
 
 imagedir = '/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/'
 images = ['{0}01_T1_half.nii.gz'.format(imagedir), '{0}02_T1_half.nii.gz'.format(imagedir),'{0}03_T1_half.nii.gz'.format(imagedir)]
@@ -73,16 +76,21 @@ AvgHalfDeformedImages.inputs.output_average_image = 'MYtemplate.nii.gz'
 AvgHalfDeformedImages.inputs.normalize = 1
 
 #NODE: AvgAffineTransform - Creates an average image of the three Affine Images
-AvgAffineTransform = pe.Node( interface=antsAverageImages.AntsAverageImages(), name = 'AvgAffineTransform' )
+AvgAffineTransform = pe.Node( interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform' )
 AvgAffineTransform.inputs.dimension = 3
-AvgAffineTransform.inputs.output_average_image = 'MYtemplateAffine.txt'
-AvgAffineTransform.inputs.normalize = 1
+AvgAffineTransform.inputs.output_affine_transform = 'MYtemplateAffine.txt'
 
 #NODE: AvgHalfWarpImages - Creates an average image of the three halfWarped images
 AvgHalfWarpImages=pe.Node( interface=antsAverageImages.AntsAverageImages(), name='AvgHalfWarpImages')
 AvgHalfWarpImages.inputs.dimension = 3
 AvgHalfWarpImages.inputs.output_average_image = 'MYtemplatewarp.nii.gz'
 AvgHalfWarpImages.inputs.normalize = 1
+
+#NODE: MultiplyWarpImage - Multiply the image by the gradiant
+MultiplyWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='MultiplyWarpImage')
+MultiplyWarpImage.inputs.dimension = 3
+MultiplyWarpImage.inputs.second_input = 0.25
+MultiplyWarpImage.inputs.output_product_image = 'MYtemplatewarp.nii.gz'
 
 ################# CONNECTIONS #################
 
@@ -97,10 +105,13 @@ buildtemplateparallel.connect( InitAvgImages, "average_image", BeginANTS,"fixed_
 buildtemplateparallel.connect( wimtdeformed, "output_images", AvgHalfDeformedImages, 'images' )
 
 #connect BeginANTS to AvgAffineTransform
-#buildtemplateparallel.connect( BeginANTS, 'affine_transform', AvgAffineTransform, 'images' )
+buildtemplateparallel.connect( BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms' )
 
 #connect BeginANTS to AvgHalfWarpImages
 buildtemplateparallel.connect( BeginANTS, 'warp_transform', AvgHalfWarpImages, 'images' )
+
+#connect AvgHalfWarpImages to MultiplyWarpImage
+buildtemplateparallel.connect( AvgHalfWarpImages, 'average_image', MultiplyWarpImage, 'first_input' )
 
 ################### RUN #####################
 
