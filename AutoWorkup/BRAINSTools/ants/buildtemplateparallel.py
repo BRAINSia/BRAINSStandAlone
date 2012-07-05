@@ -5,13 +5,14 @@ import antsAverageImages
 import antsAverageAffineTransform
 import antsMultiplyImages
 import ants
-from nipype.interfaces.ants import WarpImageMultiTransform
+import antsWarp
+#from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 
 imagedir = '/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/'
 images = ['{0}01_T1_half.nii.gz'.format(imagedir), '{0}02_T1_half.nii.gz'.format(imagedir),'{0}03_T1_half.nii.gz'.format(imagedir)]
-ExperimentBaseDirectoryCache = '/scratch/antsbuildtemplate/TEST_CACHE'
+ExperimentBaseDirectoryCache = '/scratch/antsbuildtemplate/TEST_CACHE2'
 
 #WORKFLOW: Creating overall workflow:
 buildtemplateparallel = pe.Workflow( name='buildtemplateparallel')
@@ -38,27 +39,28 @@ buildtemplateparallel.config['logging'] = {
 buildtemplateparallel.base_dir = ExperimentBaseDirectoryCache
 
 firstRun = pe.Workflow(name = 'firstRun')
-#firstRun.config['execution'] = {
-#                                     'plugin':'Linear',
-#                                     #'stop_on_first_crash':'true',
-#                                     #'stop_on_first_rerun': 'true',
-#                                     'stop_on_first_crash':'true',
-#                                     'stop_on_first_rerun': 'false',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
-#                                     'hash_method': 'timestamp',
-#                                     'single_thread_matlab':'true',       ## Multi-core 2011a  multi-core for matrix multiplication.
-#                                     'remove_unnecessary_outputs':'false',
-#                                     'use_relative_paths':'false',         ## relative paths should be on, require hash update when changed.
-#                                     'remove_node_directories':'false',   ## Experimental
-#                                     'local_hash_check':'true',           ##
-#                                     'job_finished_timeout':15            ##
-#                                     }
-#firstRun.config['logging'] = {
-#      'workflow_level':'DEBUG',
-#      'filemanip_level':'DEBUG',
-#      'interface_level':'DEBUG',
-#      'log_directory': ExperimentBaseDirectoryCache
-#    }
-#firstRun.base_dir = ExperimentBaseDirectoryCache
+firstRun.config['execution'] = {
+                                     'keep_inputs':'true',
+                                     'plugin':'Linear',
+                                     #'stop_on_first_crash':'true',
+                                     #'stop_on_first_rerun': 'true',
+                                     'stop_on_first_crash':'true',
+                                     'stop_on_first_rerun': 'false',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
+                                     'hash_method': 'timestamp',
+                                     'single_thread_matlab':'true',       ## Multi-core 2011a  multi-core for matrix multiplication.
+                                     'remove_unnecessary_outputs':'false',
+                                     'use_relative_paths':'false',         ## relative paths should be on, require hash update when changed.
+                                     'remove_node_directories':'false',   ## Experimental
+                                     'local_hash_check':'true',           ##
+                                     'job_finished_timeout':15            ##
+                                     }
+firstRun.config['logging'] = {
+      'workflow_level':'DEBUG',
+      'filemanip_level':'DEBUG',
+      'interface_level':'DEBUG',
+      'log_directory': ExperimentBaseDirectoryCache
+    }
+firstRun.base_dir = ExperimentBaseDirectoryCache
 
 ################# ASSIGNING NODES #################
 
@@ -88,7 +90,7 @@ BeginANTS.inputs.regularization_deformation_field_sigma = 0
 BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
 
 #NODE: wimtdeformed - Forward Warp Image Multi Transform to produce deformed images
-wimtdeformed = pe.MapNode( interface = WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
+wimtdeformed = pe.MapNode( interface = antsWarp.WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
 wimtdeformed.inputs.moving_image = images
 
 #NODE: AvgHlafDeformedImages -  Creates an average image of the three halfDeformed images
@@ -111,16 +113,22 @@ AvgWarpImages.inputs.normalize = 1
 #NODE: MultiplyWarpImage - Multiply the image by the gradiant
 MultiplyWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='MultiplyWarpImage')
 MultiplyWarpImage.inputs.dimension = 3
-MultiplyWarpImage.inputs.second_input = 0.25
+MultiplyWarpImage.inputs.second_input = -0.25
 MultiplyWarpImage.inputs.output_product_image = 'MYtemplatewarp.nii.gz'
 
 #NODE: Warptemplates - Warps all of the templates to produce a new MYtemplatewarp.nii.gz
-Warptemplates = pe.Node( interface = WarpImageMultiTransform(), name = 'Warptemplates' )
+Warptemplates = pe.Node( interface = antsWarp.WarpImageMultiTransform(), name = 'Warptemplates' )
 Warptemplates.inputs.invert_affine = [1]
 
 #NODE: WarpAll - Warp Everything together...
-WarpAll = pe.Node( interface = WarpImageMultiTransform(), name = 'WarpAll' )
+WarpAll = pe.Node( interface = antsWarp.WarpImageMultiTransform(), name = 'WarpAll' )
 WarpAll.inputs.invert_affine = [1]
+
+#NODE: ListAppender1 - creates a list of affines and images for the transformation_series in WarpAll
+functionString1 = 'def func(arg1, arg2): return map(list, zip(arg1,arg2))'
+ListAppender1 = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender1')
+ListAppender1.inputs.function_str = functionString1
+ListAppender1.inputs.ignore_exception = True
 
 #NODE: ListAppender - creates a list of affines and images for the transformation_series in WarpAll
 functionString2 = 'def func(arg1, arg2, arg3, arg4, arg5): return [arg1, arg2, arg3, arg4, arg5]'
@@ -130,15 +138,22 @@ fi.inputs.ignore_exception = True
 
 ################# CONNECTIONS #################
 
+#connect BeginANTS to ListAppender1
+firstRun.connect( BeginANTS, 'warp_transform', ListAppender1, 'arg1')
+firstRun.connect( BeginANTS, 'affine_transform', ListAppender1, 'arg2')
+
+#connct ListAppender to WarpAll
+firstRun.connect( ListAppender1, 'out', wimtdeformed, 'transformation_series' )
+
 #Connect BeginANTS to wimtdeformed:
-firstRun.connect( BeginANTS, 'wimtdeformed_transformation_list', wimtdeformed, 'transformation_series' )
+#firstRun.connect( BeginANTS, 'wimtdeformed_transformation_list', wimtdeformed, 'transformation_series' )
 buildtemplateparallel.connect( InitAvgImages, 'average_image', firstRun, "wimtdeformed.reference_image" )
 
 ##Connect InitAvgImages to BeginANTS
 buildtemplateparallel.connect( InitAvgImages, "average_image", firstRun, "BeginANTS.fixed_image" )
 
 #Connect wimtdeformed to AvgDeformedImages
-firstRun.connect( wimtdeformed, "output_images", AvgDeformedImages, 'images' )
+firstRun.connect( wimtdeformed, "output_image", AvgDeformedImages, 'images' )
 
 #connect BeginANTS to AvgAffineTransform
 firstRun.connect( BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms' )
@@ -160,10 +175,10 @@ firstRun.connect( AvgAffineTransform, 'affine_transform', Warptemplates, 'transf
 
 #connect AvgAffineTransform and Warptemplates to ListAppender
 firstRun.connect( AvgAffineTransform, 'affine_transform', fi, 'arg1')
-firstRun.connect( Warptemplates, 'output_images', fi, 'arg2')
-firstRun.connect( Warptemplates, 'output_images', fi, 'arg3')
-firstRun.connect( Warptemplates, 'output_images', fi, 'arg4')
-firstRun.connect( Warptemplates, 'output_images', fi, 'arg5')
+firstRun.connect( Warptemplates, 'output_image', fi, 'arg2')
+firstRun.connect( Warptemplates, 'output_image', fi, 'arg3')
+firstRun.connect( Warptemplates, 'output_image', fi, 'arg4')
+firstRun.connect( Warptemplates, 'output_image', fi, 'arg5')
 
 #connct ListAppender to WarpAll
 firstRun.connect( fi, 'out', WarpAll, 'transformation_series' )
@@ -175,11 +190,12 @@ firstRun.connect( AvgDeformedImages, 'average_image', WarpAll, 'reference_image'
 #Connect clone!!
 secondRun = firstRun.clone(name='secondRun')
 
-buildtemplateparallel.connect(firstRun, 'WarpAll.output_images', secondRun, 'BeginANTS.fixed_image')
-buildtemplateparallel.connect(firstRun, 'WarpAll.output_images', secondRun, 'wimtdeformed.reference_image')
+buildtemplateparallel.connect(firstRun, 'WarpAll.output_image', secondRun, 'BeginANTS.fixed_image')
+buildtemplateparallel.connect(firstRun, 'WarpAll.output_image', secondRun, 'wimtdeformed.reference_image')
 
 ################### RUN #####################
 
 buildtemplateparallel.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
+
 buildtemplateparallel.write_graph(graph2use='hierarchical')
 buildtemplateparallel.write_graph(graph2use='exec')
