@@ -351,9 +351,9 @@ def mainWF():
 
 #####NODES#####
 
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'avgImages']), name='InputSpec' )
+    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec' )
     #inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images']), name='InputSpec' )
-    outputSpecRun = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpecRun' )
+    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec' )
 
     #NODE: BeginANTS - produces warped, inverse warped, and affine images
     BeginANTS=pe.MapNode( interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
@@ -427,7 +427,7 @@ def mainWF():
 #####CONNECTIONS#####
 
     mainWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
-    mainWF.connect(inputSpec, 'avgImages', BeginANTS, 'fixed_image' )
+    mainWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image' )
     #connect BeginANTS to ListAppender1
     mainWF.connect( BeginANTS, 'warp_transform', ListAppender1, 'arg1')
     mainWF.connect( BeginANTS, 'affine_transform', ListAppender1, 'arg2')
@@ -472,5 +472,17 @@ def mainWF():
     #connect AvgDeformedImages to WarpAll
     mainWF.connect( AvgDeformedImages, 'average_image', WarpAll, 'moving_image' )
     mainWF.connect( AvgDeformedImages, 'average_image', WarpAll, 'reference_image' )
+
+    mainWF.connect(WarpAll, 'output_image', outputSpec, 'template')
+
+
+    #
+    ##Connect clone!!
+    #secondRun = mainWF.clone(name='secondRun')
+    #
+    #mainWF.connect(outputSpec, 'template', secondRun, 'inputSpec.fixed_image')
+    ##buildtemplateparallel.connect(firstRun, 'WarpAll.output_image', secondRun, 'wimtdeformed.reference_image')
+
+
 
     return mainWF
