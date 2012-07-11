@@ -38,14 +38,18 @@ infosource.inputs.images = images
 
 btp.connect(infosource, 'images', myInitAvgWF, 'InputSpec.images')
 btp.connect(infosource, 'images', myMainWF, 'InputSpec.images')
-btp.connect(myInitAvgWF, 'OutputSpec.average_image', myMainWF, 'InputSpec.avgImages')
+btp.connect(myInitAvgWF, 'OutputSpec.average_image', myMainWF, 'InputSpec.fixed_image')
 
+secondRun = myMainWF.clone(name='secondRun')
+btp.connect(infosource, 'images', secondRun, 'InputSpec.images')
+btp.connect(myMainWF, 'OutputSpec.template', secondRun, 'InputSpec.fixed_image')
 
 btp.write_graph(graph2use='hierarchical')
 btp.write_graph(graph2use='exec')
 
-#
-#
+btp.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
+
+
 #if __name__ == "__main__":
 #    # Create and parse input arguments
 #    parser = argparse.ArgumentParser(description='')
