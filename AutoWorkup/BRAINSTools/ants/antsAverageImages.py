@@ -47,7 +47,6 @@ cd /hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST
 
 # Standard library imports
 import os
-from glob import glob
 
 # Local imports
 from nipype.interfaces.base import (TraitedSpec, File, traits, InputMultiPath, OutputMultiPath, isdefined)

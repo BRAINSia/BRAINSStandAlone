@@ -2,6 +2,7 @@ from buildtemplateparallel import initAvgWF, mainWF
 import nipype.pipeline.engine as pe
 import argparse
 import nipype.interfaces.utility as util
+import textwrap
 
 def BuildTemplateParallelWorkFlow():
 
@@ -50,7 +51,18 @@ def BuildTemplateParallelWorkFlow():
 
 if __name__ == "__main__":
     # Create and parse input arguments
-    parser = argparse.ArgumentParser(description='')
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description=textwrap.dedent("""
+  This program is used to generate a template image from initial images using
+  the ANTS build template parallel scheme. \n
+
+Common Usage:
+  $ python buildTemplateParallelDriver.py -i
+  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/01_T1_half.nii.gz
+  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/02_T1_half.nii.gz
+  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/03_T1_half.nii.gz
+ \n
+"""))
     #parser.add_argument('-o', '--outputVolume', dest='outputVolume', help='The ANTS template output volume.')
     parser.add_argument('-i', '--inputVolumes', nargs='*', dest='inputVolumes', help='The ANTS template input volumes.')
     args = parser.parse_args()
