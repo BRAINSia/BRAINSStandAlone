@@ -44,7 +44,7 @@ def BuildTemplateParallelWorkFlow():
     btp.connect(infosource, 'images', secondRun, 'InputSpec.images')
     btp.connect(myMainWF, 'OutputSpec.template', secondRun, 'InputSpec.fixed_image')
 
-    #btp.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
+    btp.run(plugin='MultiProc', plugin_args={'n_procs' : 3})
 
     btp.write_graph(graph2use='hierarchical')
     #btp.write_graph(graph2use='exec')

@@ -11,82 +11,29 @@ import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 
 def initAvgWF(ExperimentBaseDirectoryCache):
-    initAvgWF = pe.Workflow( name= 'initAvgWF')
-    initAvgWF.config['execution'] = {
-                                         'plugin':'Linear',
-                                         #'stop_on_first_crash':'true',
-                                         #'stop_on_first_rerun': 'true',
-                                         'stop_on_first_crash':'true',
-                                         'stop_on_first_rerun': 'false',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
-                                         'hash_method': 'timestamp',
-                                         'single_thread_matlab':'true',       ## Multi-core 2011a  multi-core for matrix multiplication.
-                                         'remove_unnecessary_outputs':'false',
-                                         'use_relative_paths':'false',         ## relative paths should be on, require hash update when changed.
-                                         'remove_node_directories':'false',   ## Experimental
-                                         'local_hash_check':'true',           ##
-                                         'job_finished_timeout':15            ##
-                                         }
-    initAvgWF.config['logging'] = {
-          'workflow_level':'DEBUG',
-          'filemanip_level':'DEBUG',
-          'interface_level':'DEBUG',
-          'log_directory': ExperimentBaseDirectoryCache
-        }
-    initAvgWF.base_dir = ExperimentBaseDirectoryCache
+    initAvgWF = pe.Workflow(name= 'initAvgWF')
 
-    #####NODES#####
+    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images']), name='InputSpec')
+    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['average_image']), name='OutputSpec')
 
-    #NODE: Input and Output Spec-
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images']), name='InputSpec' )
-    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['average_image']), name='OutputSpec' )
-
-    #NODE: InitAvgImages - Average the initial images
-    InitAvgImages=pe.Node( interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
+    InitAvgImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
     InitAvgImages.inputs.dimension = 3
     InitAvgImages.inputs.output_average_image = 'MYtemplate.nii.gz'
     InitAvgImages.inputs.normalize = 1
-
-    #####CONNECTIONS#####
 
     initAvgWF.connect(inputSpec, 'images', InitAvgImages, 'images')
     initAvgWF.connect(InitAvgImages, 'average_image', outputSpec, 'average_image')
 
     return initAvgWF
 
-
 def mainWF(ExperimentBaseDirectoryCache):
 
     mainWF = pe.Workflow(name = 'mainWF')
-    mainWF.config['execution'] = {
-                                         'keep_inputs':'true',
-                                         'plugin':'Linear',
-                                         #'stop_on_first_crash':'true',
-                                         #'stop_on_first_rerun': 'true',
-                                         'stop_on_first_crash':'true',
-                                         'stop_on_first_rerun': 'false',      ## This stops at first attempt to rerun, before running, and before deleting previous results.
-                                         'hash_method': 'timestamp',
-                                         'single_thread_matlab':'true',       ## Multi-core 2011a  multi-core for matrix multiplication.
-                                         'remove_unnecessary_outputs':'false',
-                                         'use_relative_paths':'false',         ## relative paths should be on, require hash update when changed.
-                                         'remove_node_directories':'false',   ## Experimental
-                                         'local_hash_check':'true',           ##
-                                         'job_finished_timeout':15            ##
-                                         }
-    mainWF.config['logging'] = {
-          'workflow_level':'DEBUG',
-          'filemanip_level':'DEBUG',
-          'interface_level':'DEBUG',
-          'log_directory': ExperimentBaseDirectoryCache
-        }
-    mainWF.base_dir = ExperimentBaseDirectoryCache
 
-    #####NODES#####
+    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec')
+    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec')
 
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec' )
-    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec' )
-
-    #NODE: BeginANTS - produces warped, inverse warped, and affine images
-    BeginANTS=pe.MapNode( interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
+    BeginANTS=pe.MapNode(interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
     BeginANTS.inputs.dimension = 3
     BeginANTS.inputs.output_transform_prefix = 'MY'
     BeginANTS.inputs.metric = ['CC']
@@ -102,99 +49,72 @@ def mainWF(ExperimentBaseDirectoryCache):
     BeginANTS.inputs.regularization_deformation_field_sigma = 0
     BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
 
-    #NODE: wimtdeformed - Forward Warp Image Multi Transform to produce deformed images
-    wimtdeformed = pe.MapNode( interface = antsWarp.WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
+    wimtdeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
 
-    #NODE: AvgHlafDeformedImages -  Creates an average image of the three halfDeformed images
-    AvgDeformedImages=pe.Node( interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
+    AvgDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
     AvgDeformedImages.inputs.dimension = 3
     AvgDeformedImages.inputs.output_average_image = 'MYtemplate.nii.gz'
     AvgDeformedImages.inputs.normalize = 1
 
-    #NODE: AvgAffineTransform - Creates an average image of the three Affine Images
-    AvgAffineTransform = pe.Node( interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform' )
+    AvgAffineTransform = pe.Node(interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform')
     AvgAffineTransform.inputs.dimension = 3
     AvgAffineTransform.inputs.output_affine_transform = 'MYtemplateAffine.txt'
 
-    #NODE: AvgWarpImages - Creates an average image of the three halfWarped images
-    AvgWarpImages=pe.Node( interface=antsAverageImages.AntsAverageImages(), name='AvgWarpImages')
+    AvgWarpImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgWarpImages')
     AvgWarpImages.inputs.dimension = 3
     AvgWarpImages.inputs.output_average_image = 'MYtemplatewarp.nii.gz'
     AvgWarpImages.inputs.normalize = 1
 
-    #NODE: MultiplyWarpImage - Multiply the image by the gradiant
     MultiplyWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='MultiplyWarpImage')
     MultiplyWarpImage.inputs.dimension = 3
     MultiplyWarpImage.inputs.second_input = -0.25
     MultiplyWarpImage.inputs.output_product_image = 'MYtemplatewarp.nii.gz'
 
-    #NODE: Warptemplates - Warps all of the templates to produce a new MYtemplatewarp.nii.gz
-    Warptemplates = pe.Node( interface = antsWarp.WarpImageMultiTransform(), name = 'Warptemplates' )
+    Warptemplates = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'Warptemplates')
     Warptemplates.inputs.invert_affine = [1]
 
-    #NODE: WarpAll - Warp Everything together...
-    WarpAll = pe.Node( interface = antsWarp.WarpImageMultiTransform(), name = 'WarpAll' )
+    WarpAll = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'WarpAll')
     WarpAll.inputs.invert_affine = [1]
 
-    #NODE: ListAppender1 - creates a list of affines and images for the transformation_series in WarpAll
     functionString1 = 'def func(arg1, arg2): return map(list, zip(arg1,arg2))'
     ListAppender1 = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender1')
     ListAppender1.inputs.function_str = functionString1
     ListAppender1.inputs.ignore_exception = True
 
-    #NODE: ListAppender - creates a list of affines and images for the transformation_series in WarpAll
     functionString2 = 'def func(arg1, arg2, arg3, arg4, arg5): return [arg1, arg2, arg3, arg4, arg5]'
     fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2', 'arg3', 'arg4', 'arg5'], output_names=['out']), name='ListAppender2')
     fi.inputs.function_str = functionString2
     fi.inputs.ignore_exception = True
 
-    #####CONNECTIONS#####
-
     mainWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
     mainWF.connect(inputSpec, 'images', wimtdeformed, 'moving_image')
-    mainWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image' )
+    mainWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
-    #connect BeginANTS to ListAppender1
-    mainWF.connect( BeginANTS, 'warp_transform', ListAppender1, 'arg1')
-    mainWF.connect( BeginANTS, 'affine_transform', ListAppender1, 'arg2')
+    mainWF.connect(BeginANTS, 'warp_transform', ListAppender1, 'arg1')
+    mainWF.connect(BeginANTS, 'affine_transform', ListAppender1, 'arg2')
+    mainWF.connect(BeginANTS, 'warp_transform', AvgWarpImages, 'images')
+    mainWF.connect(BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms')
 
-    #connct ListAppender to WarpAll
-    mainWF.connect( ListAppender1, 'out', wimtdeformed, 'transformation_series' )
+    mainWF.connect(ListAppender1, 'out', wimtdeformed, 'transformation_series')
 
-    #Connect wimtdeformed to AvgDeformedImages
-    mainWF.connect( wimtdeformed, "output_image", AvgDeformedImages, 'images' )
+    mainWF.connect(wimtdeformed, "output_image", AvgDeformedImages, 'images')
 
-    #connect BeginANTS to AvgAffineTransform
-    mainWF.connect( BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms' )
+    mainWF.connect(AvgWarpImages, 'average_image', MultiplyWarpImage, 'first_input')
 
-    #connect BeginANTS to AvgWarpImages
-    mainWF.connect( BeginANTS, 'warp_transform', AvgWarpImages, 'images' )
+    mainWF.connect(AvgDeformedImages, 'average_image', Warptemplates, 'reference_image')
+    mainWF.connect(MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image')
+    mainWF.connect(AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series')
 
-    #connect AvgWarpImages to MultiplyWarpImage
-    mainWF.connect( AvgWarpImages, 'average_image', MultiplyWarpImage, 'first_input' )
+    mainWF.connect(AvgAffineTransform, 'affine_transform', fi, 'arg1')
+    mainWF.connect(Warptemplates, 'output_image', fi, 'arg2')
+    mainWF.connect(Warptemplates, 'output_image', fi, 'arg3')
+    mainWF.connect(Warptemplates, 'output_image', fi, 'arg4')
+    mainWF.connect(Warptemplates, 'output_image', fi, 'arg5')
 
-    #connect AvgDeformedImages to Warptemplates
-    mainWF.connect( AvgDeformedImages, 'average_image', Warptemplates, 'reference_image' )
+    mainWF.connect(fi, 'out', WarpAll, 'transformation_series')
 
-    #connect AvgWarpImages to Warptemplates
-    mainWF.connect( MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image' )
-
-    #connect AvgAffineTransform to Warptemplates
-    mainWF.connect( AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series' )
-
-    #connect AvgAffineTransform and Warptemplates to ListAppender
-    mainWF.connect( AvgAffineTransform, 'affine_transform', fi, 'arg1')
-    mainWF.connect( Warptemplates, 'output_image', fi, 'arg2')
-    mainWF.connect( Warptemplates, 'output_image', fi, 'arg3')
-    mainWF.connect( Warptemplates, 'output_image', fi, 'arg4')
-    mainWF.connect( Warptemplates, 'output_image', fi, 'arg5')
-
-    #connct ListAppender to WarpAll
-    mainWF.connect( fi, 'out', WarpAll, 'transformation_series' )
-
-    #connect AvgDeformedImages to WarpAll
-    mainWF.connect( AvgDeformedImages, 'average_image', WarpAll, 'moving_image' )
-    mainWF.connect( AvgDeformedImages, 'average_image', WarpAll, 'reference_image' )
+    mainWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'moving_image')
+    mainWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'reference_image')
 
     mainWF.connect(WarpAll, 'output_image', outputSpec, 'template')
 

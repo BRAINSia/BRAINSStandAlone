@@ -318,14 +318,13 @@ class ANTSInputSpec(CommandLineInputSpec):
 class ANTSOutputSpec(TraitedSpec):
     affine_transform = File(exists=True, desc='Affine transform file')
     warp_transform = File(exists=True, desc='Warping deformation field')
-    wimtdeformed_transformation_list = traits.List(File(exists=True, desc='Warped Image MultiTransform transformation list'))
     inverse_warp_transform = File(exists=True, desc='Inverse warping deformation field')
     metaheader = File(exists=True, desc='VTK metaheader .mhd file')
     metaheader_raw = File(exists=True, desc='VTK metaheader .raw file')
 
 #class ANTS(ANTSCommand):
 class ANTS(CommandLine):
-    _cmd = 'ANTS'#'/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/ANTS-Darwin-clang/bin/ANTS'
+    _cmd = 'ANTS'
     input_spec = ANTSInputSpec
     output_spec = ANTSOutputSpec
 
@@ -404,7 +403,6 @@ class ANTS(CommandLine):
         outputs = self._outputs().get()
         outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Affine.txt')
         outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Warp.nii.gz')
-        outputs['wimtdeformed_transformation_list'] = [outputs['warp_transform'], outputs['affine_transform']]
         outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'InverseWarp.nii.gz')
         #outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
         #outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')

@@ -69,7 +69,7 @@ class AntsAverageImages(ANTSCommand):
     --------
     >>>
     """
-    _cmd = '/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/ANTS-Darwin-clang/bin/AverageImages'
+    _cmd = 'AverageImages'
     input_spec = AntsAverageImagesInputSpec
     output_spec = AntsAverageImagesOutputSpec
 
