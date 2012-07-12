@@ -305,19 +305,27 @@ class ANTSInputSpec(CommandLineInputSpec):
     smoothing_sigmas = traits.List(traits.Int(), argstr='--gaussian-smoothing-sigmas %s', sep='x')
     subsampling_factors = traits.List(traits.Int(), argstr='--subsampling-factors %s', sep='x')
     affine_gradient_descent_option = traits.List(traits.Float(), argstr='%s')
+
+    mi_option = traits.List(traits.Int(), argstr='--MI-option %s', sep='x')
+    regularization = traits.Enum('Gauss', 'DMFFD', argstr='%s', desc='')
+    regularization_gradient_field_sigma = traits.Float(requires=['regularization'], desc='')
+    regularization_deformation_field_sigma = traits.Float(requires=['regularization'], desc='')
+    number_of_affine_iterations = traits.List(traits.Int(), argstr='--number-of-affine-iterations %s', sep='x')
+
     # fixed_image_mask = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'fixed' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
     # moving_image_mask = File(exists=True, argstr='--mask-image %s', desc="this mask -- defined in the 'moving' image space defines the region of interest over which the registration is computed ==> above 0.1 means inside mask ==> continuous values in range [0.1,1.0] effect optimization like a probability. ==> values > 1 are treated as = 1.0")
 
 class ANTSOutputSpec(TraitedSpec):
     affine_transform = File(exists=True, desc='Affine transform file')
     warp_transform = File(exists=True, desc='Warping deformation field')
+    wimtdeformed_transformation_list = traits.List(File(exists=True, desc='Warped Image MultiTransform transformation list'))
     inverse_warp_transform = File(exists=True, desc='Inverse warping deformation field')
     metaheader = File(exists=True, desc='VTK metaheader .mhd file')
     metaheader_raw = File(exists=True, desc='VTK metaheader .raw file')
 
 #class ANTS(ANTSCommand):
 class ANTS(CommandLine):
-    _cmd = 'ANTS'
+    _cmd = 'ANTS'#'/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/ANTS-Darwin-clang/bin/ANTS'
     input_spec = ANTSInputSpec
     output_spec = ANTSOutputSpec
 
@@ -354,6 +362,11 @@ class ANTS(CommandLine):
             retval.append('[%s]'% parameters)
         return ''.join(retval)
 
+    def _regularization_constructor(self):
+        return '--regularization {0}[{1},{2}]'.format(self.inputs.regularization,
+                                     self.inputs.regularization_gradient_field_sigma,
+                                     self.inputs.regularization_deformation_field_sigma)
+
     def _affine_gradient_descent_option_constructor(self):
         retval = ['--affine-gradient-descent-option']
         values = self.inputs.affine_gradient_descent_option
@@ -376,6 +389,8 @@ class ANTS(CommandLine):
             return '--output-naming %s' % self.inputs.output_transform_prefix
         elif opt == 'transformation_model':
             return self._transformation_constructor()
+        elif opt == 'regularization':
+            return self._regularization_constructor()
         elif opt == 'use_histogram_matching':
             if self.inputs.use_histogram_matching:
                 return '--use-Histogram-Matching 1'
@@ -389,7 +404,8 @@ class ANTS(CommandLine):
         outputs = self._outputs().get()
         outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Affine.txt')
         outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Warp.nii.gz')
+        outputs['wimtdeformed_transformation_list'] = [outputs['warp_transform'], outputs['affine_transform']]
         outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'InverseWarp.nii.gz')
-        outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
-        outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')
+        #outputs['metaheader'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.mhd')
+        #outputs['metaheader_raw'] = os.path.abspath(self.inputs.output_transform_prefix + 'velocity.raw')
         return outputs
