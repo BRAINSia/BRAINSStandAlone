@@ -13,157 +13,156 @@ namespace itk
 /*This file defines ICCDEF registration class which initializes the input
   preprocessor and the registrator. */
 
-  template <typename TImage,
-            typename TRealImage, 
-            typename TOutputImage
-           >
-  class ICCDEFWarp : public ICCApplicationBase<
-                            IccdefPreprocessor<TImage, TRealImage>, 
-                            IccdefRegistrator<TRealImage, TOutputImage,ITK_TYPENAME TRealImage::PixelType>
-                           >
-  {
-    public:
+template <typename TImage,
+          typename TRealImage,
+          typename TOutputImage
+          >
+class ICCDEFWarp : public ICCApplicationBase<
+    IccdefPreprocessor<TImage, TRealImage>,
+    IccdefRegistrator<TRealImage, TOutputImage, ITK_TYPENAME TRealImage::PixelType>
+    >
+{
+public:
 
-    /** Standard class typedefs. */
-    typedef ICCDEFWarp Self;
-    typedef ICCApplicationBase<
+  /** Standard class typedefs. */
+  typedef ICCDEFWarp Self;
+  typedef ICCApplicationBase<
     IccdefPreprocessor<TImage, TRealImage>,
     IccdefRegistrator<TRealImage, TRealImage,
-                    ITK_TYPENAME TRealImage::PixelType>
-                    > Superclass;
-    typedef SmartPointer<Self>       Pointer;
-    typedef SmartPointer<const Self> ConstPointer;
+                      ITK_TYPENAME TRealImage::PixelType>
+    > Superclass;
+  typedef SmartPointer<Self>       Pointer;
+  typedef SmartPointer<const Self> ConstPointer;
 
-    /** Deformation field pixel type. */
-    typedef float                     FieldValueType;
-    typedef Vector<FieldValueType, 3> FieldPixelType;
-    typedef Image<FieldPixelType, 3>  TDeformationField;
+  /** Deformation field pixel type. */
+  typedef float                     FieldValueType;
+  typedef Vector<FieldValueType, 3> FieldPixelType;
+  typedef Image<FieldPixelType, 3>  TDeformationField;
 
-    /** Run-time type information (and related methods). */
-    itkTypeMacro (ICCDEFWarp, ICCApplicationBase);
+  /** Run-time type information (and related methods). */
+  itkTypeMacro(ICCDEFWarp, ICCApplicationBase);
 
-    /** Method for creation through the object factory. */
-    itkNewMacro (Self);
+  /** Method for creation through the object factory. */
+  itkNewMacro(Self);
 
-    /** Image types. */
-    typedef TImage     ImageType;
-    typedef TRealImage RealImageType;
+  /** Image types. */
+  typedef TImage     ImageType;
+  typedef TRealImage RealImageType;
 
-    /** Image dimension. */
-    itkStaticConstMacro (ImageDimension, unsigned int,
-    TImage::ImageDimension);
+  /** Image dimension. */
+  itkStaticConstMacro(ImageDimension, unsigned int,
+                      TImage::ImageDimension);
 
-    /** Type to hold the number of checker boxes per dimension */
-    typedef FixedArray<unsigned int, ::itk::GetImageDimension<
-      TImage>::ImageDimension> PatternArrayType;
+  /** Type to hold the number of checker boxes per dimension */
+  typedef FixedArray<unsigned int, ::itk::GetImageDimension<
+                       TImage>::ImageDimension> PatternArrayType;
 
-    typedef typename ImageType::PixelType PixelType;
-    typedef typename ImageType::IndexType IndexType;
-    typedef typename ImageType::SizeType  SizeType;
+  typedef typename ImageType::PixelType PixelType;
+  typedef typename ImageType::IndexType IndexType;
+  typedef typename ImageType::SizeType  SizeType;
 
-    /** ShrinkFactors type. */
-    typedef FixedArray<unsigned int,itk::GetImageDimension<TImage>::ImageDimension> ShrinkFactorsType;
+  /** ShrinkFactors type. */
+  typedef FixedArray<unsigned int, itk::GetImageDimension<TImage>::ImageDimension> ShrinkFactorsType;
 
-    /** IterationArray type. */
-    typedef Array<unsigned int> IterationsArrayType;
+  /** IterationArray type. */
+  typedef Array<unsigned int> IterationsArrayType;
 
-    /** Set the atlas patient ID. */
-    itkSetStringMacro (TheMovingImageFilename);
-    itkGetStringMacro (TheMovingImageFilename);
+  /** Set the atlas patient ID. */
+  itkSetStringMacro(TheMovingImageFilename);
+  itkGetStringMacro(TheMovingImageFilename);
 
-    /** Set the subject patient ID. */
-    itkSetStringMacro (TheFixedImageFilename);
-    itkGetStringMacro (TheFixedImageFilename);
+  /** Set the subject patient ID. */
+  itkSetStringMacro(TheFixedImageFilename);
+  itkGetStringMacro(TheFixedImageFilename);
 
-    /** Set the initial Displacement Field one of 3 ways. */
+  /** Set the initial Displacement Field one of 3 ways. */
 //  itkSetStringMacro (InitialDeformationFieldFilename);
 //  itkGetStringMacro (InitialDeformationFieldFilename);
-  
-    itkSetStringMacro (InitialFixedDeformationFieldFilename);
-    itkGetStringMacro (InitialFixedDeformationFieldFilename);
-  
-    itkSetStringMacro (InitialMovingDeformationFieldFilename);
-    itkGetStringMacro (InitialMovingDeformationFieldFilename);
 
-    itkSetStringMacro (InitialCoefficientFilename);
-    itkGetStringMacro (InitialCoefficientFilename);
+  itkSetStringMacro(InitialFixedDeformationFieldFilename);
+  itkGetStringMacro(InitialFixedDeformationFieldFilename);
 
-    itkSetStringMacro (InitialTransformFilename);
-    itkGetStringMacro (InitialTransformFilename);
+  itkSetStringMacro(InitialMovingDeformationFieldFilename);
+  itkGetStringMacro(InitialMovingDeformationFieldFilename);
+
+  itkSetStringMacro(InitialCoefficientFilename);
+  itkGetStringMacro(InitialCoefficientFilename);
+
+  itkSetStringMacro(InitialTransformFilename);
+  itkGetStringMacro(InitialTransformFilename);
 
   /** Set Displacementname */
 //  itkSetStringMacro (DisplacementBaseName);
 //  itkGetStringMacro (DisplacementBaseName);
-  /** Set WarpedImageName */
-    itkSetStringMacro (OutputPrefix);
-    itkGetStringMacro (OutputPrefix);
+/** Set WarpedImageName */
+  itkSetStringMacro(OutputPrefix);
+  itkGetStringMacro(OutputPrefix);
 
   /** Set input parameter file */
   // itkSetStringMacro (ParameterFilename);
 
   /** Set output transformation filename. */
-  //itkSetStringMacro (OutputFilename);
+  // itkSetStringMacro (OutputFilename);
 
   /**Set Deformation field output filename*/
-    itkSetStringMacro (ForwardDeformationFieldOutputName);
-    itkGetStringMacro (ForwardDeformationFieldOutputName);
+  itkSetStringMacro(ForwardDeformationFieldOutputName);
+  itkGetStringMacro(ForwardDeformationFieldOutputName);
 
-    itkSetStringMacro (BackwardDeformationFieldOutputName);
-    itkGetStringMacro (BackwardDeformationFieldOutputName);
+  itkSetStringMacro(BackwardDeformationFieldOutputName);
+  itkGetStringMacro(BackwardDeformationFieldOutputName);
   /**Set Jacobian Image prefix name*/
-    itkSetMacro(OutputJacobianImage, bool);
-    itkGetConstMacro(OutputJacobianImage, bool);
-  
-    itkSetMacro(OutputDeformationField, bool);
-    itkGetConstMacro(OutputDeformationField, bool);
-  
-    itkSetMacro(OutputDisplacement, bool);
-    itkGetConstMacro(OutputDisplacement, bool);
+  itkSetMacro(OutputJacobianImage, bool);
+  itkGetConstMacro(OutputJacobianImage, bool);
+
+  itkSetMacro(OutputDeformationField, bool);
+  itkGetConstMacro(OutputDeformationField, bool);
+
+  itkSetMacro(OutputDisplacement, bool);
+  itkGetConstMacro(OutputDisplacement, bool);
 
   /** Set append output file boolean. */
-    itkSetMacro (AppendOutputFile, bool);
-    itkGetMacro (AppendOutputFile, bool);
-    itkBooleanMacro (AppendOutputFile);
+  itkSetMacro(AppendOutputFile, bool);
+  itkGetMacro(AppendOutputFile, bool);
+  itkBooleanMacro(AppendOutputFile);
 
   /**Force Centered Image.*/
-    itkSetMacro (ForceCoronalZeroOrigin, bool);
-    itkGetConstMacro (ForceCoronalZeroOrigin, bool);
+  itkSetMacro(ForceCoronalZeroOrigin, bool);
+  itkGetConstMacro(ForceCoronalZeroOrigin, bool);
 
-    /*BOBF macros */
+  /*BOBF macros */
   /**Set Target Mask filename*/
-    itkSetStringMacro (FixedBinaryVolume);
-    itkGetStringMacro (FixedBinaryVolume);
+  itkSetStringMacro(FixedBinaryVolume);
+  itkGetStringMacro(FixedBinaryVolume);
 
   /**Set Template Mask filename*/
-    itkSetStringMacro (MovingBinaryVolume);
-    itkGetStringMacro (MovingBinaryVolume);
+  itkSetStringMacro(MovingBinaryVolume);
+  itkGetStringMacro(MovingBinaryVolume);
 
 #if 0
   /** Set/Get the lower threshold. The default is 0. */
-  itkSetMacro (Lower, PixelType);
-  itkGetMacro (Lower, PixelType);
+  itkSetMacro(Lower, PixelType);
+  itkGetMacro(Lower, PixelType);
 
   /** Set/Get the upper threshold. The default is 70 */
-  itkSetMacro (Upper, PixelType);
-  itkGetMacro (Upper, PixelType);
-
+  itkSetMacro(Upper, PixelType);
+  itkGetMacro(Upper, PixelType);
 
   /** Set the Seed of the neighborhood used for a mask. */
-  itkSetMacro (Seed, IndexType);
+  itkSetMacro(Seed, IndexType);
   /** Get the radius of the neighborhood used to compute the median */
-  itkGetConstReferenceMacro (Seed, IndexType);
+  itkGetConstReferenceMacro(Seed, IndexType);
 
   /** Set the radius of the neighborhood used for a mask. */
-  itkSetMacro (Radius, SizeType);
+  itkSetMacro(Radius, SizeType);
   /** Get the radius of the neighborhood used to compute the median */
-  itkGetConstReferenceMacro (Radius, SizeType);
+  itkGetConstReferenceMacro(Radius, SizeType);
 #endif
 
   /** Set/Get value to replace thresholded pixels. Pixels that lie *
    *  within Lower and Upper (inclusive) will be replaced with this
    *  value. The default is 1. */
-  itkSetMacro (DefaultPixelValue, PixelType);
-  itkGetMacro (DefaultPixelValue, PixelType);
+  itkSetMacro(DefaultPixelValue, PixelType);
+  itkGetMacro(DefaultPixelValue, PixelType);
 
   itkSetMacro(MedianFilterSize,  SizeType);
   itkGetMacro(MedianFilterSize,  SizeType);
@@ -196,7 +195,7 @@ namespace itk
   }
 
   typedef ICCDeformableRegistrationFilter<RealImageType, RealImageType,
-    TDeformationField>
+                                          TDeformationField>
   BaseRegistrationFilterType;
   void SetRegistrationFilter(
     BaseRegistrationFilterType * filter)
@@ -206,15 +205,16 @@ namespace itk
 
 protected:
 
-  ICCDEFWarp ();
-  virtual ~ICCDEFWarp ()
-                                                                                         {}
+  ICCDEFWarp();
+  virtual ~ICCDEFWarp()
+  {
+  }
 
   /*** Initialize the preprocessor */
-  virtual void InitializePreprocessor ();
+  virtual void InitializePreprocessor();
 
   /*** Initialize the registrator  */
-  virtual void InitializeRegistrator ();
+  virtual void InitializeRegistrator();
 
 private:
 
@@ -229,8 +229,8 @@ private:
 //  std::string m_WarpedImageName;
   std::string m_OutputPrefix;
 
-  std::string      m_FixedBinaryVolume;
-  std::string      m_MovingBinaryVolume;
+  std::string m_FixedBinaryVolume;
+  std::string m_MovingBinaryVolume;
 
   // std::string m_ParameterFilename;
   bool m_ForceCoronalZeroOrigin;
@@ -241,24 +241,23 @@ private:
 
   std::string m_OutNormalized;
   //    std::string m_OutDebug;
-  std::string      m_OutputFilename;
-  std::string      m_ForwardDeformationFieldOutputName;
-  std::string      m_BackwardDeformationFieldOutputName;
-  bool             m_AppendOutputFile;
+  std::string m_OutputFilename;
+  std::string m_ForwardDeformationFieldOutputName;
+  std::string m_BackwardDeformationFieldOutputName;
+  bool        m_AppendOutputFile;
 
-  PixelType        m_DefaultPixelValue;
-  SizeType         m_MedianFilterSize;
-
+  PixelType m_DefaultPixelValue;
+  SizeType  m_MedianFilterSize;
 
   // typename TDeformationField::Pointer m_InitialDeformationField;
   unsigned long       m_NumberOfHistogramLevels;
   unsigned long       m_NumberOfMatchPoints;
   unsigned short      m_NumberOfLevels;
   IterationsArrayType m_NumberOfIterations;
-  };
+};
 }          // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-  #include "ICCDEFWarp.txx"
+#include "ICCDEFWarp.txx"
 #endif
 #endif

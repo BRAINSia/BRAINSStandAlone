@@ -14,13 +14,13 @@ namespace itk
  *
  */
 template <typename TPreprocessor,
-  typename TRegistrator>
+          typename TRegistrator>
 class ICCApplicationBase : public Object
-  {
+{
 public:
 
   /** Standard class typedefs. */
-  typedef ICCApplicationBase          Self;
+  typedef ICCApplicationBase       Self;
   typedef Object                   Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
@@ -55,24 +55,27 @@ protected:
 
   ICCApplicationBase();
   virtual ~ICCApplicationBase()
-                  {}
+  {
+  }
 
   /*** Initialize the preprocessor */
   virtual void InitializePreprocessor()
-  {}
+  {
+  }
 
   /*** Initialize the registrator  */
   virtual void InitializeRegistrator()
-  {}
+  {
+  }
 
   PreprocessorPointer m_Preprocessor;
   RegistratorPointer  m_Registrator;
   bool                m_OutDebug;
-  };
+};
 }   // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-  #include "ICCApplicationBase.txx"
+#include "ICCApplicationBase.txx"
 #endif
 
 #endif

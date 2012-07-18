@@ -16,8 +16,8 @@ TODO:  NEED TO COMMENT WHAT THIS PROGRAM IS TO BE USED FOR
 #include "itkWindowedSincInterpolateImageFunction.h"
 #include "ApplyWarpCLP.h"
 
-//#include "itkBrains2MaskImageIO.h"
-//#include "itkBrains2MaskImageIOFactory.h"
+// #include "itkBrains2MaskImageIO.h"
+// #include "itkBrains2MaskImageIOFactory.h"
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkStatisticsImageFilter.h"
@@ -31,25 +31,23 @@ typedef double CoordinateRepType;
 typedef itk::BSplineDeformableTransform<
   CoordinateRepType,
   SpaceDimension,
-  SplineOrder > BSplineTransformType;
+  SplineOrder> BSplineTransformType;
 
-typedef itk::AffineTransform<double, 3> AffineTransformType;
-typedef itk::VersorRigid3DTransform<double> VersorRigid3DTransformType;
-typedef itk::ScaleVersor3DTransform<double> ScaleVersor3DTransformType;
+typedef itk::AffineTransform<double, 3>         AffineTransformType;
+typedef itk::VersorRigid3DTransform<double>     VersorRigid3DTransformType;
+typedef itk::ScaleVersor3DTransform<double>     ScaleVersor3DTransformType;
 typedef itk::ScaleSkewVersor3DTransform<double> ScaleSkewVersor3DTransformType;
 
-  //  These were hoisted from the ApplyWarp main executable.
-  //  REFACTOR:  It turned out to be very inconvenient to let RefImage differ from Image.
-  const unsigned int GenericTransformImageNS::SpaceDimension = 3;
-  typedef float                              PixelType;
-  typedef itk::Image<PixelType, GenericTransformImageNS::SpaceDimension>    ImageType;
-  typedef float                              RefPixelType;
-  typedef itk::Image<RefPixelType, GenericTransformImageNS::SpaceDimension> RefImageType;
+//  These were hoisted from the ApplyWarp main executable.
+//  REFACTOR:  It turned out to be very inconvenient to let RefImage differ from Image.
+const unsigned int GenericTransformImageNS::SpaceDimension = 3;
+typedef float                                                             PixelType;
+typedef itk::Image<PixelType, GenericTransformImageNS::SpaceDimension>    ImageType;
+typedef float                                                             RefPixelType;
+typedef itk::Image<RefPixelType, GenericTransformImageNS::SpaceDimension> RefImageType;
 #endif
 
-
-
-//A filter to debug the min/max values
+// A filter to debug the min/max values
 template <class TImage>
 void PrintImageMinAndMax(TImage * inputImage)
 {
@@ -65,19 +63,17 @@ void PrintImageMinAndMax(TImage * inputImage)
             << " and Maximum of " << statsFilter->GetMaximum() << std::endl;
 }
 
-
-
 int ApplyWarp(int argc, char *argv[])
 {
   PARSE_ARGS;
 
-  const bool         debug = true;
+  const bool debug = true;
 
   const bool useTransform = (warpTransform.size() > 0);
     {
     const bool useDeformationField = (deformationVolume.size() > 0);
 
-    if ( debug )
+    if( debug )
       {
       std::cout << "=====================================================" << std::endl;
       std::cout << "Input Volume:      " <<  inputVolume << std::endl;
@@ -87,164 +83,174 @@ int ApplyWarp(int argc, char *argv[])
       std::cout << "Orientation to RAI:" <<  orientationRAI << std::endl;
       std::cout << "Interpolation:     " <<  interpolationMode << std::endl;
       std::cout << "Background Value:  " <<  defaultValue << std::endl;
-      if (useDeformationField) std::cout << "Warp by Deformation Volume: " <<   deformationVolume   << std::endl;
-      if (useTransform)  std::cout << "Warp By Transform: "   <<   warpTransform << std::endl;
+      if( useDeformationField )
+        {
+        std::cout << "Warp by Deformation Volume: " <<   deformationVolume   << std::endl;
+        }
+      if( useTransform )
+        {
+        std::cout << "Warp By Transform: "   <<   warpTransform << std::endl;
+        }
       std::cout << "=====================================================" << std::endl;
       }
 
-    if (useTransformMode.size() > 0) 
+    if( useTransformMode.size() > 0 )
       {
-      std::cout << "Scripting 'code rot' note:  The useTransformMode parameter will be ignored.  Now ApplyWarp infers the warpTransform type from the contents of the .mat file." << std::endl;
+      std::cout
+      <<
+      "Scripting 'code rot' note:  The useTransformMode parameter will be ignored.  Now ApplyWarp infers the warpTransform type from the contents of the .mat file."
+      << std::endl;
       }
 
-    if (useTransform == useDeformationField) 
+    if( useTransform == useDeformationField )
       {
-      std::cout << "Choose one of the two possibilities, a BRAINSFit transform --or-- a high-dimensional deformation field." << std::endl;
+      std::cout
+      << "Choose one of the two possibilities, a BRAINSFit transform --or-- a high-dimensional deformation field."
+      << std::endl;
       exit(1);
       }
     }
 
-
-  typedef itk::Image<float,3> ImageType;
-  typedef itk::Image<float,3> RefImageType;
+  typedef itk::Image<float, 3> ImageType;
+  typedef itk::Image<float, 3> RefImageType;
   ImageType::Pointer PrincipalOperandImage;  // One name for the image to be warped.
-  {
+    {
 
 #if 0
-    typedef itk::ImageFileReader<ImageType>  ReaderType;
+    typedef itk::ImageFileReader<ImageType> ReaderType;
     ReaderType::Pointer imageReader = ReaderType::New();
     imageReader->SetFileName( inputVolume );
-    imageReader->Update( );
+    imageReader->Update();
 
     PrincipalOperandImage = imageReader->GetOutput();
-    //PrincipalOperandImage->DisconnectPipeline();
+    // PrincipalOperandImage->DisconnectPipeline();
 #endif
 
-    if(orientationRAI)
-    {
+    if( orientationRAI )
+      {
       PrincipalOperandImage = itkUtil::ReadImage<ImageType>(inputVolume);
-      PrincipalOperandImage = itkUtil::OrientImage<ImageType>(PrincipalOperandImage,itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);      
-    }
+      PrincipalOperandImage = itkUtil::OrientImage<ImageType>(PrincipalOperandImage,
+                                                              itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+      }
     else
-    {
-      PrincipalOperandImage = itkUtil::ReadImage<ImageType>(inputVolume); 
+      {
+      PrincipalOperandImage = itkUtil::ReadImage<ImageType>(inputVolume);
+      }
     }
-  }
-
-
-
 
   // Read ReferenceVolume and DeformationVolume
 
-  typedef float                                      VectorComponentType;
+  typedef float                                                                     VectorComponentType;
   typedef itk::Vector<VectorComponentType, GenericTransformImageNS::SpaceDimension> VectorPixelType;
   typedef itk::Image<VectorPixelType,  GenericTransformImageNS::SpaceDimension>     DeformationFieldType;
 
   // An empty SmartPointer constructor sets up someImage.IsNull() to represent a not-supplied state:
   DeformationFieldType::Pointer DeformationField;
-  RefImageType::Pointer ReferenceImage;
+  RefImageType::Pointer         ReferenceImage;
 
-  if ( useTransform )
+  if( useTransform )
     {
 #if 0
-    typedef itk::ImageFileReader<RefImageType>   ReaderType;
+    typedef itk::ImageFileReader<RefImageType> ReaderType;
     ReaderType::Pointer refImageReader = ReaderType::New();
-    if ( referenceVolume.size() > 0 )
+    if( referenceVolume.size() > 0 )
       {
       refImageReader->SetFileName( referenceVolume );
       }
-    else 
+    else
       {
       std::cout << "Alert:  missing Reference Volume defaulted to: " <<  inputVolume << std::endl;
       refImageReader->SetFileName( inputVolume );
       }
-    refImageReader->Update( );
+    refImageReader->Update();
     ReferenceImage = refImageReader->GetOutput();
 #endif
-     
-      if ( referenceVolume.size() > 0 )
+
+    if( referenceVolume.size() > 0 )
       {
-          if(orientationRAI)
-          {
-	     ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
-             ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-          }
-          else
-          {
-             ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
-          }
+      if( orientationRAI )
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
+        ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,
+                                                            itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+        }
+      else
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
+        }
       }
-      else 
+    else
       {
-          std::cout << "Alert:  missing Reference Volume defaulted to: " <<  inputVolume << std::endl;
-          //  ReferenceImage = itkUtil::ReadImage<RefImageType>( inputVolume );
-          if(orientationRAI)
-          {
-             ReferenceImage = itkUtil::ReadImage<RefImageType>(inputVolume);
-             ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-          }
-          else
-          {
-             ReferenceImage = itkUtil::ReadImage<RefImageType>(inputVolume);
-          }
+      std::cout << "Alert:  missing Reference Volume defaulted to: " <<  inputVolume << std::endl;
+      //  ReferenceImage = itkUtil::ReadImage<RefImageType>( inputVolume );
+      if( orientationRAI )
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(inputVolume);
+        ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,
+                                                            itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+        }
+      else
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(inputVolume);
+        }
       }
-	 
+
     }
-  else if (!useTransform) // that is, it's a warp by deformation field:
+  else if( !useTransform ) // that is, it's a warp by deformation field:
     {
 #if 0
-    typedef itk::ImageFileReader<DeformationFieldType>  DefFieldReaderType;
+    typedef itk::ImageFileReader<DeformationFieldType> DefFieldReaderType;
     DefFieldReaderType::Pointer fieldImageReader = DefFieldReaderType::New();
     fieldImageReader->SetFileName( deformationVolume );
-    fieldImageReader->Update( );
+    fieldImageReader->Update();
     DeformationField = fieldImageReader->GetOutput();
 
-    if ( referenceVolume.size() > 0 )
+    if( referenceVolume.size() > 0 )
       {
-      typedef itk::ImageFileReader<RefImageType>   ReaderType;
+      typedef itk::ImageFileReader<RefImageType> ReaderType;
       ReaderType::Pointer refImageReader = ReaderType::New();
       refImageReader->SetFileName( referenceVolume );
-      refImageReader->Update( );
+      refImageReader->Update();
       ReferenceImage = refImageReader->GetOutput();
       }
     // else ReferenceImage.IsNull() represents the delayed default
 #endif
-        if(orientationRAI)
-          {
-	     DeformationField = itkUtil::ReadImage<DeformationFieldType>(deformationVolume);
-             DeformationField = itkUtil::OrientImage<DeformationFieldType>(DeformationField,itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-          }
-          else
-          {
-	     DeformationField = itkUtil::ReadImage<DeformationFieldType>(deformationVolume);
-          } 
-	if( referenceVolume.size() >0 )
-	{
-          if(orientationRAI)
-          {
-             ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
-             ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
-          }
-          else
-          {
-             ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
-          }
-	}
+    if( orientationRAI )
+      {
+      DeformationField = itkUtil::ReadImage<DeformationFieldType>(deformationVolume);
+      DeformationField = itkUtil::OrientImage<DeformationFieldType>(
+          DeformationField, itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+      }
+    else
+      {
+      DeformationField = itkUtil::ReadImage<DeformationFieldType>(deformationVolume);
+      }
+    if( referenceVolume.size() > 0 )
+      {
+      if( orientationRAI )
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
+        ReferenceImage = itkUtil::OrientImage<RefImageType>(ReferenceImage,
+                                                            itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+        }
+      else
+        {
+        ReferenceImage = itkUtil::ReadImage<RefImageType>(referenceVolume);
+        }
+      }
     }
 
-
-
   // Read optional transform:
-  
+
   // An empty SmartPointer constructor sets up someTransform.IsNull() to represent a not-supplied state:
   BSplineTransformType::Pointer itkBSplineTransform;
-  AffineTransformType::Pointer ITKAffineTransform;
+  AffineTransformType::Pointer  ITKAffineTransform;
 
-  if ( useTransform )
+  if( useTransform )
     {
 #if 0
     bool definitelyBSpline = false;
-    
+
     itk::TransformFileReader::Pointer transformReader
       = itk::TransformFileReader::New();
 
@@ -258,7 +264,7 @@ int ApplyWarp(int argc, char *argv[])
     itk::TransformFileReader::TransformListType::const_iterator it
       = transforms->begin();
 
-    if (transforms->size() == 1) // There is no bulk transform.
+    if( transforms->size() == 1 ) // There is no bulk transform.
       {
       BulkTransform = AffineTransformType::New();
       BulkTransform->SetIdentity();
@@ -277,7 +283,7 @@ int ApplyWarp(int argc, char *argv[])
       definitelyBSpline = (secondNameOfClass == "BSplineDeformableTransform");
       }
 
-    if (definitelyBSpline)
+    if( definitelyBSpline )
       {
       itkBSplineTransform = static_cast<BSplineTransformType *>( ( *it ).GetPointer() );
       itkBSplineTransform->SetBulkTransform( BulkTransform );
@@ -288,151 +294,147 @@ int ApplyWarp(int argc, char *argv[])
       ITKAffineTransform = ReadTransform( warpTransform.c_str() );
       std::cout << "warpTransform recognized as one of the linear transforms." << std::endl;
 
-      if ( invertTransform )
+      if( invertTransform )
         {
         AffineTransformType::Pointer ITKAffineTempTransform
-          = AffineTransformType::New( );
+          = AffineTransformType::New();
         ITKAffineTempTransform->SetIdentity();
 
         ITKAffineTempTransform->SetFixedParameters(
           ITKAffineTransform->GetFixedParameters() );
-        ITKAffineTempTransform->SetParameters( 
+        ITKAffineTempTransform->SetParameters(
           ITKAffineTransform->GetParameters() );
         ITKAffineTempTransform->GetInverse( ITKAffineTransform );
         }
       }
 #else
     ReadDotMatTransformFile(warpTransform,
-        itkBSplineTransform,
-        ITKAffineTransform,
-        invertTransform);
+                            itkBSplineTransform,
+                            ITKAffineTransform,
+                            invertTransform);
 #endif
     }
 
-  
-
-  ImageType::Pointer TransformedImage 
+  ImageType::Pointer TransformedImage
     = GenericTransformImage<ImageType,
-        RefImageType,
-        DeformationFieldType>(
-    PrincipalOperandImage,
-    ReferenceImage,
-    DeformationField,
-    defaultValue,
-    itkBSplineTransform,
-    ITKAffineTransform,
-    interpolationMode,
-    pixelType == "binary");
-  
-
+                            RefImageType,
+                            DeformationFieldType>(
+        PrincipalOperandImage,
+        ReferenceImage,
+        DeformationField,
+        defaultValue,
+        itkBSplineTransform,
+        ITKAffineTransform,
+        interpolationMode,
+        pixelType == "binary");
 
   // Write out the output image;  threshold it if necessary.
-      
-  if ( pixelType == "binary" )
+
+  if( pixelType == "binary" )
     {
     // A special case for dealing with binary images
     // where signed distance maps are warped and thresholds created
-    typedef short int                             MaskPixelType;
+    typedef short int                                                           MaskPixelType;
     typedef itk::Image<MaskPixelType,  GenericTransformImageNS::SpaceDimension> MaskImageType;
-    typedef itk::CastImageFilter<ImageType, MaskImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, MaskImageType>                      CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
+    castFilter->Update();
 
     MaskImageType::Pointer outputImage = castFilter->GetOutput();
     typedef itk::ImageFileWriter<MaskImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "uchar" )
+  else if( pixelType == "uchar" )
     {
-    typedef unsigned char                    NewPixelType;
+    typedef unsigned char                                                     NewPixelType;
     typedef itk::Image<NewPixelType, GenericTransformImageNS::SpaceDimension> NewImageType;
-    typedef itk::CastImageFilter<ImageType, NewImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, NewImageType>                     CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
+    castFilter->Update();
 
     typedef itk::ImageFileWriter<NewImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "short" )
+  else if( pixelType == "short" )
     {
-    typedef signed short                     NewPixelType;
+    typedef signed short                                                      NewPixelType;
     typedef itk::Image<NewPixelType, GenericTransformImageNS::SpaceDimension> NewImageType;
-    typedef itk::CastImageFilter<ImageType, NewImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, NewImageType>                     CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
+    castFilter->Update();
 
     typedef itk::ImageFileWriter<NewImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "ushort" )
+  else if( pixelType == "ushort" )
     {
-    typedef unsigned short                  NewPixelType;
+    typedef unsigned short                                                    NewPixelType;
     typedef itk::Image<NewPixelType, GenericTransformImageNS::SpaceDimension> NewImageType;
-    typedef itk::CastImageFilter<ImageType, NewImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, NewImageType>                     CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
+    castFilter->Update();
 
     typedef itk::ImageFileWriter<NewImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "int" )
+  else if( pixelType == "int" )
     {
-    typedef int                             NewPixelType;
+    typedef int                                                               NewPixelType;
     typedef itk::Image<NewPixelType, GenericTransformImageNS::SpaceDimension> NewImageType;
-    typedef itk::CastImageFilter<ImageType, NewImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, NewImageType>                     CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
+    castFilter->Update();
 
     typedef itk::ImageFileWriter<NewImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "uint" )
+  else if( pixelType == "uint" )
     {
-    typedef unsigned int                  NewPixelType;
+    typedef unsigned int                                                      NewPixelType;
     typedef itk::Image<NewPixelType, GenericTransformImageNS::SpaceDimension> NewImageType;
-    typedef itk::CastImageFilter<ImageType, NewImageType> CastImageFilter;
+    typedef itk::CastImageFilter<ImageType, NewImageType>                     CastImageFilter;
     CastImageFilter::Pointer castFilter = CastImageFilter::New();
     castFilter->SetInput( TransformedImage );
-    castFilter->Update( );
-;
+    castFilter->Update();
+    ;
     typedef itk::ImageFileWriter<NewImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( castFilter->GetOutput() );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
-  else if ( pixelType == "float" )
+  else if( pixelType == "float" )
     {
     typedef itk::ImageFileWriter<ImageType> WriterType;
     WriterType::Pointer imageWriter = WriterType::New();
     imageWriter->SetFileName( outputVolume );
     imageWriter->SetInput( TransformedImage );
-    imageWriter->Update( );
+    imageWriter->Update();
     }
   else
     {
     std::cout << "ERROR:  Invalid pixelType" << std::endl;
-    exit (-1);
+    exit(-1);
     }
 
   return EXIT_SUCCESS;
@@ -440,9 +442,9 @@ int ApplyWarp(int argc, char *argv[])
 
 int main( int argc, char *argv[] )
 {
-  //HACK:  BRAINS2 Masks are currently broken
-  //The direction cosines are and the direction labels are not consistently being set.
-  //itk::Brains2MaskImageIOFactory::RegisterOneFactory();
+  // HACK:  BRAINS2 Masks are currently broken
+  // The direction cosines are and the direction labels are not consistently being set.
+  // itk::Brains2MaskImageIOFactory::RegisterOneFactory();
 
   // Apparently when you register one transform, you need to register all your
   // transforms.

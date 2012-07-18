@@ -38,7 +38,7 @@ namespace itk
  */
 template <typename TInputImage, typename TOutputImage>
 class ITK_EXPORT IccdefPreprocessor : public Object
-  {
+{
 public:
 
   /** Standard class typedefs. */
@@ -54,7 +54,7 @@ public:
   itkNewMacro(Self);
 
   /** Input Image Type. */
-  typedef TInputImage  InputImageType;
+  typedef TInputImage InputImageType;
   /** Output Image Type. */
   typedef TOutputImage OutputImageType;
 
@@ -68,12 +68,12 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int, TInputImage::ImageDimension);
 
   /** Set the atlas patient ID. */
-  itkSetStringMacro (TheMovingImageFilename);
-  itkGetStringMacro (TheMovingImageFilename);
-  
+  itkSetStringMacro(TheMovingImageFilename);
+  itkGetStringMacro(TheMovingImageFilename);
+
   /** Set the subject patient ID. */
-  itkSetStringMacro (TheFixedImageFilename);
-  itkGetStringMacro (TheFixedImageFilename);
+  itkSetStringMacro(TheFixedImageFilename);
+  itkGetStringMacro(TheFixedImageFilename);
 
   /** Deformation field value type. */
   typedef float FieldValueType;
@@ -82,11 +82,11 @@ public:
 
   /** Deformation field pixel type. */
   typedef Vector<FieldValueType,
-    itkGetStaticConstMacro(ImageDimension)> FieldPixelType;
+                 itkGetStaticConstMacro(ImageDimension)> FieldPixelType;
 
   /** Deformation field type. */
   typedef Image<FieldPixelType,
-    itkGetStaticConstMacro(ImageDimension)> TDeformationField;
+                itkGetStaticConstMacro(ImageDimension)> TDeformationField;
 
   /** Set the initial Deformation Field. */
   itkSetObjectMacro( InitialDeformationField, TDeformationField );
@@ -118,20 +118,20 @@ public:
 
   /** Get minimum value of original moving image. */
   itkGetMacro( MovingImageMinimum, InputPixelType );
-  
+
   /** Transform Types. */
-  typedef VersorRigid3DTransform<double> VersorRigid3DTransformType;
-  typedef ScaleSkewVersor3DTransform<double> ScaleSkewVersor3DTransformType;
-  typedef AffineTransform<double, itkGetStaticConstMacro(ImageDimension) > AffineTransformType;
+  typedef VersorRigid3DTransform<double>                                  VersorRigid3DTransformType;
+  typedef ScaleSkewVersor3DTransform<double>                              ScaleSkewVersor3DTransformType;
+  typedef AffineTransform<double, itkGetStaticConstMacro(ImageDimension)> AffineTransformType;
 
   /** Image dimension enumeration. */
   itkStaticConstMacro(SplineOrder, unsigned int, 3);
 
   typedef double CoordinateRepType;
   typedef typename itk::BSplineDeformableTransform<
-		CoordinateRepType,
-		itkGetStaticConstMacro(ImageDimension),
-		itkGetStaticConstMacro(SplineOrder) > BSplineTransformType;
+    CoordinateRepType,
+    itkGetStaticConstMacro(ImageDimension),
+    itkGetStaticConstMacro(SplineOrder)> BSplineTransformType;
 
   /*BOBF macros*/
   /**Set Target Mask filename*/
@@ -168,7 +168,7 @@ public:
   itkSetMacro(MedianFilterSize,  SizeType);
   itkGetMacro(MedianFilterSize,  SizeType);
 
-  itkSetStringMacro ( InitialTransformFilename );
+  itkSetStringMacro( InitialTransformFilename );
 
   /**Set Debug mode*/
   itkSetMacro(OutDebug, bool);
@@ -180,7 +180,8 @@ public:
 protected:
   IccdefPreprocessor();
   ~IccdefPreprocessor()
-                   {};
+  {
+  };
 private:
   IccdefPreprocessor( const Self & );  // purposely not implemented
   void operator=( const Self & );      // purposely not implemented
@@ -205,26 +206,26 @@ private:
 //  PixelType   m_Lower;
 //  PixelType   m_Upper;
 //  SizeType    m_Radius;
-  PixelType   m_DefaultPixelValue;
-  bool        m_OutDebug;
-  SizeType    m_MedianFilterSize;
+  PixelType m_DefaultPixelValue;
+  bool      m_OutDebug;
+  SizeType  m_MedianFilterSize;
   typedef typename OutputImageType::Pointer OutputImagePointer;
   typedef typename InputImageType::Pointer  InputImagePointer;
 
-  bool m_UseHistogramMatching;
+  bool        m_UseHistogramMatching;
   std::string m_TheMovingImageFilename;
   std::string m_TheFixedImageFilename;
   std::string m_InitialTransformFilename;
 
   /*MakeBOBF function takes in a brain image and a whole brain mask and strips
     the skull of the image.*/
-  InputImagePointer MakeBOBFImage( InputImagePointer input,
-    std::string MaskName );
-  };
+  InputImagePointer MakeBOBFImage( InputImagePointer input, std::string MaskName );
+
+};
 }   // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-  #include "IccdefPreprocessor.txx"
+#include "IccdefPreprocessor.txx"
 #endif
 
 #endif // _IccdefPreprocessor_h
