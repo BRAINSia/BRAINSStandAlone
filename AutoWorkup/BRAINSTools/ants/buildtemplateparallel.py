@@ -1,3 +1,16 @@
+#!/usr/bin/python
+#################################################################################
+## Program:   Build Template Parallel
+## Language:  Python
+##
+## Authors:  Jessica Forbes and Grace Murray, University of Iowa
+##
+##      This software is distributed WITHOUT ANY WARRANTY; without even
+##      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##      PURPOSE.
+##
+#################################################################################
+
 import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
