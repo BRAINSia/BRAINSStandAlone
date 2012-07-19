@@ -201,7 +201,7 @@ itk::AddExtraTransformRegister();
   registerImageFilter->SetMovingVolume( orientImageFilter->GetOutput() );
   try
     {
-    registerImageFilter->StartRegistration();
+    registerImageFilter->Update();
     }
   catch( itk::ExceptionObject & ex )
     {

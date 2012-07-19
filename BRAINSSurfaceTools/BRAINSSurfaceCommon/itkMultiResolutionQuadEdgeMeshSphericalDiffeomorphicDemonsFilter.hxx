@@ -369,7 +369,7 @@ MultiResolutionQuadEdgeMeshSphericalDiffeomorphicDemonsFilter< TMesh >
 
   try
     {
-    registration->StartRegistration();
+    registration->Update();
     }
   catch( ExceptionObject & e )
     {

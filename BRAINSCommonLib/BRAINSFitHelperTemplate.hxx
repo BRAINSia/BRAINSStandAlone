@@ -16,6 +16,7 @@
 #include "itkStatisticsLabelObject.h"
 #include "itkLabelImageToStatisticsLabelMapFilter.h"
 #include "itkMacro.h"
+#include "brainsBSplineDeformableTransformInitializer.h"
 
 namespace itk
 {
@@ -614,7 +615,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::FitCommonCode(
 
 template <class FixedImageType, class MovingImageType>
 void
-BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void)
+BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
 {
   typedef COMMON_MMI_METRIC_TYPE<FixedImageType, MovingImageType> MattesMutualInformationMetricType;
   unsigned currentTransformId = 0;
@@ -1147,8 +1148,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
         {
         typedef BSplineTransformType::RegionType TransformRegionType;
         typedef TransformRegionType::SizeType    TransformSizeType;
-        typedef itk::BSplineDeformableTransformInitializer
-        <BSplineTransformType, RegisterImageType> InitializerType;
+        typedef itk::brainsBSplineDeformableTransformInitializer<BSplineTransformType, RegisterImageType> InitializerType;
         InitializerType::Pointer transformInitializer = InitializerType::New();
         transformInitializer->SetTransform(initialBSplineTransform);
         transformInitializer->SetImage(m_FixedVolume);
@@ -1388,7 +1388,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::StartRegistration(void
 
         typedef BSplineTransformType::RegionType TransformRegionType;
         typedef TransformRegionType::SizeType    TransformSizeType;
-        typedef itk::BSplineDeformableTransformInitializer
+        typedef itk::brainsBSplineDeformableTransformInitializer
         <BSplineTransformType, RegisterImageType> InitializerType;
 
         const typename MaskImageType::ConstPointer tempOutputFixedVolumeROI =
@@ -1770,7 +1770,7 @@ template <class FixedImageType, class MovingImageType>
 void
 BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::GenerateData()
 {
-  this->StartRegistration();
+  this->Update();
 }
 
 } // end namespace itk

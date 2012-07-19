@@ -348,7 +348,7 @@ HistogramMatchingQuadEdgeMeshFilter< TInputMesh, TOutputMesh, THistogramMeasurem
         {
         // add sample to histogram
         measurement[0] = value;
-        histogram->IncreaseFrequency( measurement, 1 );
+        histogram->IncreaseFrequencyOfMeasurement( measurement, 1 );
         }
       ++itr;
       }

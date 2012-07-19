@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
   registerImageFilter->SetNumberOfIterations(iterations);
   try
     {
-    registerImageFilter->StartRegistration();
+    registerImageFilter->Update();
     }
   catch( itk::ExceptionObject & ex )
     {

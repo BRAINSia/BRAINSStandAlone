@@ -88,7 +88,7 @@ BRAINSFitHelper::BRAINSFitHelper() :
 }
 
 void
-BRAINSFitHelper::StartRegistration(void)
+BRAINSFitHelper::Update(void)
 {
 
   //
@@ -583,7 +583,7 @@ BRAINSFitHelper::PrintCommandLine(const bool dumpTempVolumes, const std::string 
 void
 BRAINSFitHelper::GenerateData()
 {
-  this->StartRegistration();
+  this->Update();
 }
 
 } // end namespace itk

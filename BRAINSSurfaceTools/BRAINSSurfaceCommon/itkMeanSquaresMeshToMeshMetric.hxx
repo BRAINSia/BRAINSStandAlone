@@ -147,7 +147,7 @@ MeanSquaresMeshToMeshMetric<TFixedMesh,TMovingMesh>
 
   const unsigned int ParametersDimension = this->GetNumberOfParameters();
   derivative = DerivativeType( ParametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   typedef typename InterpolatorType::PointType InterpolationPointType;
   InterpolationPointType pointToEvaluate;
@@ -178,17 +178,15 @@ MeanSquaresMeshToMeshMetric<TFixedMesh,TMovingMesh>
       pointToEvaluate.CastFrom( transformedPoint );
       const RealDataType movingValue  = this->m_Interpolator->Evaluate( pointToEvaluate );
 
-      const TransformJacobianType & jacobian =
-        this->m_Transform->GetJacobian( inputPoint ); 
+      TransformJacobianType jacobian;
+      this->m_Transform->ComputeJacobianWithRespectToParameters( inputPoint, jacobian );
 
-      
       const RealDataType fixedValue     = pointDataItr.Value();
       this->m_NumberOfPixelsCounted++;
 
       const RealDataType diff = movingValue - fixedValue; 
-  
+
       DerivativeDataType gradient;
- 
       this->m_Interpolator->EvaluateDerivative( pointToEvaluate, gradient );
 
       for(unsigned int par=0; par<ParametersDimension; par++)
@@ -253,7 +251,7 @@ MeanSquaresMeshToMeshMetric<TFixedMesh,TMovingMesh>
 
   const unsigned int ParametersDimension = this->GetNumberOfParameters();
   derivative = DerivativeType( ParametersDimension );
-  derivative.Fill( NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+  derivative.Fill( NumericTraits<typename DerivativeType::ValueType>::Zero );
 
   typedef typename InterpolatorType::PointType InterpolationPointType;
   InterpolationPointType pointToEvaluate;
@@ -284,8 +282,8 @@ MeanSquaresMeshToMeshMetric<TFixedMesh,TMovingMesh>
       pointToEvaluate.CastFrom( transformedPoint );
       const RealDataType movingValue  = this->m_Interpolator->Evaluate( pointToEvaluate );
 
-      const TransformJacobianType & jacobian =
-        this->m_Transform->GetJacobian( inputPoint ); 
+      TransformJacobianType jacobian;
+      this->m_Transform->ComputeJacobianWithRespectToParameters( inputPoint, jacobian );
 
       
       const RealDataType fixedValue     = pointDataItr.Value();
