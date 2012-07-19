@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #################################################################################
-## Program:   BRAINS (Brain Research: Analysis of Images, Networks, and Systems)
+## Program:   Build Template Parallel
 ## Language:  Python
 ##
 ## Author:  Hans J. Johnson
