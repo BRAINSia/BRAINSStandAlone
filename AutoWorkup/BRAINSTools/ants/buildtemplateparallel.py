@@ -6,7 +6,6 @@ import antsAverageAffineTransform
 import antsMultiplyImages
 import ants
 import antsWarp
-#from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 

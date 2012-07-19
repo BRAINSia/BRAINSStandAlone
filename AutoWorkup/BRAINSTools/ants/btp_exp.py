@@ -61,9 +61,6 @@ def main(argv=None):
                        help='The name of the workflow running plugin to use')
     group.add_argument('-ExperimentConfig', action="store", dest='ExperimentConfig', required=True,
                        help='The path to the file that describes the entire experiment')
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
-    #parser.add_argument('-v', action='store_false', dest='verbose', default=True,
-    #                    help='If not present, prints the locations')
     input_arguments = parser.parse_args()
 
 
@@ -73,8 +70,6 @@ def main(argv=None):
     # Experiment specific information
     session_db=expConfig.get('EXPERIMENT_DATA','SESSION_DB')
     ExperimentName=expConfig.get('EXPERIMENT_DATA','EXPERIMENTNAME')
-    ####WORKFLOW_COMPONENTS_STRING=expConfig.get('EXPERIMENT_DATA','WORKFLOW_COMPONENTS')
-    ####WORKFLOW_COMPONENTS=eval(WORKFLOW_COMPONENTS_STRING)
 
     # Platform specific information
     #     Prepend the python search paths
@@ -88,7 +83,6 @@ def main(argv=None):
     PROGRAM_PATHS.extend(os.environ['PATH'].split(':'))
     os.environ['PATH']=':'.join(PROGRAM_PATHS)
     #    Define platform specific output write paths
-    ####mountPrefix=expConfig.get(input_arguments.processingEnvironment,'MOUNTPREFIX')
     BASEOUTPUTDIR=expConfig.get(input_arguments.processingEnvironment,'BASEOUTPUTDIR')
     ExperimentBaseDirectoryPrefix=os.path.realpath(os.path.join(BASEOUTPUTDIR,ExperimentName))
     ExperimentBaseDirectoryCache=ExperimentBaseDirectoryPrefix+"_CACHE"
@@ -97,52 +91,9 @@ def main(argv=None):
         os.makedirs(ExperimentBaseDirectoryCache)
     if not os.path.exists(ExperimentBaseDirectoryResults):
         os.makedirs(ExperimentBaseDirectoryResults)
-    #    Define workup common reference data sets
-    #    The ATLAS needs to be copied to the ExperimentBaseDirectoryPrefix
-    #    The ATLAS pathing must stay constant
-    ####ATLASPATH=expConfig.get(input_arguments.processingEnvironment,'ATLASPATH')
-    ####if not os.path.exists(ATLASPATH):
-    ####    print("ERROR:  Invalid Path for Atlas: {0}".format(ATLASPATH))
-    ####    sys.exit(-1)
-    ####CACHE_ATLASPATH=os.path.realpath(os.path.join(ExperimentBaseDirectoryCache,'Atlas'))
-    ####from distutils.dir_util import copy_tree
-    ####if not os.path.exists(CACHE_ATLASPATH):
-    ####    print("Copying a reference of the atlas to the experiment cache directory: {0}".format(CACHE_ATLASPATH))
-    ####    copy_tree(ATLASPATH,CACHE_ATLASPATH,preserve_mode=1,preserve_times=1)
-    ####    ## Now generate the xml file with the correct pathing
-    ####    file_replace(os.path.join(ATLASPATH,'AtlasPVDefinition.xml.in'),os.path.join(CACHE_ATLASPATH,'AtlasPVDefinition.xml'),"@ATLAS_DIRECTORY@",CACHE_ATLASPATH)
-    ####else:
-    ####    print("Atlas already exists in experiment cache directory: {0}".format(CACHE_ATLASPATH))
-    #  Just to be safe, copy the model file as well
-    ####BCDMODELPATH=expConfig.get(input_arguments.processingEnvironment,'BCDMODELPATH')
-    ####CACHE_BCDMODELPATH=os.path.join(ExperimentBaseDirectoryCache,os.path.basename(BCDMODELPATH))
-    ####from distutils.file_util import copy_file
-    ####for BCDModelFiles in ['LLSModel-2ndVersion.hdf5','T1-2ndVersion.mdl']:
-    ####    orig=os.path.join(BCDMODELPATH,BCDModelFiles)
-    ####    new=os.path.join(CACHE_BCDMODELPATH,BCDModelFiles)
-    ####    if not os.path.exists(CACHE_BCDMODELPATH):
-    ####        os.mkdir(CACHE_BCDMODELPATH)
-    ####    if not os.path.exists(new):
-    ####        print("Copying BCD Model file to cache directory: {0}".format(new))
-    ####        copy_file(  orig, new,preserve_mode=1, preserve_times=1)
-    ####    else:
-    ####        print("BCD Model exists in cache directory: {0}".format(new))
 
-
-    ####CUSTOM_ENVIRONMENT=expConfig.get(input_arguments.processingEnvironment,'CUSTOM_ENVIRONMENT')
-    ####CUSTOM_ENVIRONMENT=eval(CUSTOM_ENVIRONMENT)
-    ###### Set custom environmental variables so that subproceses work properly (i.e. for Freesurfer)
-    #####print CUSTOM_ENVIRONMENT
-    ####for key,value in CUSTOM_ENVIRONMENT.items():
-    ####    #print "SETTING: ", key, value
-    ####    os.putenv(key,value)
-    ####    os.environ[key]=value
     print os.environ
     #sys.exit(-1)
-
-    ## If freesurfer is requested, then ensure that a sane environment is available
-    ####if 'FREESURFER' in WORKFLOW_COMPONENTS:
-    ####    print "FREESURFER NEEDS TO CHECK FOR SANE ENVIRONMENT HERE."
 
     CLUSTER_QUEUE=expConfig.get(input_arguments.processingEnvironment,'CLUSTER_QUEUE')
 
@@ -178,7 +129,6 @@ def main(argv=None):
 
     ## Create the shell wrapper script for ensuring that all jobs running on remote hosts from SGE
     #  have the same environment as the job submission host.
-    #JOB_SCRIPT=get_global_sge_script(sys.path,PROGRAM_PATHS,CUSTOM_ENVIRONMENT)
     JOB_SCRIPT=get_global_sge_script(sys.path,PROGRAM_PATHS)
     print JOB_SCRIPT
 
