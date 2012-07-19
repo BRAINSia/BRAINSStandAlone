@@ -181,7 +181,7 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     output_inverse_warped_image = traits.Either(traits.Bool, File(), hash_files=False, requires=['output_warped_image'], desc="")
 
 class antsRegistrationOutputSpec(TraitedSpec):
-    #affine_transform = File(exists=True, desc='Affine transform file')
+    affine_transform = File(exists=True, desc='Affine transform file')
     warp_transform = File(exists=True, desc='Warp transform')
     inverse_warp_transform = File(exists=True, desc='Inverse warp transform')
     warped_image = File(exists=True, desc='Warped image')
@@ -227,8 +227,9 @@ class antsRegistration(CommandLine):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1Warp.nii.gz')
-        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1InverseWarp.nii.gz')
+        outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Affine.mat')
+        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0Warp.nii.gz')
+        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0InverseWarp.nii.gz')
         if isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
             outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_image)
         if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
