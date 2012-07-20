@@ -39,11 +39,11 @@ def mainWF(ExperimentBaseDirectoryCache):
     BeginANTS.inputs.metric = 'CC'
     BeginANTS.inputs.metric_weight = 1
     BeginANTS.inputs.radius = 5
-    BeginANTS.inputs.transform = 'Affine[0.25]'
-    BeginANTS.inputs.number_of_iterations = [1, 1, 1]
+    BeginANTS.inputs.transform = ["Affine[1]","SyN[0.25,3.0,0.0]"]
+    BeginANTS.inputs.number_of_iterations = [[10, 10, 10], [50, 35, 15]]
     BeginANTS.inputs.use_histogram_matching = True
-    BeginANTS.inputs.shrink_factors = [1,1,1]
-    BeginANTS.inputs.smoothing_sigmas = [0,0,0]
+    BeginANTS.inputs.shrink_factors = [[3,2,1],[3,2,1]]
+    BeginANTS.inputs.smoothing_sigmas = [[0,0,0],[0,0,0]]
     #BeginANTS.inputs.mi_option = [32, 16000]
     #BeginANTS.inputs.regularization = 'Gauss'
     #BeginANTS.inputs.regularization_gradient_field_sigma = 3

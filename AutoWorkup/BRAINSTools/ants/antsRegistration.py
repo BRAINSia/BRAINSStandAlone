@@ -151,9 +151,9 @@ from nipype.utils.filemanip import split_filename
 
 #class antsRegistrationInputSpec(ANTSCommandInputSpec):
 class antsRegistrationInputSpec(CommandLineInputSpec):
-    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=False, desc='image dimension (2 or 3)')
+    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
     fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
-    moving_image = InputMultiPath(File(exists=True), argstr='%s', mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+    moving_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
 
     metric = traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes", mandatory=True, desc="")
     # TODO: Metric has not yet been implemented in the executable
@@ -166,13 +166,13 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     moving_image_mask = File(argstr='%s', mandatory=False, desc='', requires=['fixed_image_mask'], exists=True)
     initial_moving_transform = File(argstr='%s', desc='', exists=True)
     invert_initial_moving_transform = traits.Bool(desc='', requires=["initial_moving_transform"])
-    transform = traits.Str(argstr='--transform "%s"', mandatory = True)
+    transform = traits.List(traits.Str(),argstr='%s', mandatory = True)
 
     use_estimate_learning_rate_once = traits.Bool(argstr="--use-estimate-learning-rate-once")
-    use_histogram_matching = traits.Bool(argstr="--use-histogram-matching")
-    number_of_iterations = traits.List(traits.Int(), argstr="%s")
-    smoothing_sigmas = traits.List(traits.Int(), argstr="--smoothing-sigmas %s", sep='x')
-    shrink_factors = traits.List(traits.Int(), argstr="--shrink-factors %s", sep='x')
+    use_histogram_matching = traits.Bool(argstr='%s', default=True, usedefault=True)
+    number_of_iterations = traits.List(traits.List(traits.Int()))
+    smoothing_sigmas = traits.List(traits.List(traits.Int()))
+    shrink_factors = traits.List(traits.List(traits.Int()))
 
     convergence_threshold = traits.Float(1e-6,requires=['number_of_iterations'],usedefault=True)
     convergence_window_size = traits.Int(10,requires=['number_of_iterations', 'convergence_threshold'],usedefault=True)
@@ -198,24 +198,32 @@ class antsRegistration(CommandLine):
     input_spec = antsRegistrationInputSpec
     output_spec = antsRegistrationOutputSpec
 
+    def formatTransform(self):
+        retval = []
+        for ii in range(len(self.inputs.transform)):
+            retval.append('--metric "%s[%s,%s,%d,%d]"' % (self.inputs.metric, self.inputs.fixed_image[0], self.inputs.moving_image[0],self.inputs.metric_weight,self.inputs.radius))
+            retval.append('--transform "%s"' % self.inputs.transform[ii])
+            retval.append(self.formatConvergence(ii))
+            retval.append('--shrink-factors %s' % "x".join([str(i) for i in self.inputs.shrink_factors[ii]]))
+            retval.append('--smoothing-sigmas %s' % "x".join([str(i) for i in self.inputs.smoothing_sigmas[ii]]))
+        return " ".join(retval)
+
+    def formatConvergence(self, ii):
+        convergence_iter = "x".join([str(i) for i in self.inputs.number_of_iterations[ii]])
+        return '--convergence "[%s,%g,%d]"' % (convergence_iter,
+                                            self.inputs.convergence_threshold,
+                                            self.inputs.convergence_window_size)
+
     def _format_arg(self, opt, spec, val):
-        if opt == 'moving_image':
-            retval = []
-            for ii in range(len(self.inputs.moving_image)):
-                retval.append('--metric "%s[%s,%s,%d,%d]"' % (self.inputs.metric, self.inputs.fixed_image[ii], self.inputs.moving_image[ii],self.inputs.metric_weight,self.inputs.radius))
-            return " ".join(retval)
-        elif opt == 'moving_image_mask':
+        if opt == 'moving_image_mask':
             return '--masks "[%s,%s]"' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
+        elif opt == 'transform':
+            return self.formatTransform()
         elif opt == 'initial_moving_transform':
             if isdefined(self.inputs.invert_initial_moving_transform) and self.inputs.invert_initial_moving_transform:
                 return '--initial-moving-transform "[%s,1]"' % self.inputs.initial_moving_transform
             else:
                 return '--initial-moving-transform "[%s,0]"' % self.inputs.initial_moving_transform
-        elif opt == "number_of_iterations":
-            convergence_iter = "x".join([str(i) for i in self.inputs.number_of_iterations])
-            return '--convergence "[%s,%g,%d]"' % (convergence_iter,
-                                                self.inputs.convergence_threshold,
-                                                self.inputs.convergence_window_size)
         elif opt == 'output_transform_prefix':
             if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
                 return '--output "[%s,%s,%s]"' % (self.inputs.output_transform_prefix, self.inputs.output_warped_image, self.inputs.output_inverse_warped_image )
@@ -223,13 +231,18 @@ class antsRegistration(CommandLine):
                 return '--output "[%s,%s]"'     % (self.inputs.output_transform_prefix, self.inputs.output_warped_image )
             else:
                 return '--output %s' % self.inputs.output_transform_prefix
+        elif opt == 'use_histogram_matching':
+            if self.inputs.use_histogram_matching:
+                return '--use-histogram-matching 1'
+            else:
+                return '--use-histogram-matching 0'
         return super(antsRegistration, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + 'Affine.mat')
-        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0Warp.nii.gz')
-        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0InverseWarp.nii.gz')
+        outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0Affine.mat')
+        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1Warp.nii.gz')
+        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1InverseWarp.nii.gz')
         if isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
             outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_image)
         if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
