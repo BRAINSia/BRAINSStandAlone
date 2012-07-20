@@ -1,24 +1,12 @@
-#!/usr/bin/python
-#################################################################################
-## Program:   Build Template Parallel
-## Language:  Python
-##
-## Authors:  Jessica Forbes and Grace Murray, University of Iowa
-##
-##      This software is distributed WITHOUT ANY WARRANTY; without even
-##      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-##      PURPOSE.
-##
-#################################################################################
-
 import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
 import antsAverageImages
 import antsAverageAffineTransform
 import antsMultiplyImages
-import ants
+import antsRegistration
 import antsWarp
+#from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 
@@ -45,21 +33,22 @@ def mainWF(ExperimentBaseDirectoryCache):
     inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec')
     outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec')
 
-    BeginANTS=pe.MapNode(interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
+    BeginANTS=pe.MapNode(interface=antsRegistration.antsRegistration(), name = 'BeginANTS', iterfield=['moving_image'])
     BeginANTS.inputs.dimension = 3
     BeginANTS.inputs.output_transform_prefix = 'MY'
-    BeginANTS.inputs.metric = ['CC']
-    BeginANTS.inputs.metric_weight = [1.0]
-    BeginANTS.inputs.radius = [5]
-    BeginANTS.inputs.transformation_model = 'SyN'
-    BeginANTS.inputs.gradient_step_length = 0.25
-    BeginANTS.inputs.number_of_iterations = [50, 35, 15]
+    BeginANTS.inputs.metric = 'CC'
+    BeginANTS.inputs.metric_weight = 1
+    BeginANTS.inputs.radius = 5
+    BeginANTS.inputs.transform = 'Affine[0.25]'
+    BeginANTS.inputs.number_of_iterations = [1, 1, 1]
     BeginANTS.inputs.use_histogram_matching = True
-    BeginANTS.inputs.mi_option = [32, 16000]
-    BeginANTS.inputs.regularization = 'Gauss'
-    BeginANTS.inputs.regularization_gradient_field_sigma = 3
-    BeginANTS.inputs.regularization_deformation_field_sigma = 0
-    BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
+    BeginANTS.inputs.shrink_factors = [1,1,1]
+    BeginANTS.inputs.smoothing_sigmas = [0,0,0]
+    #BeginANTS.inputs.mi_option = [32, 16000]
+    #BeginANTS.inputs.regularization = 'Gauss'
+    #BeginANTS.inputs.regularization_gradient_field_sigma = 3
+    #BeginANTS.inputs.regularization_deformation_field_sigma = 0
+    #BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
 
     wimtdeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
 
