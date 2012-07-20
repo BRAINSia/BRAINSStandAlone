@@ -1,13 +1,28 @@
+#!/usr/bin/python
+#################################################################################
+## Program:   Build Template Parallel Driver
+## Language:  Python
+##
+## Authors:  Jessica Forbes and Grace Murray, University of Iowa
+##
+##      This software is distributed WITHOUT ANY WARRANTY; without even
+##      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##      PURPOSE.
+##
+#################################################################################
+
 from buildtemplateparallel import initAvgWF, mainWF
 import nipype.pipeline.engine as pe
 import argparse
 import nipype.interfaces.utility as util
 import textwrap
+import os
+import sys
 
-def BuildTemplateParallelWorkFlow(input_arguments):
+def BuildTemplateParallelWorkFlow(ExperimentBaseDirectoryCache, ExperimentBaseDirectoryResults, subject_data_file):
 
-    ExperimentBaseDirectoryCache = '/scratch/antsbuildtemplate/TEST_CACHE4'
-
+    print "Building Pipeline"
+    ########### PIPELINE INITIALIZATION #############
     btp = pe.Workflow( name='buildtemplateparallel')
     btp.config['execution'] = {
                                          'plugin':'Linear',
@@ -33,8 +48,14 @@ def BuildTemplateParallelWorkFlow(input_arguments):
 
     myInitAvgWF = initAvgWF(ExperimentBaseDirectoryCache)
     myMainWF = mainWF(ExperimentBaseDirectoryCache)
+
+    Handle = open(subject_data_file, 'r')
+    image_string = Handle.read()
+    Handle.close()
+    image_list = image_string.strip().split('\n')
+
     infosource = pe.Node(interface=util.IdentityInterface(fields=['images']), name='infoSource' )
-    infosource.inputs.images = input_arguments.inputVolumes
+    infosource.inputs.images = image_list
 
     btp.connect(infosource, 'images', myInitAvgWF, 'InputSpec.images')
     btp.connect(infosource, 'images', myMainWF, 'InputSpec.images')
@@ -44,61 +65,4 @@ def BuildTemplateParallelWorkFlow(input_arguments):
     btp.connect(infosource, 'images', secondRun, 'InputSpec.images')
     btp.connect(myMainWF, 'OutputSpec.template', secondRun, 'InputSpec.fixed_image')
 
-    btp.write_graph(graph2use='hierarchical')
-    #btp.write_graph(graph2use='exec')
-
-    SGEFlavor='SGE'
-    if input_arguments.wfrun == 'helium_all.q':
-        btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
-    if input_arguments.wfrun == 'helium_all.q_graph':
-        SGEFlavor='SGEGraph' #Use the SGEGraph processing
-        btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
-    elif input_arguments.wfrun == 'ipl_OSX':
-        btp.write_graph()
-        print "Running On ipl_OSX"
-        btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
-    elif input_arguments.wfrun == 'local_4':
-        btp.write_graph()
-        print "Running with 4 parallel processes on local machine"
-        btp.run(plugin='MultiProc', plugin_args={'n_procs' : 4})
-    elif input_arguments.wfrun == 'local_12':
-        btp.write_graph()
-        print "Running with 12 parallel processes on local machine"
-        btp.run(plugin='MultiProc', plugin_args={'n_procs' : 12})
-    elif input_arguments.wfrun == 'local':
-        try:
-            btp.write_graph()
-        except:
-            pass
-        print "Running sequentially on local machine"
-        btp.run()
-    else:
-        print "You must specify the run environment type. [helium_all.q,ipl_OSX,local_4,local_12,local]"
-        print input_arguments.wfrun
-        sys.exit(-1)
-
-
-if __name__ == "__main__":
-    # Create and parse input arguments
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description=textwrap.dedent("""
-  This program is used to generate a template image from initial images using
-  the ANTS build template parallel scheme. \n
-
-Common Usage:
-  $ python buildTemplateParallelDriver.py -wfrun local_4
-  -i
-  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/01_T1_half.nii.gz
-  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/02_T1_half.nii.gz
-  /hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/03_T1_half.nii.gz
- \n
-"""))
-    #parser.add_argument('-o', '--outputVolume', dest='outputVolume', help='The ANTS template output volume.')
-    parser.add_argument('-i', '--inputVolumes', nargs='*', dest='inputVolumes', help='The ANTS template input volumes.')
-    parser.add_argument('-wfrun', action="store", dest='wfrun', required=True,
-                       help='The name of the workflow running plugin to use')
-    input_arguments = parser.parse_args()
-    BuildTemplateParallelWorkFlow(input_arguments)
+    return btp
