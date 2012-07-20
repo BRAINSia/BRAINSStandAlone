@@ -96,7 +96,6 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 {
   // file pointer for opening the setup file
   // /////////////////////////////////////////////////////////////////////////////////////////////
-  this->m_Debug = this->m_Debug;
   LMC::globalverboseFlag = this->m_Verbose;
   globalImagedebugLevel = this->m_WritedebuggingImagesLevel;
 
