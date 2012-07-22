@@ -1,7 +1,7 @@
-#ifndef __itkMultiThreadIterativeInverseDeformationFieldImageFilter_txx
-#define __itkMultiThreadIterativeInverseDeformationFieldImageFilter_txx
+#ifndef __itkMultiThreadIterativeInverseDisplacementFieldImageFilter_txx
+#define __itkMultiThreadIterativeInverseDisplacementFieldImageFilter_txx
 
-#include "itkMultiThreadIterativeInverseDeformationFieldImageFilter.h"
+#include "itkMultiThreadIterativeInverseDisplacementFieldImageFilter.h"
 #include "itkProgressReporter.h"
 
 namespace itk
@@ -9,9 +9,9 @@ namespace itk
 // ----------------------------------------------------------------------------
 // Constructor
 template <class TInputImage, class TOutputImage>
-MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage,
+MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage,
                                                        TOutputImage>::
-MultiThreadIterativeInverseDeformationFieldImageFilter()
+MultiThreadIterativeInverseDisplacementFieldImageFilter()
 {
   m_NumberOfIterations = 5;
   m_StopValue = 0;
@@ -20,7 +20,7 @@ MultiThreadIterativeInverseDeformationFieldImageFilter()
 
 // ----------------------------------------------------------------------------
 template <class TInputImage, class TOutputImage>
-void MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage>
+void MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage, TOutputImage>
 ::GenerateData()
 {
 
@@ -72,7 +72,7 @@ void MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutput
   vectorWarper->SetOutputOrigin(inputPtr->GetOrigin() );
   vectorWarper->SetOutputSpacing(inputPtr->GetSpacing() );
   vectorWarper->SetOutputDirection(inputPtr->GetDirection() );
-  vectorWarper->SetDeformationField(negField);
+  vectorWarper->SetDisplacementField(negField);
   vectorWarper->GraftOutput(outputPtr);
   vectorWarper->UpdateLargestPossibleRegion();
 
@@ -240,7 +240,7 @@ void MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutput
 
 template <class TInputImage, class TOutputImage>
 void
-MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage>
+MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage, TOutputImage>
 ::ComputeInverse(InputImageConstPointer& inputPtr, OutputImagePointer& outputPtr,
                  FieldInterpolatorPointer& inputFieldInterpolator,
                  double spacing)
@@ -259,7 +259,7 @@ MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage
 
 template <class TInputImage, class TOutputImage>
 ITK_THREAD_RETURN_TYPE
-MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage>
+MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage, TOutputImage>
 ::ComputeInverseThreaderCallback(void * arg)
 {
   ThreadStruct * str;
@@ -288,7 +288,7 @@ MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage
 
 template <class TInputImage, class TOutputImage>
 void
-MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage>
+MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage, TOutputImage>
 ::ThreadedComputeInverse(InputImageConstPointer& inputPtr, OutputImagePointer& outputPtr,
                          FieldInterpolatorPointer& inputFieldInterpolator, double spacing,
                          const ThreadRegionType & regionToProcess,
@@ -423,7 +423,7 @@ MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage
 
 // ----------------------------------------------------------------------------
 template <class TInputImage, class TOutputImage>
-void MultiThreadIterativeInverseDeformationFieldImageFilter<TInputImage, TOutputImage>
+void MultiThreadIterativeInverseDisplacementFieldImageFilter<TInputImage, TOutputImage>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
 

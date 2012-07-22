@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef __itkVectorFFTWComplexConjugateToRealImageFilter_h
-#define __itkVectorFFTWComplexConjugateToRealImageFilter_h
+#ifndef __itkVectorFFTWHalfHermitianToRealInverseFFTImageFilter_h
+#define __itkVectorFFTWHalfHermitianToRealInverseFFTImageFilter_h
 
 #include <itkImageToImageFilter.h>
 #include <itkImage.h>
@@ -24,7 +24,7 @@ namespace itk
 {
 
 template <typename TPixel, unsigned int VDimension = 3>
-class VectorFFTWComplexConjugateToRealImageFilter :
+class VectorFFTWHalfHermitianToRealInverseFFTImageFilter :
   public ImageToImageFilter<Image<Vector<std::complex<typename TPixel::ValueType>, 3>, VDimension>,
                             Image<TPixel, VDimension> >
 {
@@ -33,7 +33,7 @@ public:
   typedef Image<Vector<std::complex<typename TPixel::ValueType>, 3>, VDimension> TInputImageType;
   typedef Image<TPixel, VDimension>                                              TOutputImageType;
 
-  typedef VectorFFTWComplexConjugateToRealImageFilter           Self;
+  typedef VectorFFTWHalfHermitianToRealInverseFFTImageFilter           Self;
   typedef ImageToImageFilter<TInputImageType, TOutputImageType> Superclass;
   typedef SmartPointer<Self>                                    Pointer;
   typedef SmartPointer<const Self>                              ConstPointer;
@@ -43,7 +43,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(VectorFFTWComplexConjugateToRealImageFilter,
+  itkTypeMacro(VectorFFTWHalfHermitianToRealInverseFFTImageFilter,
                ImageToImageFilter);
 
   /** Image type typedef support. */
@@ -80,7 +80,7 @@ public:
   }
 
 protected:
-  VectorFFTWComplexConjugateToRealImageFilter() : m_PlanComputed(false),
+  VectorFFTWHalfHermitianToRealInverseFFTImageFilter() : m_PlanComputed(false),
     m_LastImageSize(0),
     m_InputBuffer(0),
     m_OutputBuffer(0),
@@ -88,7 +88,7 @@ protected:
   {
   }
 
-  virtual ~VectorFFTWComplexConjugateToRealImageFilter()
+  virtual ~VectorFFTWHalfHermitianToRealInverseFFTImageFilter()
   {
     if( m_PlanComputed )
       {
@@ -99,7 +99,7 @@ protected:
   }
 
 private:
-  VectorFFTWComplexConjugateToRealImageFilter(const Self &); // purposely not implemented
+  VectorFFTWHalfHermitianToRealInverseFFTImageFilter(const Self &); // purposely not implemented
   void operator=(const Self &);                              // purposely not implemented
 
   bool         m_PlanComputed;
@@ -114,7 +114,7 @@ private:
 } // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkVectorFFTWComplexConjugateToRealImageFilter.txx"
+#include "itkVectorFFTWHalfHermitianToRealInverseFFTImageFilter.hxx"
 #endif
 
-#endif // __itkVectorFFTWComplexConjugateToRealImageFilter_h
+#endif // __itkVectorFFTWHalfHermitianToRealInverseFFTImageFilter_h

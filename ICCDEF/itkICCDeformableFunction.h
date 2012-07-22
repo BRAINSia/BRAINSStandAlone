@@ -10,8 +10,8 @@
 #define __itkICCDeformableFunction_h
 
 #include "itkPDEDeformableRegistrationFunction.h"
-#include "itkVectorFFTWRealToComplexConjugateImageFilter.h"
-#include "itkVectorFFTWComplexConjugateToRealImageFilter.h"
+#include "itkVectorFFTWRealToHalfHermitianForwardFFTImageFilter.h"
+#include "itkVectorFFTWHalfHermitianToRealInverseFFTImageFilter.h"
 #include "itkWarpImageFilter.h"
 #include "itkDerivativeImageFilter.h"
 #include "itkSpatialObject.h"
@@ -22,16 +22,16 @@
 namespace itk
 {
 
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 class ITK_EXPORT ICCDeformableFunction :
   public PDEDeformableRegistrationFunction<TFixedImage,
-                                           TMovingImage, TDeformationField>
+                                           TMovingImage, TDisplacementField>
 {
 public:
   /** Standard class typedefs. */
   typedef ICCDeformableFunction Self;
   typedef PDEDeformableRegistrationFunction<
-    TFixedImage, TMovingImage, TDeformationField>    Superclass;
+    TFixedImage, TMovingImage, TDisplacementField>    Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
 
@@ -57,9 +57,9 @@ public:
   typedef typename FixedImageType::PixelType     FixedPixelType;
 
   /** Deformation field type. */
-  typedef typename Superclass::DeformationFieldType DeformationFieldType;
-  typedef typename Superclass::DeformationFieldTypePointer
-  DeformationFieldTypePointer;
+  typedef typename Superclass::DisplacementFieldType DisplacementFieldType;
+  typedef typename Superclass::DisplacementFieldTypePointer
+  DisplacementFieldTypePointer;
 
   /** Inherit some enums from the superclass. */
   itkStaticConstMacro(ImageDimension, unsigned int, Superclass::ImageDimension);
@@ -87,7 +87,7 @@ public:
   /** Warper type */
   typedef WarpImageFilter<
     MovingImageType,
-    MovingImageType, DeformationFieldType>           WarperMovingType;
+    MovingImageType, DisplacementFieldType>           WarperMovingType;
   typedef typename WarperMovingType::Pointer WarperMovingPointer;
 
   typedef unsigned char                                                MaskPixelType;
@@ -95,39 +95,39 @@ public:
   typedef typename MaskImageType::Pointer                              MaskImagePointer;
 
   typedef WarpImageFilter<MaskImageType,
-                          MaskImageType, DeformationFieldType>           MaskWarperType;
+                          MaskImageType, DisplacementFieldType>           MaskWarperType;
   typedef typename MaskWarperType::Pointer MaskWarperPointer;
 
   typedef std::complex<MovingPixelType>                                                    ComplexPixelType;
-  typedef itk::Vector<ComplexPixelType, itkGetStaticConstMacro(ImageDimension)>            DeformationFieldFFTPixelType;
+  typedef itk::Vector<ComplexPixelType, itkGetStaticConstMacro(ImageDimension)>            DisplacementFieldFFTPixelType;
   typedef itk::Image<ComplexPixelType, itkGetStaticConstMacro(ImageDimension)>             ComplexImageType;
-  typedef itk::Image<DeformationFieldFFTPixelType, itkGetStaticConstMacro(ImageDimension)> DeformationFieldFFTType;
+  typedef itk::Image<DisplacementFieldFFTPixelType, itkGetStaticConstMacro(ImageDimension)> DisplacementFieldFFTType;
 
-  typedef typename DeformationFieldFFTType::Pointer DeformationFieldFFTPointer;
+  typedef typename DisplacementFieldFFTType::Pointer DisplacementFieldFFTPointer;
   typedef typename ComplexImageType::Pointer        ComplexImagePointer;
 
-  typedef VectorFFTWRealToComplexConjugateImageFilter<typename TDeformationField::PixelType,
+  typedef VectorFFTWRealToHalfHermitianForwardFFTImageFilter<typename TDisplacementField::PixelType,
                                                       itkGetStaticConstMacro(ImageDimension)> FFTWRealToComplexType;
-  typedef VectorFFTWComplexConjugateToRealImageFilter<typename TDeformationField::PixelType,
+  typedef VectorFFTWHalfHermitianToRealInverseFFTImageFilter<typename TDisplacementField::PixelType,
                                                       itkGetStaticConstMacro(ImageDimension)> FFTWComplexToRealType;
 
   typedef SubtractImageFilter<FixedImageType, FixedImageType, FixedImageType> SubtractImageType;
   typedef DerivativeImageFilter<MovingImageType, MovingImageType>             DerivativeType;
-  typedef ImageRegionIterator<DeformationFieldType>                           IterationDeformationFieldType;
+  typedef ImageRegionIterator<DisplacementFieldType>                           IterationDisplacementFieldType;
   typedef ImageRegionIterator<FixedImageType>                                 IterationImageType;
   typedef ImageRegionConstIterator<FixedImageType>                            ConstIterationImageType;
-//  typedef SubtractImageFilter<DeformationFieldType,  DeformationFieldType, DeformationFieldType>
-// SubtractDeformationFieldType;
-//  typedef SubtractImageFilter<DeformationFieldFFTType, DeformationFieldFFTType, DeformationFieldFFTType>
-// SubtractDeformationFieldFFTType;
-//  typedef MultiplyByConstantImageFilter<DeformationFieldType, float, DeformationFieldType>
+//  typedef SubtractImageFilter<DisplacementFieldType,  DisplacementFieldType, DisplacementFieldType>
+// SubtractDisplacementFieldType;
+//  typedef SubtractImageFilter<DisplacementFieldFFTType, DisplacementFieldFFTType, DisplacementFieldFFTType>
+// SubtractDisplacementFieldFFTType;
+//  typedef MultiplyByConstantImageFilter<DisplacementFieldType, float, DisplacementFieldType>
 // MultiplyByConstantImageType;
-//  typedef MultiplyByConstantImageFilter<DeformationFieldFFTType, float, DeformationFieldFFTType>
+//  typedef MultiplyByConstantImageFilter<DisplacementFieldFFTType, float, DisplacementFieldFFTType>
 // MultiplyByConstantFFTType;
-  typedef AddImageFilter<DeformationFieldType, DeformationFieldType, DeformationFieldType> AddImageType;
+  typedef AddImageFilter<DisplacementFieldType, DisplacementFieldType, DisplacementFieldType> AddImageType;
   typedef Image<float, itkGetStaticConstMacro(ImageDimension)>                             FloatImageType;
 
-  // typename TDeformationField::PixelType
+  // typename TDisplacementField::PixelType
   /** Covariant vector type. */
   typedef CovariantVector<double, itkGetStaticConstMacro(ImageDimension)> CovariantVectorType;
 
@@ -270,22 +270,22 @@ public:
     return m_UseGradientType;
   }
 
-  DeformationFieldTypePointer GetInverseUpdateBuffer()
+  DisplacementFieldTypePointer GetInverseUpdateBuffer()
   {
     return m_InverseUpdateBuffer;
   }
 
-  DeformationFieldTypePointer GetUpdateBuffer()
+  DisplacementFieldTypePointer GetUpdateBuffer()
   {
     return m_UpdateBuffer;
   }
 
-  DeformationFieldFFTPointer GetCoefficient()
+  DisplacementFieldFFTPointer GetCoefficient()
   {
     return m_Coefficient;
   }
 
-  void SetCoefficient(DeformationFieldFFTPointer& coeff)
+  void SetCoefficient(DisplacementFieldFFTPointer& coeff)
   {
     m_Coefficient = coeff;
   }
@@ -449,9 +449,9 @@ private:
   mutable unsigned long       m_NumberOfPixelsProcessed;
   mutable double              m_RMSChange;
   mutable double              m_SumOfSquaredChange;
-  DeformationFieldTypePointer m_InverseUpdateBuffer;
-  DeformationFieldTypePointer m_UpdateBuffer;
-  DeformationFieldFFTPointer  m_Coefficient;
+  DisplacementFieldTypePointer m_InverseUpdateBuffer;
+  DisplacementFieldTypePointer m_UpdateBuffer;
+  DisplacementFieldFFTPointer  m_Coefficient;
 
   float               m_SimilarityWeight;
   float               m_LandmarkWeight;
@@ -474,7 +474,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkICCDeformableFunction.txx"
+#include "itkICCDeformableFunction.hxx"
 #endif
 
 #endif

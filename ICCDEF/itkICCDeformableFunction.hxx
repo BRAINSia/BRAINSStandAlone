@@ -17,9 +17,9 @@
 #include "itkICCDeformableFunction.h"
 #include "itkExceptionObject.h"
 #include "vnl/vnl_math.h"
-// #include "itkIterativeInverseDeformationFieldImageFilter.h"
-// #include "itkIterativeInverseDeformationFieldImageFilter1.h"
-#include "itkICCIterativeInverseDeformationFieldImageFilter.h"
+// #include "itkIterativeInverseDisplacementFieldImageFilter.h"
+// #include "itkIterativeInverseDisplacementFieldImageFilter1.h"
+#include "itkICCIterativeInverseDisplacementFieldImageFilter.h"
 #include "itkSubtractImageFilter.h"
 #include "itkImageToVectorImageFilter.h"
 #include "itkMultiplyImageFilter.h"
@@ -41,8 +41,8 @@ namespace itk
 /**
  * Default constructor
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::ICCDeformableFunction()
 {
 
@@ -87,9 +87,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
   m_RMSChange = NumericTraits<double>::max();
   m_SumOfSquaredChange = 0.0;
 
-  m_UpdateBuffer = DeformationFieldType::New();
-  m_InverseUpdateBuffer = DeformationFieldType::New();
-  m_Coefficient = DeformationFieldFFTType::New();
+  m_UpdateBuffer = DisplacementFieldType::New();
+  m_InverseUpdateBuffer = DisplacementFieldType::New();
+  m_Coefficient = DisplacementFieldFFTType::New();
   m_WarpedMaskImage = MaskImageType::New();
 
   m_SimilarityWeight = 1.0;
@@ -106,9 +106,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 /*
  * Standard "PrintSelf" method.
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 void
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
@@ -141,9 +141,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 /**
  *
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 void
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::SetIntensityDifferenceThreshold(double threshold)
 {
   m_IntensityDifferenceThreshold = threshold;
@@ -152,9 +152,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 /**
  *
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 double
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::GetIntensityDifferenceThreshold() const
 {
   return m_IntensityDifferenceThreshold;
@@ -163,9 +163,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 /**
  * Set the function state values before each iteration
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 void
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::InitializeIteration()
 {
 #if 1
@@ -193,8 +193,8 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
     m_MovingMaskImageWarper->SetOutputSpacing( this->m_FixedImageSpacing );
     m_MovingMaskImageWarper->SetOutputDirection( this->m_FixedImageDirection );
     m_MovingMaskImageWarper->SetInput(dynamic_cast<ImageMaskSpatialObjectType *>(m_MovingMask.GetPointer() )->GetImage() );
-    m_MovingMaskImageWarper->SetDeformationField( this->GetDeformationField() );
-    m_MovingMaskImageWarper->GetOutput()->SetRequestedRegion( this->GetDeformationField()->GetRequestedRegion() );
+    m_MovingMaskImageWarper->SetDisplacementField( this->GetDisplacementField() );
+    m_MovingMaskImageWarper->GetOutput()->SetRequestedRegion( this->GetDisplacementField()->GetRequestedRegion() );
     m_MovingMaskImageWarper->Update();
     m_WarpedMaskImage = m_MovingMaskImageWarper->GetOutput();
     // itkUtil::WriteImage<MaskImageType>(m_WarpedMaskImage, "deformedMask.nii.gz");
@@ -208,8 +208,8 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
   m_MovingImageWarper->SetOutputSpacing( this->m_FixedImageSpacing );
   m_MovingImageWarper->SetOutputDirection( this->m_FixedImageDirection );
   m_MovingImageWarper->SetInput( this->GetMovingImage() );
-  m_MovingImageWarper->SetDeformationField( this->GetDeformationField() );
-  m_MovingImageWarper->GetOutput()->SetRequestedRegion( this->GetDeformationField()->GetRequestedRegion() );
+  m_MovingImageWarper->SetDisplacementField( this->GetDisplacementField() );
+  m_MovingImageWarper->GetOutput()->SetRequestedRegion( this->GetDisplacementField()->GetRequestedRegion() );
   try
     {
     m_MovingImageWarper->Update();
@@ -296,14 +296,14 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 //	m_SimilarityWeight = 0.1; //40.0/256.0;
 
     // Compute the similarity
-    DeformationFieldTypePointer similarity = DeformationFieldType::New();
-    similarity->SetRegions(this->GetDeformationField()->GetLargestPossibleRegion() );
+    DisplacementFieldTypePointer similarity = DisplacementFieldType::New();
+    similarity->SetRegions(this->GetDisplacementField()->GetLargestPossibleRegion() );
     similarity->Allocate();
-    similarity->SetSpacing(this->GetDeformationField()->GetSpacing() );
-    similarity->SetOrigin(this->GetDeformationField()->GetOrigin() );
-    similarity->SetDirection(this->GetDeformationField()->GetDirection() );
+    similarity->SetSpacing(this->GetDisplacementField()->GetSpacing() );
+    similarity->SetOrigin(this->GetDisplacementField()->GetOrigin() );
+    similarity->SetDirection(this->GetDisplacementField()->GetDirection() );
 
-    IterationDeformationFieldType def12Iter(similarity, similarity->GetRequestedRegion() );
+    IterationDisplacementFieldType def12Iter(similarity, similarity->GetRequestedRegion() );
     IterationImageType            sub12Iter(subtract->GetOutput(), subtract->GetOutput()->GetRequestedRegion() );
     ConstIterationImageType       fit(this->GetFixedImage(), this->GetFixedImage()->GetRequestedRegion() );
     IterationImageType            mit(m_MovingImageWarper->GetOutput(),
@@ -312,7 +312,7 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
     IterationImageType yIter(tempY, tempY->GetRequestedRegion() );
     IterationImageType zIter(tempZ, tempZ->GetRequestedRegion() );
 
-    typename TDeformationField::PixelType pixel;
+    typename TDisplacementField::PixelType pixel;
 #if 0
     if( this->GetMovingImageMask() && this->GetFixedImageMask() )
       {
@@ -320,7 +320,7 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
            fit.GoToBegin(), mit.GoToBegin(), xIter.GoToBegin(), yIter.GoToBegin(), zIter.GoToBegin();
            !def12Iter.IsAtEnd(); ++def12Iter, ++fit, ++mit, ++xIter, ++yIter, ++zIter )
         {
-        typename DeformationFieldType::IndexType index = def12Iter.GetIndex();
+        typename DisplacementFieldType::IndexType index = def12Iter.GetIndex();
         typename FixedImageType::PointType fixedPoint;
         this->GetFixedImage()->TransformIndexToPhysicalPoint(index, fixedPoint);
         if( this->GetFixedImageMask()->IsInside(fixedPoint) &&
@@ -382,7 +382,7 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
     // Write the similarity measure image
 #if 0
     typedef Image<float, 3>                                                          RealImageType;
-    typedef VectorIndexSelectionCastImageFilter<DeformationFieldType, RealImageType> SelectImageType;
+    typedef VectorIndexSelectionCastImageFilter<DisplacementFieldType, RealImageType> SelectImageType;
     typename SelectImageType::Pointer caster = SelectImageType::New();
     caster->SetInput(similarity);
     for( unsigned int i = 0; i < 3; i++ )
@@ -400,9 +400,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
       }
 #endif
 /*
-  typename  DeformationFieldFFTType::Pointer coeff =  DeformationFieldFFTType::New();
+  typename  DisplacementFieldFFTType::Pointer coeff =  DisplacementFieldFFTType::New();
    typename FFTWRealToComplexType::Pointer fft12 = FFTWRealToComplexType::New();
-     fft12->SetInput(this->GetDeformationField());
+     fft12->SetInput(this->GetDisplacementField());
    fft12->Update();
    coeff=fft12->GetOutput();
    coeff->DisconnectPipeline();
@@ -412,15 +412,15 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
     fft_filter->SetInput(similarity);
     fft_filter->Update();
 
-    ImageRegionIterator<DeformationFieldFFTType>      coeffsIter0(m_Coefficient, m_Coefficient->GetRequestedRegion() );
+    ImageRegionIterator<DisplacementFieldFFTType>      coeffsIter0(m_Coefficient, m_Coefficient->GetRequestedRegion() );
     ImageRegionConstIterator<ComplexImageType>        smoothIter(m_SmoothFilter, m_SmoothFilter->GetRequestedRegion() );
-    ImageRegionConstIterator<DeformationFieldFFTType> iter0(fft_filter->GetOutput(),
+    ImageRegionConstIterator<DisplacementFieldFFTType> iter0(fft_filter->GetOutput(),
                                                             fft_filter->GetOutput()->GetRequestedRegion() );
     for( iter0.GoToBegin(), smoothIter.GoToBegin(), coeffsIter0.GoToBegin();
          !iter0.IsAtEnd();
          ++iter0, ++smoothIter, ++coeffsIter0 )
       {
-      typename DeformationFieldFFTType::PixelType pixel1 = coeffsIter0.Get();
+      typename DisplacementFieldFFTType::PixelType pixel1 = coeffsIter0.Get();
       for( unsigned i = 0; i < 3; i++ )
         {
         pixel1[i] = pixel1[i] - (smoothIter.Get() * iter0.Get()[i]);        // * delta_normalizer);
@@ -443,8 +443,8 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
       // typename LandmarkType::PointListType list;
       typedef ThinPlateSplineKernelTransform<float, ImageDimension> KernelTransformType;
       typedef typename KernelTransformType::PointSetType            KernelPointSetType;
-      typename DeformationFieldType::IndexType pixelIndex;
-      typename DeformationFieldType::IndexType pixelIndex1;
+      typename DisplacementFieldType::IndexType pixelIndex;
+      typename DisplacementFieldType::IndexType pixelIndex1;
       typename MovingImageType::PointType movingPoint;
       typename MovingImageType::PointType warpedMovingPoint;
       typename MovingImageType::PointType fixedPoint;
@@ -472,7 +472,7 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
         //    std::cout<<"fixed point: "<<fixedPoint<<std::endl;
         for( unsigned int j = 0; j < ImageDimension; j++ )
           {
-          warpedMovingPoint[j] = movingPoint[j] +  this->GetDeformationField()->GetPixel(pixelIndex)[j];
+          warpedMovingPoint[j] = movingPoint[j] +  this->GetDisplacementField()->GetPixel(pixelIndex)[j];
           difference[j] = fixedPoint[j] - warpedMovingPoint[j];
           }
 #if 1
@@ -490,7 +490,7 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
         this->GetFixedImage()->TransformIndexToPhysicalPoint(pixelIndex1, warpedMovingPoint);
         warpedMovingLandmark->SetPoint(pointID, warpedMovingPoint);
 #if 0
-        std::cout << "Deformation field: " << this->GetDeformationField()->GetPixel(pixelIndex) << std::endl;
+        std::cout << "Deformation field: " << this->GetDisplacementField()->GetPixel(pixelIndex) << std::endl;
         std::cout << "fixed point: " << fixedPoint << std::endl;
         std::cout << "warped moving point: " << warpedMovingPoint << std::endl;
 #endif
@@ -527,22 +527,22 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
       // ** Compute the displacement **//
       typename MovingImageType::PointType warpedPoint;
       typename MovingImageType::PointType point;
-      IterationDeformationFieldType defIter(this->GetDeformationField(),
-                                            this->GetDeformationField()->GetRequestedRegion() );
+      IterationDisplacementFieldType defIter(this->GetDisplacementField(),
+                                            this->GetDisplacementField()->GetRequestedRegion() );
       ConstIterationImageType it_m(this->GetMovingImage(), this->GetMovingImage()->GetRequestedRegion() );
       for( it_m.GoToBegin(), defIter.GoToBegin(); !it_m.IsAtEnd(); ++it_m, ++defIter )
         {
         pixelIndex = it_m.GetIndex();
         this->GetFixedImage()->TransformIndexToPhysicalPoint(pixelIndex, point);
         warpedPoint = transform->TransformPoint(point);
-        typename DeformationFieldType::PixelType def;
+        typename DisplacementFieldType::PixelType def;
         for( unsigned int i = 0; i < ImageDimension; i++  )
           {
           def[i] = warpedPoint[i] - point[i];
           }
         defIter.Set(def);
         }
-      this->GetDeformationField()->Modified();
+      this->GetDisplacementField()->Modified();
 #if 0
       mlit = m_MovingLandmark->GetPoints()->Begin();
       flit = m_FixedLandmark->GetPoints()->Begin();
@@ -561,18 +561,18 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 #endif
 
       typename FFTWRealToComplexType::Pointer fft_filter = FFTWRealToComplexType::New();
-      fft_filter->SetInput(this->GetDeformationField() );
+      fft_filter->SetInput(this->GetDisplacementField() );
       fft_filter->Update();
 
-      ImageRegionIterator<DeformationFieldFFTType>      coeffsIter(m_Coefficient, m_Coefficient->GetRequestedRegion() );
+      ImageRegionIterator<DisplacementFieldFFTType>      coeffsIter(m_Coefficient, m_Coefficient->GetRequestedRegion() );
       ImageRegionConstIterator<ComplexImageType>        smoothIter(m_SmoothFilter, m_SmoothFilter->GetRequestedRegion() );
-      ImageRegionConstIterator<DeformationFieldFFTType> iter(fft_filter->GetOutput(),
+      ImageRegionConstIterator<DisplacementFieldFFTType> iter(fft_filter->GetOutput(),
                                                              fft_filter->GetOutput()->GetRequestedRegion() );
       for( iter.GoToBegin(), smoothIter.GoToBegin(), coeffsIter.GoToBegin();
            !iter.IsAtEnd();
            ++iter, ++smoothIter, ++coeffsIter )
         {
-        typename DeformationFieldFFTType::PixelType pixel1 = coeffsIter.Get();
+        typename DisplacementFieldFFTType::PixelType pixel1 = coeffsIter.Get();
         for( unsigned int i = 0; i < 3; i++ )
           {
           pixel1[i] = pixel1[i] - (m_LandmarkWeight * smoothIter.Get() * iter.Get()[i]);            // *
@@ -592,9 +592,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
   m_UpdateBuffer->DisconnectPipeline();
 
   // compute the inverse deformation field
-  typedef ICCIterativeInverseDeformationFieldImageFilter<TDeformationField,
-                                                         TDeformationField> InverseDeformationFieldImageType;
-  typename InverseDeformationFieldImageType::Pointer  inverse = InverseDeformationFieldImageType::New();
+  typedef ICCIterativeInverseDisplacementFieldImageFilter<TDisplacementField,
+                                                         TDisplacementField> InverseDisplacementFieldImageType;
+  typename InverseDisplacementFieldImageType::Pointer  inverse = InverseDisplacementFieldImageType::New();
   inverse->SetInput(m_UpdateBuffer);
   inverse->SetStopValue(1.0e-6);
   inverse->SetNumberOfIterations(100);
@@ -607,9 +607,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
  * Compute update at a non boundary neighbourhood
  */
 
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 void
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::ComputeMetric( void * gd)
 {
   GlobalDataStruct *globalData = (GlobalDataStruct *)gd;
@@ -680,10 +680,10 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 //   std::cout<<"SumOfSquaredDifference"<<globalData->m_SumOfSquaredDifference<<std::endl;
 }
 
-template <class TFixedImage, class TMovingImage, class TDeformationField>
-typename ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
+typename ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::PixelType
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::ComputeUpdate(const NeighborhoodType & /*it*/, void * /*gd */,
                 const FloatOffsetType & itkNotUsed(offset) )
 {
@@ -696,9 +696,9 @@ ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
 /**
  * Update the metric and release the per-thread-global data.
  */
-template <class TFixedImage, class TMovingImage, class TDeformationField>
+template <class TFixedImage, class TMovingImage, class TDisplacementField>
 void
-ICCDeformableFunction<TFixedImage, TMovingImage, TDeformationField>
+ICCDeformableFunction<TFixedImage, TMovingImage, TDisplacementField>
 ::ReleaseGlobalDataPointer( void *gd ) const
 {
   GlobalDataStruct * globalData = (GlobalDataStruct *) gd;
