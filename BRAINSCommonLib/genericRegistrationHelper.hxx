@@ -263,6 +263,21 @@ MultiModal3DMutualRegistrationHelper<TTransformType, TOptimizer, TFixedImage,
       optimizerScales[i] = reproportionScale;
       }
     }
+  else if( m_Transform->GetNumberOfParameters() == 7 )    // Similarity3D
+    {
+    for( unsigned int i = 0; i < 3; ++i )
+      {
+      optimizerScales[i] = 1.0;
+      }
+    for( unsigned int i = 3; i < 6; ++i )
+      {
+      optimizerScales[i] = translationScale;
+      }
+    for( unsigned int i = 6; i < 7; ++i )
+      {
+      optimizerScales[i] = reproportionScale;
+      }
+    }
   else if( m_Transform->GetNumberOfParameters() == 6 )     //  VersorRigid3D
     {
     for( unsigned int i = 0; i < 3; ++i )
