@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
   // transforms.
   //
   itk::TransformFactory<VersorRigid3DTransformType>::RegisterTransform();
+  itk::TransformFactory<Similarity3DTransformType>::RegisterTransform();
   itk::TransformFactory<ScaleVersor3DTransformType>::RegisterTransform();
   itk::TransformFactory<ScaleSkewVersor3DTransformType>::RegisterTransform();
   itk::TransformFactory<AffineTransformType>::RegisterTransform();
@@ -187,13 +188,17 @@ int main(int argc, char *argv[])
   std::vector<std::string> localTransformType;
   // See if the individual boolean registration options are being used.  If any
   // of these are set, then transformType is not used.
-  if( ( useRigid == true ) || ( useScaleVersor3D == true ) || ( useScaleSkewVersor3D == true )
+  if( ( useRigid == true ) || (useSimilarity3D == true) || ( useScaleVersor3D == true ) || ( useScaleSkewVersor3D == true )
       || ( useAffine == true ) || ( useBSpline == true ) )
     {
     localTransformType.resize(0); // Set to zero length
     if( useRigid == true )
       {
       localTransformType.push_back("Rigid");
+      }
+    if( useSimilarity3D == true )
+      {
+      localTransformType.push_back("Similarity3D");
       }
     if( useScaleVersor3D == true )
       {
