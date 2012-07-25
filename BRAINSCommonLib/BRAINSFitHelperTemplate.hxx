@@ -30,8 +30,8 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
   // dimensional, and throw an error if
   // B-Spline is before Rigid, or any other non-sensical ordering of the
   // transform types.
-  // Rigid=1, ScaleVersor3D=2, ScaleSkewVersor3D=3, Affine=4, and (BSpline or
-  // ROIBspline)=5
+  // Rigid=1, Similarity3D=2, ScaleVersor3D=3, ScaleSkewVersor3D=4, Affine=5, and (BSpline or
+  // ROIBspline)=6
 #define VTROExceptionMacroMacro()                                       \
   itkGenericExceptionMacro(<< "Ordering of transforms does not proceed from\n" \
                            << "smallest to largest.  Please review settings for transformType.\n" \
@@ -51,7 +51,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         VTROExceptionMacroMacro();
         }
       }
-    else if( transformType[l] == "ScaleVersor3D" )
+    else if( transformType[l] == "Similarity3D" )
       {
       if( CurrentTransformRank <= 2 )
         {
@@ -62,7 +62,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         VTROExceptionMacroMacro();
         }
       }
-    else if( transformType[l] == "ScaleSkewVersor3D" )
+    else if( transformType[l] == "ScaleVersor3D" )
       {
       if( CurrentTransformRank <= 3 )
         {
@@ -73,7 +73,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         VTROExceptionMacroMacro();
         }
       }
-    else if( transformType[l] == "Affine" )
+    else if( transformType[l] == "ScaleSkewVersor3D" )
       {
       if( CurrentTransformRank <= 4 )
         {
@@ -84,7 +84,7 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         VTROExceptionMacroMacro();
         }
       }
-    else if( transformType[l] == "BSpline" )
+    else if( transformType[l] == "Affine" )
       {
       if( CurrentTransformRank <= 5 )
         {
@@ -95,11 +95,22 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
         VTROExceptionMacroMacro();
         }
       }
+    else if( transformType[l] == "BSpline" )
+      {
+      if( CurrentTransformRank <= 6 )
+        {
+        CurrentTransformRank = 6;
+        }
+      else
+        {
+        VTROExceptionMacroMacro();
+        }
+      }
     else if( transformType[l] == "ROIBSpline" )
       {
-      if( CurrentTransformRank <= 5 )
+      if( CurrentTransformRank <= 6 )
         {
-        CurrentTransformRank = 5;
+        CurrentTransformRank = 6;
         }
       else
         {
@@ -742,7 +753,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
     //
     // Break into cases on TransformType:
     //
-    if( currentTransformType == "Rigid" )
+if( currentTransformType == "Rigid" )
       {
       //  Choose TransformType for the itk registration class template:
       typedef VersorRigid3DTransformType           TransformType;
@@ -770,7 +781,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             AssignRigid::AssignConvertedTransform(initialITKTransform,
                                                   tempInitializerITKTransform);
             }
-          else if( ( transformFileType == "ScaleVersor3DTransform" )
+          else if( ( transformFileType == "Similarity3DTransform" )
+                   ||( transformFileType == "ScaleVersor3DTransform" )
                    || ( transformFileType == "ScaleSkewVersor3DTransform" )
                    || ( transformFileType == "AffineTransform" ) )
             {
@@ -820,7 +832,102 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
         initialITKTransform);
       localInitializeTransformMode = "Off";   // Now turn of the initiallize
                                               // code to off
+      }
+    else if( currentTransformType == "Similarity3D" )
+      {
+      //  Choose TransformType for the itk registration class template:
+      typedef Similarity3DTransformType    TransformType;
+      typedef itk::VersorTransformOptimizer OptimizerType;
+      // const int NumberOfEstimatedParameter = 7;
 
+      //
+      // Process the initialITKTransform as ScaleVersor3DTransform:
+      //
+      TransformType::Pointer initialITKTransform = TransformType::New();
+      initialITKTransform->SetIdentity();
+      if( m_CurrentGenericTransform.IsNotNull() )
+        {
+        try
+          {
+          const std::string transformFileType = m_CurrentGenericTransform->GetNameOfClass();
+          if( transformFileType == "VersorRigid3DTransform" )
+            {
+            const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(initialITKTransform,
+                                                  tempInitializerITKTransform);
+            }
+          else if( transformFileType == "Similarity3DTransform" )
+            {
+            const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<Similarity3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(initialITKTransform,
+                                                  tempInitializerITKTransform);
+            }
+          else if( ( transformFileType == "ScaleVersor3DTransform" )
+                   ||( transformFileType == "ScaleSkewVersor3DTransform" )
+                   || ( transformFileType == "AffineTransform" ) )
+            {
+            // CONVERTING TO RIGID TRANSFORM TYPE from other type:
+            // TODO: we should preserve the Scale components
+            std::cout << "WARNING:  Extracting Rigid component type from transform." << std::endl;
+            VersorRigid3DTransformType::Pointer tempInitializerITKTransform = ComputeRigidTransformFromGeneric(
+                m_CurrentGenericTransform.GetPointer() );
+            AssignRigid::AssignConvertedTransform( initialITKTransform, tempInitializerITKTransform.GetPointer() );
+            }
+          else              // || transformFileType ==
+                            // "ScaleSkewVersor3DTransform"
+          // ||
+          // transformFileType == "AffineTransform"
+            {
+            std::cout
+            <<
+            "Unsupported initial transform file -- TransformBase first transform typestring, "
+            << transformFileType
+            <<
+            " not equal to required type VersorRigid3DTransform OR ScaleVersor3DTransform"
+            << std::endl;
+            return;
+            }
+          }
+        catch( itk::ExceptionObject & excp )
+          {
+          std::cout << "[FAILED]" << std::endl;
+          std::cerr
+          << "Error while reading the m_CurrentGenericTransform"
+          << std::endl;
+          std::cerr << excp << std::endl;
+          return;
+          }
+        }
+        {
+        // Special optimizations only for the MMI metric
+        // that need adjusting based on both the type of metric, and
+        // the "dimensionality" of the transform being adjusted.
+        typename MattesMutualInformationMetricType::Pointer test_MMICostMetric =
+          dynamic_cast<MattesMutualInformationMetricType *>(this->m_CostMetricObject.GetPointer() );
+        if( test_MMICostMetric.IsNotNull() )
+          {
+          const bool UseExplicitPDFDerivatives =
+            ( m_UseExplicitPDFDerivativesMode == "ON" || m_UseExplicitPDFDerivativesMode == "AUTO" ) ? true : false;
+          test_MMICostMetric->SetUseExplicitPDFDerivatives(UseExplicitPDFDerivatives);
+          }
+        }
+      // #include "FitCommonCode.tmpl"
+      this->FitCommonCode<TransformType, OptimizerType, MetricType>
+        (localNumberOfIterations[currentTransformIndex],
+        localMinimumStepLength[currentTransformIndex],
+        initialITKTransform);
+      localInitializeTransformMode = "Off";   // Now turn of the initiallize
+                                              // code to off
       }
     else if( currentTransformType == "ScaleVersor3D" )
       {
@@ -843,6 +950,17 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
               dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(initialITKTransform,
+                                                  tempInitializerITKTransform);
+            }
+          else if( transformFileType == "Similarity3DTransform" )
+            {
+            const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<Similarity3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1021,15 +1139,15 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       localInitializeTransformMode = "Off";   // Now turn of the initiallize
                                               // code to off
       }
-    else if( currentTransformType == "Affine" )
+    else if( currentTransformType == "ScaleSkewVersor3D" )
       {
       //  Choose TransformType for the itk registration class template:
-      typedef itk::AffineTransform<double, Dimension>  TransformType;
-      typedef itk::RegularStepGradientDescentOptimizer OptimizerType;
-      // const int NumberOfEstimatedParameter = 12;
+      typedef ScaleSkewVersor3DTransformType TransformType;
+      typedef itk::VersorTransformOptimizer  OptimizerType;
+      // const int NumberOfEstimatedParameter = 15;
 
       //
-      // Process the initialITKTransform
+      // Process the initialITKTransform as ScaleSkewVersor3D:
       //
       TransformType::Pointer initialITKTransform = TransformType::New();
       initialITKTransform->SetIdentity();
@@ -1042,6 +1160,17 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
               dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(initialITKTransform,
+                                                  tempInitializerITKTransform);
+            }
+          else if( transformFileType == "Similarity3DTransform" )
+            {
+            const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<Similarity3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1071,25 +1200,25 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             AssignRigid::AssignConvertedTransform(initialITKTransform,
                                                   tempInitializerITKTransform);
             }
-          else if( transformFileType == "AffineTransform" )
+          else if( ( transformFileType == "AffineTransform" ) )
             {
-            const AffineTransformType::ConstPointer tempInitializerITKTransform =
-              dynamic_cast<AffineTransformType const *>( m_CurrentGenericTransform.GetPointer() );
-            if( tempInitializerITKTransform.IsNull() )
-              {
-              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
-              }
-            AssignRigid::AssignConvertedTransform(initialITKTransform,
-                                                  tempInitializerITKTransform);
+            // CONVERTING TO RIGID TRANSFORM TYPE from other type:
+            // TODO:  We should really preserve the Scale and Skew components
+            std::cout << "WARNING:  Extracting Rigid component type from transform." << std::endl;
+            VersorRigid3DTransformType::Pointer tempInitializerITKTransform = ComputeRigidTransformFromGeneric(
+                m_CurrentGenericTransform.GetPointer() );
+            AssignRigid::AssignConvertedTransform( initialITKTransform, tempInitializerITKTransform.GetPointer() );
             }
-          else              //  NO SUCH CASE!!
+          else              // || transformFileType == "AffineTransform" ||
+          // transformFileType
+          // == "ScaleVersor3DTransform"
             {
             std::cout
             <<
             "Unsupported initial transform file -- TransformBase first transform typestring, "
             << transformFileType
-            << " not equal to any recognized type VersorRigid3DTransform OR "
-            << "ScaleVersor3DTransform OR ScaleSkewVersor3DTransform OR AffineTransform"
+            << " not equal to required type VersorRigid3DTransform "
+            << "OR ScaleVersor3DTransform OR ScaleSkewVersor3DTransform"
             << std::endl;
             return;
             }
@@ -1104,7 +1233,6 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           return;
           }
         }
-
         {
         // Special optimizations only for the MMI metric
         // that need adjusting based on both the type of metric, and
@@ -1169,6 +1297,18 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
               dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(bulkAffineTransform,
+                                                  tempInitializerITKTransform);
+            initialBSplineTransform->SetBulkTransform(bulkAffineTransform);
+            }
+          else if( transformFileType == "Similarity3DTransform" )
+            {
+            const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<Similarity3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
@@ -1481,6 +1621,18 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
             {
             const VersorRigid3DTransformType::ConstPointer tempInitializerITKTransform =
               dynamic_cast<VersorRigid3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
+            if( tempInitializerITKTransform.IsNull() )
+              {
+              std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
+              }
+            AssignRigid::AssignConvertedTransform(bulkAffineTransform,
+                                                  tempInitializerITKTransform);
+            initialBSplineTransform->SetBulkTransform(bulkAffineTransform);
+            }
+          else if( transformFileType == "Similarity3DTransform" )
+            {
+            const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+              dynamic_cast<Similarity3DTransformType const *>( m_CurrentGenericTransform.GetPointer() );
             if( tempInitializerITKTransform.IsNull() )
               {
               std::cout << "Error in type conversion" << __FILE__ << __LINE__ << std::endl;
