@@ -9,8 +9,8 @@
   Copyright (c) Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -59,7 +59,7 @@ namespace itk
  * \ingroup RegistrationFilters
  */
 template <typename TFixedMesh, typename TMovingMesh>
-class ITK_EXPORT MeshToMeshRegistrationMethod : public ProcessObject 
+class ITK_EXPORT MeshToMeshRegistrationMethod : public ProcessObject
 {
 public:
   /** Standard class typedefs. */
@@ -70,7 +70,7 @@ public:
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
-  
+
   /** Run-time type information (and related methods). */
   itkTypeMacro(MeshToMeshRegistrationMethod, ProcessObject);
 
@@ -111,12 +111,9 @@ public:
   /** Smart Pointer type to a DataObject. */
   typedef typename DataObject::Pointer                  DataObjectPointer;
 
-  /** Method that initiates the registration. */
-  void StartRegistration(void);
-
   /** Set/Get the Fixed Mesh. */
   itkSetConstObjectMacro( FixedMesh, FixedMeshType );
-  itkGetConstObjectMacro( FixedMesh, FixedMeshType ); 
+  itkGetConstObjectMacro( FixedMesh, FixedMeshType );
 
   /** Set/Get the Moving Mesh. */
   itkSetConstObjectMacro( MovingMesh, MovingMeshType );
@@ -142,7 +139,7 @@ public:
   virtual void SetInitialTransformParameters( const ParametersType & param );
   itkGetConstReferenceMacro( InitialTransformParameters, ParametersType );
 
-  /** Get the last transformation parameters visited by 
+  /** Get the last transformation parameters visited by
    * the optimizer. */
   itkGetConstReferenceMacro( LastTransformParameters, ParametersType );
 
@@ -159,21 +156,21 @@ public:
 
   /** Method to return the latest modified time of this object or
    * any of its cached ivars */
-  unsigned long GetMTime() const;  
+  unsigned long GetMTime() const;
 
 protected:
   MeshToMeshRegistrationMethod();
   virtual ~MeshToMeshRegistrationMethod() {};
   void PrintSelf(std::ostream& os, Indent indent) const;
 
-  /** Method invoked by the pipeline in order to trigger the computation of 
+  /** Method invoked by the pipeline in order to trigger the computation of
    * the registration. */
   void  GenerateData ();
-  
+
 private:
   MeshToMeshRegistrationMethod(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
-  
+
   MetricPointer                     m_Metric;
   OptimizerType::Pointer            m_Optimizer;
 
@@ -185,7 +182,7 @@ private:
 
   ParametersType                    m_InitialTransformParameters;
   ParametersType                    m_LastTransformParameters;
-  
+
 };
 
 
