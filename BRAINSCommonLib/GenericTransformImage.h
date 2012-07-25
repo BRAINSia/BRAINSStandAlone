@@ -16,6 +16,7 @@
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkStatisticsImageFilter.h"
 #include "itkScaleVersor3DTransform.h"
+#include "itkSimilarity3DTransform.h"
 #include "itkScaleSkewVersor3DTransform.h"
 #include "itkAffineTransform.h"
 #include <itkBSplineDeformableTransform.h>
@@ -55,6 +56,7 @@ typedef itk::BSplineDeformableTransform<
 
 typedef itk::AffineTransform<double, 3>                      AffineTransformType;
 typedef itk::VersorRigid3DTransform<double>                  VersorRigid3DTransformType;
+typedef itk::Similarity3DTransform<double>                  Similarity3DTransformType;
 typedef itk::ScaleVersor3DTransform<double>                  ScaleVersor3DTransformType;
 typedef itk::ScaleSkewVersor3DTransform<double>              ScaleSkewVersor3DTransformType;
 typedef itk::ThinPlateR2LogRSplineKernelTransform<double, 3> ThinPlateSpline3DTransformType;

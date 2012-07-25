@@ -7,6 +7,7 @@
 #include "itkScaleVersor3DTransform.h"
 #include "itkScaleSkewVersor3DTransform.h"
 #include "itkAffineTransform.h"
+#include "itkSimilarity3DTransform.h"
 #include "itkVersorRigid3DTransform.h"
 #include "itkBSplineDeformableTransform.h"
 #include "itkBRAINSROIAutoImageFilter.h"
@@ -27,6 +28,7 @@ typedef itk::BSplineDeformableTransform<
   BFNSplineOrder>                                        BSplineTransformType;
 
 typedef itk::VersorRigid3DTransform<double>              VersorRigid3DTransformType;
+typedef itk::Similarity3DTransform<double>               Similarity3DTransformType;
 typedef itk::ScaleVersor3DTransform<double>              ScaleVersor3DTransformType;
 typedef itk::ScaleSkewVersor3DTransform<double>          ScaleSkewVersor3DTransformType;
 typedef itk::AffineTransform<double, BFNSSpaceDimension> AffineTransformType;
