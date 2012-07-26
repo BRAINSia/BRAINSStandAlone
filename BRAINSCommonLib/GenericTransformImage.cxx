@@ -56,6 +56,16 @@ VersorRigid3DTransformType::Pointer ComputeRigidTransformFromGeneric(
           }
         AssignRigid::ExtractVersorRigid3DTransform(versorRigid, tempInitializerITKTransform);
         }
+      else if( transformFileType == "Similarity3DTransform" )
+        {
+        const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+          dynamic_cast<Similarity3DTransformType const *>( genericTransformToWrite.GetPointer() );
+        if( tempInitializerITKTransform.IsNull() )
+          {
+          itkGenericExceptionMacro(<< "Error in type conversion");
+          }
+        AssignRigid::ExtractVersorRigid3DTransform(versorRigid, tempInitializerITKTransform);
+        }
       else if( transformFileType == "ScaleVersor3DTransform" )
         {
         const ScaleVersor3DTransformType::ConstPointer tempInitializerITKTransform =
@@ -142,6 +152,13 @@ int WriteBothTransformsToDisk(const GenericTransformType::ConstPointer genericTr
     {
     const std::string transformFileType = genericTransformToWrite->GetNameOfClass();
     if( transformFileType == "VersorRigid3DTransform" )
+      {
+      if( outputTransform.size() > 0 )  // Write out the transform
+        {
+        itk::WriteTransformToDisk(genericTransformToWrite, outputTransform);
+        }
+      }
+    else if( transformFileType == "Similarity3DTransform" )
       {
       if( outputTransform.size() > 0 )  // Write out the transform
         {
@@ -267,6 +284,19 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
         itkGenericExceptionMacro(<< "Error in type conversion");
         }
       VersorRigid3DTransformType::Pointer tempCopy = VersorRigid3DTransformType::New();
+      AssignRigid::AssignConvertedTransform(tempCopy,
+                                            tempInitializerITKTransform);
+      genericTransform = tempCopy.GetPointer();
+      }
+    else if( transformFileType == "Similarity3DTransform" )
+      {
+      const Similarity3DTransformType::ConstPointer tempInitializerITKTransform =
+        dynamic_cast<Similarity3DTransformType const *>( ( *( currentTransformList.begin() ) ).GetPointer() );
+      if( tempInitializerITKTransform.IsNull() )
+        {
+        itkGenericExceptionMacro(<< "Error in type conversion");
+        }
+      Similarity3DTransformType::Pointer tempCopy = Similarity3DTransformType::New();
       AssignRigid::AssignConvertedTransform(tempCopy,
                                             tempInitializerITKTransform);
       genericTransform = tempCopy.GetPointer();
@@ -494,7 +524,8 @@ void AddExtraTransformRegister(void)
   itk::TransformFactory<itk::ScaleVersor3DTransform<float> >::RegisterDefaultTransforms();
   itk::TransformFactory<itk::ScaleVersor3DTransform<double> >::RegisterTransform();
   itk::TransformFactory<itk::ScaleVersor3DTransform<float> >::RegisterTransform();
-
+  itk::TransformFactory<itk::Similarity3DTransform<double> >::RegisterTransform();
+  itk::TransformFactory<itk::Similarity3DTransform<float> >::RegisterTransform();
   itk::TransformFactory<itk::AffineTransform<double, 2> >::RegisterTransform();
   itk::TransformFactory<itk::AffineTransform<double, 3> >::RegisterTransform();
   itk::TransformFactory<itk::BSplineDeformableTransform<double, 2, 2> >::RegisterTransform();

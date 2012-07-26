@@ -96,9 +96,16 @@
        <default>false</default>
     </boolean>
     <boolean>
+       <name>useSimilarity3D</name>
+       <longflag>useSimilarity3D</longflag>
+       <label>Rigid+IsotropicScale(7 DOF)</label>
+       <description>Perform a Similarity3D registration as part of the sequential registration steps.  This family of options superceeds the use of transformType if any of them are set.</description>
+       <default>false</default>
+    </boolean>
+    <boolean>
        <name>useScaleVersor3D</name>
        <longflag>useScaleVersor3D</longflag>
-       <label>Rigid+Scale(7 DOF)</label>
+       <label>Rigid+AnisotropicScale(9 DOF)</label>
        <description>Perform a ScaleVersor3D registration as part of the sequential registration steps.  This family of options superceeds the use of transformType if any of them are set.</description>
        <default>false</default>
     </boolean>
