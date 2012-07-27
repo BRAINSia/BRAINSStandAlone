@@ -3,6 +3,7 @@
 #include <itkMatrix.h>
 #include <itkVector.h>
 #include <itkAffineTransform.h>
+#include <itkSimilarity3DTransform.h>
 #include <itkVersorRigid3DTransform.h>
 #include "itkScaleVersor3DTransform.h"
 #include "itkScaleSkewVersor3DTransform.h"
@@ -35,6 +36,12 @@ typedef VersorRigid3DTransformType::Pointer
 VersorRigid3DTransformPointer;
 typedef VersorRigid3DTransformType::ParametersType
 VersorRigid3DParametersType;
+
+typedef itk::Similarity3DTransform<double>
+Similarity3DTransformType;
+typedef Similarity3DTransformType::Pointer Similarity3DTransformPointer;
+typedef Similarity3DTransformType::ParametersType
+Similarity3DParametersType;
 
 typedef itk::ScaleVersor3DTransform<double>
 ScaleVersor3DTransformType;
@@ -353,6 +360,153 @@ inline void AssignConvertedTransform(
     std::cout
     <<
     "Error missing Pointer data, assigning ScaleVersor3DTransformPointer := VersorRigid3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+/**
+  * AffineTransformPointer  :=  Similarity3DTransformPointer
+  */
+
+inline void
+AssignConvertedTransform(AffineTransformPointer & result,
+                         const Similarity3DTransformType::ConstPointer similarityVersor)
+{
+  if( result.IsNotNull() && similarityVersor.IsNotNull() )
+    {
+    result->SetIdentity();
+    result->SetCenter( similarityVersor->GetCenter() );
+    result->SetMatrix( similarityVersor->GetMatrix() );       // NOTE:  This matrix has
+                                                   // both
+    // rotation ans scale components.
+    result->SetTranslation( similarityVersor->GetTranslation() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning AffineTransformPointer := ScaleVersor3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+/**
+  * ScaleSkewVersor3DTransformPointer  :=  Similarity3DTransformPointer
+  */
+inline void AssignConvertedTransform(
+  ScaleSkewVersor3DTransformPointer & result,
+  const Similarity3DTransformType::ConstPointer similarityVersor)
+{
+  if( result.IsNotNull() && similarityVersor.IsNotNull() )
+    {
+    result->SetIdentity();
+    result->SetCenter( similarityVersor->GetCenter() );
+    result->SetRotation( similarityVersor->GetVersor() );
+    ScaleSkewVersor3DTransformType::ScaleVectorType scale;
+    scale.Fill(similarityVersor->GetScale()); 
+    result->SetScale( scale );
+    result->SetTranslation( similarityVersor->GetTranslation() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning ScaleSkewVersor3DTransformPointer := Similarity3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+/**
+  * ScaleVersor3DTransformPointer  :=  Similarity3DTransformPointer
+  */
+inline void AssignConvertedTransform(
+  ScaleVersor3DTransformPointer & result,
+  const Similarity3DTransformType::ConstPointer similarityVersor)
+{
+  if( result.IsNotNull() && similarityVersor.IsNotNull() )
+    {
+    result->SetIdentity();
+    result->SetCenter( similarityVersor->GetCenter() );
+    result->SetRotation( similarityVersor->GetVersor() );
+    result->SetTranslation( similarityVersor->GetTranslation() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning ScaleVersor3DTransformPointer := Similarity3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+
+/**
+  * Similarity3DTransformPointer  :=  Similarity3DTransformPointer
+  */
+
+inline void
+AssignConvertedTransform(Similarity3DTransformPointer & result,
+                         const Similarity3DTransformType::ConstPointer similarityVersor)
+{
+  if( result.IsNotNull() && similarityVersor.IsNotNull() )
+    {
+    result->SetParameters( similarityVersor->GetParameters() );
+    result->SetFixedParameters( similarityVersor->GetFixedParameters() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning Similarity3DTransform := Similarity3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+/**
+  * Similarity3DTransformPointer  :=  VersorRigid3DTransformPointer
+  */
+inline void AssignConvertedTransform(
+  Similarity3DTransformPointer & result,
+  const VersorRigid3DTransformType::ConstPointer versorRigid)
+{
+  if( result.IsNotNull() && versorRigid.IsNotNull() )
+    {
+    result->SetIdentity();
+    result->SetCenter( versorRigid->GetCenter() );
+    result->SetRotation( versorRigid->GetVersor() );
+    result->SetTranslation( versorRigid->GetTranslation() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning Similarity3DTransformPointer := VersorRigid3DTransformPointer."
+    << std::endl;
+    throw;
+    }
+}
+
+inline void ExtractVersorRigid3DTransform(
+  VersorRigid3DTransformPointer & result,
+  const Similarity3DTransformType::ConstPointer similarityVersor)
+{
+  if( result.IsNotNull() && similarityVersor.IsNotNull() )
+    {
+    result->SetIdentity();
+    result->SetCenter( similarityVersor->GetCenter() );
+    result->SetRotation( similarityVersor->GetVersor() );
+    result->SetTranslation( similarityVersor->GetTranslation() );
+    }
+  else
+    {
+    std::cout
+    <<
+    "Error missing Pointer data, assigning VersorRigid3DTransformPointer := Similarity3DTransformPointer."
     << std::endl;
     throw;
     }
