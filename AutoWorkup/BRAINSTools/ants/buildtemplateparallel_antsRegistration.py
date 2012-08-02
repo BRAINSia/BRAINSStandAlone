@@ -2,7 +2,7 @@
 ## Program:   Build Template Parallel
 ## Language:  Python
 ##
-## Authors:  Jessica Forbes and Grace Murray, University of Iowa
+## Authors:  Jessica Forbes, Grace Murray, and Hans Johnson, University of Iowa
 ##
 ##      This software is distributed WITHOUT ANY WARRANTY; without even
 ##      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
@@ -23,20 +23,25 @@ from nipype.interfaces.io import DataGrabber
 
 def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):
 
-    antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'antsRegistrationTemplateBuildSingleIterationWF')
+    antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'antsRegistrationTemplateBuildSingleIterationWF_'+iterationPhasePrefix)
 
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec')
-    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec')
+    ## HACK:  Include passive_images_list here for list of images to be passively put into template space.
+    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image','passive_images_list']),
+                run_without_submitting=True,
+                name='InputSpec')
+    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template','transforms_list']),
+                run_without_submitting=True,
+                name='OutputSpec')
 
     ### NOTE MAP NODE! warp each of the original images to the provided fixed_image as the template
     BeginANTS=pe.MapNode(interface=antsRegistration.antsRegistration(), name = 'BeginANTS', iterfield=['moving_image'])
     BeginANTS.inputs.dimension = 3
-    BeginANTS.inputs.output_transform_prefix = 'AffineInitialRegistration'
+    BeginANTS.inputs.output_transform_prefix = iterationPhasePrefix+'_tfm'
     BeginANTS.inputs.metric = 'CC'
     BeginANTS.inputs.metric_weight = 1
     BeginANTS.inputs.radius = 5
     BeginANTS.inputs.transform = ["Affine[1]","SyN[0.25,3.0,0.0]"]
-    BeginANTS.inputs.number_of_iterations = [[10, 10, 10], [50, 35, 15]]
+    BeginANTS.inputs.number_of_iterations = [[1000, 1000, 1000], [50, 35, 15]]
     BeginANTS.inputs.use_histogram_matching = True
     BeginANTS.inputs.shrink_factors = [[3,2,1],[3,2,1]]
     BeginANTS.inputs.smoothing_sigmas = [[0,0,0],[0,0,0]]
@@ -60,7 +65,6 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):
     MakeTransformsLists = pe.Node(interface=util.Function(function=MakeListsOfTransformLists,input_names=['warpTransformList', 'AffineTransformList'], output_names=['out']), 
                     run_without_submitting=True,
                     name='MakeTransformsLists')
-    MakeTransformsLists.inputs.function_str = functionString1
     MakeTransformsLists.inputs.ignore_exception = True
     antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', MakeTransformsLists, 'warpTransformList')
     antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', MakeTransformsLists, 'AffineTransformList')
@@ -84,46 +88,45 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):
     antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', AvgWarpImages, 'images')
 
     ## Now average the images together
-    MultiplyWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='MultiplyWarpImage')
-    MultiplyWarpImage.inputs.dimension = 3
-    MultiplyWarpImage.inputs.second_input = -0.25
-    MultiplyWarpImage.inputs.output_product_image = iterationPhasePrefix+'warp.nii.gz'
-    antsTemplateBuildSingleIterationWF.connect(AvgWarpImages, 'average_image', MultiplyWarpImage, 'first_input')
+    ## HACK:  For now GradientStep is set to 0.25 as a hard coded default value.
+    GradientStep = 0.25
+    GradientStepWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='GradientStepWarpImage')
+    GradientStepWarpImage.inputs.dimension = 3
+    GradientStepWarpImage.inputs.second_input = -1.0 * GradientStep
+    GradientStepWarpImage.inputs.output_product_image = iterationPhasePrefix+'warp.nii.gz'
+    antsTemplateBuildSingleIterationWF.connect(AvgWarpImages, 'average_image', GradientStepWarpImage, 'first_input')
 
-    ## Now 
+    ## Now  Average All inte deformed images together to create an updated template average
     AvgDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
     AvgDeformedImages.inputs.dimension = 3
     AvgDeformedImages.inputs.output_average_image = iterationPhasePrefix+'.nii.gz'
     AvgDeformedImages.inputs.normalize = 1
     antsTemplateBuildSingleIterationWF.connect(wimtdeformed, "output_image", AvgDeformedImages, 'images')
 
-    Warptemplates = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'Warptemplates')
-    Warptemplates.inputs.invert_affine = [1]
-    antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', Warptemplates, 'reference_image')
-    antsTemplateBuildSingleIterationWF.connect(MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image')
-    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series')
+    ## Now create the new template shape based on the average of all deformed images
+    UpdateTemplateShape = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'UpdateTemplateShape')
+    UpdateTemplateShape.inputs.invert_affine = [1]
+    antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', UpdateTemplateShape, 'reference_image')
+    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', UpdateTemplateShape, 'transformation_series')
+    antsTemplateBuildSingleIterationWF.connect(GradientStepWarpImage, 'product_image', UpdateTemplateShape, 'moving_image')
+
+    def MakeTransformListWithGradientWarps(averageAffineTranform, gradientStepWarp):
+        return [averageAffineTranform, gradientStepWarp, gradientStepWarp, gradientStepWarp, gradientStepWarp]
+    ApplyInvAverageAndFourTimesGradientStepWarpImage = pe.Node(interface=util.Function(function=MakeTransformListWithGradientWarps,
+                                         input_names=['averageAffineTranform', 'gradientStepWarp'],
+                                         output_names=['TransformListWithGradientWarps']),
+                 run_without_submitting=True,
+                 name='MakeTransformListWithGradientWarps')
+    ApplyInvAverageAndFourTimesGradientStepWarpImage.inputs.ignore_exception = True
+
+    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', ApplyInvAverageAndFourTimesGradientStepWarpImage, 'averageAffineTranform')
+    antsTemplateBuildSingleIterationWF.connect(UpdateTemplateShape, 'output_image', ApplyInvAverageAndFourTimesGradientStepWarpImage, 'gradientStepWarp')
 
     WarpAll = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'WarpAll')
     WarpAll.inputs.invert_affine = [1]
     antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'moving_image')
     antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'reference_image')
-
-    functionString2 = 'def func(arg1, arg2, arg3, arg4, arg5): return [arg1, arg2, arg3, arg4, arg5]'
-    fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2', 'arg3', 'arg4', 'arg5'], output_names=['out']), name='ListAppender2')
-    fi.inputs.function_str = functionString2
-    fi.inputs.ignore_exception = True
-
-
-
-    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', fi, 'arg1')
-    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg2')
-    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg3')
-    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg4')
-    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg5')
-
-    antsTemplateBuildSingleIterationWF.connect(fi, 'out', WarpAll, 'transformation_series')
-
+    antsTemplateBuildSingleIterationWF.connect(ApplyInvAverageAndFourTimesGradientStepWarpImage, 'TransformListWithGradientWarps', WarpAll, 'transformation_series')
 
     antsTemplateBuildSingleIterationWF.connect(WarpAll, 'output_image', outputSpec, 'template')
-
     return antsTemplateBuildSingleIterationWF
