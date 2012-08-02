@@ -1,3 +1,15 @@
+#################################################################################
+## Program:   Build Template Parallel
+## Language:  Python
+##
+## Authors:  Jessica Forbes and Grace Murray, University of Iowa
+##
+##      This software is distributed WITHOUT ANY WARRANTY; without even
+##      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##      PURPOSE.
+##
+#################################################################################
+
 import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
@@ -6,36 +18,20 @@ import antsAverageAffineTransform
 import antsMultiplyImages
 import antsRegistration
 import antsWarp
-#from nipype.interfaces.ants import WarpImageMultiTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 
-def initAvgWF(ExperimentBaseDirectoryCache):
-    initAvgWF = pe.Workflow(name= 'initAvgWF')
+def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):
 
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images']), name='InputSpec')
-    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['average_image']), name='OutputSpec')
-
-    InitAvgImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
-    InitAvgImages.inputs.dimension = 3
-    InitAvgImages.inputs.output_average_image = 'MYtemplate.nii.gz'
-    InitAvgImages.inputs.normalize = 1
-
-    initAvgWF.connect(inputSpec, 'images', InitAvgImages, 'images')
-    initAvgWF.connect(InitAvgImages, 'average_image', outputSpec, 'average_image')
-
-    return initAvgWF
-
-def mainWF(ExperimentBaseDirectoryCache):
-
-    mainWF = pe.Workflow(name = 'mainWF')
+    antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'antsRegistrationTemplateBuildSingleIterationWF')
 
     inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image']), name='InputSpec')
     outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template']), name='OutputSpec')
 
+    ### NOTE MAP NODE! warp each of the original images to the provided fixed_image as the template
     BeginANTS=pe.MapNode(interface=antsRegistration.antsRegistration(), name = 'BeginANTS', iterfield=['moving_image'])
     BeginANTS.inputs.dimension = 3
-    BeginANTS.inputs.output_transform_prefix = 'MY'
+    BeginANTS.inputs.output_transform_prefix = 'AffineInitialRegistration'
     BeginANTS.inputs.metric = 'CC'
     BeginANTS.inputs.metric_weight = 1
     BeginANTS.inputs.radius = 5
@@ -49,74 +45,85 @@ def mainWF(ExperimentBaseDirectoryCache):
     #BeginANTS.inputs.regularization_gradient_field_sigma = 3
     #BeginANTS.inputs.regularization_deformation_field_sigma = 0
     #BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
+    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
+    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
+    ## Utility Function
+    ## This will make a list of list pairs for defining the concatenation of transforms
+    ## wp=['wp1.nii','wp2.nii','wp3.nii']
+    ## af=['af1.mat','af2.mat','af3.mat']
+    ## ll=map(list,zip(af,wp))
+    ## ll
+    ##[['af1.mat', 'wp1.nii'], ['af2.mat', 'wp2.nii'], ['af3.mat', 'wp3.nii']]
+    def MakeListsOfTransformLists(warpTransformList, AffineTransformList):
+        return map(list, zip(warpTransformList,AffineTransformList))
+    MakeTransformsLists = pe.Node(interface=util.Function(function=MakeListsOfTransformLists,input_names=['warpTransformList', 'AffineTransformList'], output_names=['out']), 
+                    run_without_submitting=True,
+                    name='MakeTransformsLists')
+    MakeTransformsLists.inputs.function_str = functionString1
+    MakeTransformsLists.inputs.ignore_exception = True
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', MakeTransformsLists, 'warpTransformList')
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', MakeTransformsLists, 'AffineTransformList')
+
+    ## Now warp all the images
     wimtdeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(), name ='wimtdeformed', iterfield=['transformation_series', 'moving_image'])
+    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', wimtdeformed, 'moving_image')
+    antsTemplateBuildSingleIterationWF.connect(MakeTransformsLists, 'out', wimtdeformed, 'transformation_series')
 
-    AvgDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
-    AvgDeformedImages.inputs.dimension = 3
-    AvgDeformedImages.inputs.output_average_image = 'MYtemplate.nii.gz'
-    AvgDeformedImages.inputs.normalize = 1
-
+    ## Now average all affine transforms together
     AvgAffineTransform = pe.Node(interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform')
     AvgAffineTransform.inputs.dimension = 3
-    AvgAffineTransform.inputs.output_affine_transform = 'MYtemplateAffine.txt'
+    AvgAffineTransform.inputs.output_affine_transform = iterationPhasePrefix+'Affine.mat'
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms')
 
+    ## Now average the warp fields togther
     AvgWarpImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgWarpImages')
     AvgWarpImages.inputs.dimension = 3
-    AvgWarpImages.inputs.output_average_image = 'MYtemplatewarp.nii.gz'
+    AvgWarpImages.inputs.output_average_image = iterationPhasePrefix+'warp.nii.gz'
     AvgWarpImages.inputs.normalize = 1
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', AvgWarpImages, 'images')
 
+    ## Now average the images together
     MultiplyWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='MultiplyWarpImage')
     MultiplyWarpImage.inputs.dimension = 3
     MultiplyWarpImage.inputs.second_input = -0.25
-    MultiplyWarpImage.inputs.output_product_image = 'MYtemplatewarp.nii.gz'
+    MultiplyWarpImage.inputs.output_product_image = iterationPhasePrefix+'warp.nii.gz'
+    antsTemplateBuildSingleIterationWF.connect(AvgWarpImages, 'average_image', MultiplyWarpImage, 'first_input')
+
+    ## Now 
+    AvgDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
+    AvgDeformedImages.inputs.dimension = 3
+    AvgDeformedImages.inputs.output_average_image = iterationPhasePrefix+'.nii.gz'
+    AvgDeformedImages.inputs.normalize = 1
+    antsTemplateBuildSingleIterationWF.connect(wimtdeformed, "output_image", AvgDeformedImages, 'images')
 
     Warptemplates = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'Warptemplates')
     Warptemplates.inputs.invert_affine = [1]
+    antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', Warptemplates, 'reference_image')
+    antsTemplateBuildSingleIterationWF.connect(MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image')
+    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series')
 
     WarpAll = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'WarpAll')
     WarpAll.inputs.invert_affine = [1]
-
-    functionString1 = 'def func(arg1, arg2): return map(list, zip(arg1,arg2))'
-    ListAppender1 = pe.Node(interface=util.Function(input_names=['arg1', 'arg2'], output_names=['out']), name='ListAppender1')
-    ListAppender1.inputs.function_str = functionString1
-    ListAppender1.inputs.ignore_exception = True
+    antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'moving_image')
+    antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'reference_image')
 
     functionString2 = 'def func(arg1, arg2, arg3, arg4, arg5): return [arg1, arg2, arg3, arg4, arg5]'
     fi = pe.Node(interface=util.Function(input_names=['arg1', 'arg2', 'arg3', 'arg4', 'arg5'], output_names=['out']), name='ListAppender2')
     fi.inputs.function_str = functionString2
     fi.inputs.ignore_exception = True
 
-    mainWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
-    mainWF.connect(inputSpec, 'images', wimtdeformed, 'moving_image')
-    mainWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
-    mainWF.connect(BeginANTS, 'warp_transform', ListAppender1, 'arg1')
-    mainWF.connect(BeginANTS, 'affine_transform', ListAppender1, 'arg2')
-    mainWF.connect(BeginANTS, 'warp_transform', AvgWarpImages, 'images')
-    mainWF.connect(BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms')
 
-    mainWF.connect(ListAppender1, 'out', wimtdeformed, 'transformation_series')
+    antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', fi, 'arg1')
+    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg2')
+    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg3')
+    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg4')
+    antsTemplateBuildSingleIterationWF.connect(Warptemplates, 'output_image', fi, 'arg5')
 
-    mainWF.connect(wimtdeformed, "output_image", AvgDeformedImages, 'images')
+    antsTemplateBuildSingleIterationWF.connect(fi, 'out', WarpAll, 'transformation_series')
 
-    mainWF.connect(AvgWarpImages, 'average_image', MultiplyWarpImage, 'first_input')
 
-    mainWF.connect(AvgDeformedImages, 'average_image', Warptemplates, 'reference_image')
-    mainWF.connect(MultiplyWarpImage, 'product_image', Warptemplates, 'moving_image')
-    mainWF.connect(AvgAffineTransform, 'affine_transform', Warptemplates, 'transformation_series')
+    antsTemplateBuildSingleIterationWF.connect(WarpAll, 'output_image', outputSpec, 'template')
 
-    mainWF.connect(AvgAffineTransform, 'affine_transform', fi, 'arg1')
-    mainWF.connect(Warptemplates, 'output_image', fi, 'arg2')
-    mainWF.connect(Warptemplates, 'output_image', fi, 'arg3')
-    mainWF.connect(Warptemplates, 'output_image', fi, 'arg4')
-    mainWF.connect(Warptemplates, 'output_image', fi, 'arg5')
-
-    mainWF.connect(fi, 'out', WarpAll, 'transformation_series')
-
-    mainWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'moving_image')
-    mainWF.connect(AvgDeformedImages, 'average_image', WarpAll, 'reference_image')
-
-    mainWF.connect(WarpAll, 'output_image', outputSpec, 'template')
-
-    return mainWF
+    return antsTemplateBuildSingleIterationWF

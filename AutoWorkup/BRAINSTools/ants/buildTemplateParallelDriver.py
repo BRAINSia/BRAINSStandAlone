@@ -11,7 +11,11 @@
 ##
 #################################################################################
 
-from buildtemplateparallel import initAvgWF, mainWF
+### USE ANTS
+#from buildtemplateparallel import antsSimpleAverageWF, antsTemplateBuildSingleIterationWF
+### USE ANTS REGISTRATION
+from antsSimpleAverageWF import antsSimpleAverageWF
+from buildtemplateparallel_antsRegistration import antsTemplateBuildSingleIterationWF
 import nipype.pipeline.engine as pe
 import argparse
 import nipype.interfaces.utility as util
@@ -46,9 +50,6 @@ def BuildTemplateParallelWorkFlow(ExperimentBaseDirectoryCache, ExperimentBaseDi
         }
     btp.base_dir = ExperimentBaseDirectoryCache
 
-    myInitAvgWF = initAvgWF(ExperimentBaseDirectoryCache)
-    myMainWF = mainWF(ExperimentBaseDirectoryCache)
-
     Handle = open(subject_data_file, 'r')
     image_string = Handle.read()
     Handle.close()
@@ -56,6 +57,9 @@ def BuildTemplateParallelWorkFlow(ExperimentBaseDirectoryCache, ExperimentBaseDi
 
     infosource = pe.Node(interface=util.IdentityInterface(fields=['images']), name='infoSource' )
     infosource.inputs.images = image_list
+
+    myInitAvgWF = antsSimpleAverageWF()
+    myMainWF = antsTemplateBuildSingleIterationWF()
 
     btp.connect(infosource, 'images', myInitAvgWF, 'InputSpec.images')
     btp.connect(infosource, 'images', myMainWF, 'InputSpec.images')
