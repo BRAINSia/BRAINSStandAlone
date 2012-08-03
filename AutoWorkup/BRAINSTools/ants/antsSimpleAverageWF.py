@@ -18,7 +18,7 @@ def antsSimpleAverageWF():
 
     InitAvgImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name ='InitAvgImages')
     InitAvgImages.inputs.dimension = 3
-    InitAvgImages.inputs.output_average_image = 'MYtemplate.nii.gz'
+    InitAvgImages.inputs.output_average_image = 'AverageImage.nii.gz'
     InitAvgImages.inputs.normalize = 1
 
     antsSimpleAverageWF.connect(inputSpec, 'images', InitAvgImages, 'images')
