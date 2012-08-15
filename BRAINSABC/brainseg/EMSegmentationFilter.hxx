@@ -115,7 +115,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
   m_WarpGrid[2] = 5;
 
   m_UpdateRequired = true;
-
+  m_AirIndex = 1;
   this->m_PriorNames.clear();
   // m_ClassToPriorMapping.clear();
 }
@@ -1559,8 +1559,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
       //       to be used during the warping process.
       //       For AIR, it should be 1.0,  for all others is should be 0.0
       //
-      const LOOPITERTYPE HACK_AIR_INDEX = 0;
-      m_PriorsBackgroundValues[HACK_AIR_INDEX] = 1;
+      m_PriorsBackgroundValues[this->GetAirIndex()] = 1;
       }
 
     this->EMLoop();

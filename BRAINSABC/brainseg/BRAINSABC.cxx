@@ -1305,6 +1305,7 @@ int main(int argc, char * *argv)
     // __MAX__PROBS
     {
     std::vector<FloatImagePointer> atlasOriginalPriors( PriorNames.size() );
+    unsigned int AirIndex=10000;
     for( unsigned int i = 0; i < PriorNames.size(); i++ )
       {
       typedef itk::ImageFileReader<FloatImageType> ReaderType;
@@ -1314,7 +1315,14 @@ int main(int argc, char * *argv)
       priorReader->Update();
       FloatImageType::Pointer temp = priorReader->GetOutput();
       atlasOriginalPriors[i] = temp;
+      // Set the index for the background values.
+      if(PriorNames[i] == std::string("AIR") )
+        {
+        AirIndex=i;
+        }
       }
+    std::cout << "MESSAGE: USING AIR INDEX of :" << AirIndex << std::endl;
+    segfilter->SetAirIndex(AirIndex);
     segfilter->SetPriors(atlasOriginalPriors);
     }
     {
