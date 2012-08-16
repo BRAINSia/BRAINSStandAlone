@@ -218,7 +218,7 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE):
       iterfield=['images','output_average_image'],
       name='AvgDeformedPassiveImages')
     AvgDeformedPassiveImages.inputs.dimension = 3
-    AvgDeformedPassiveImages.inputs.normalize = 1
+    AvgDeformedPassiveImages.inputs.normalize = 0
     antsTemplateBuildSingleIterationWF.connect(RenestDeformedPassiveImagesNode, "nested_imagetype_list", AvgDeformedPassiveImages, 'images')
     antsTemplateBuildSingleIterationWF.connect(RenestDeformedPassiveImagesNode, "outputAverageImageName_list", AvgDeformedPassiveImages, 'output_average_image')
 
