@@ -22,16 +22,42 @@ import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import Merge, Split, Function, Rename, IdentityInterface
 
-def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE):
+##
+## NOTE:  The modes can be either 'SINGLE_IMAGE' or 'MULTI'
+##        'SINGLE_IMAGE' is quick shorthand when you are building an atlas with a single subject, then registration can
+##                    be short-circuted
+##        any other string indicates the normal mode that you would expect and replicates the shell script build_template_parallel.sh
+def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='MULTI'):
 
     antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'ANTSTemplateBuildSingleIterationWF_'+iterationPhasePrefix)
 
     inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image','ListOfPassiveImagesDictionararies']),
                 run_without_submitting=True,
                 name='InputSpec')
+    ## HACK: TODO: Need to move all local functions to a common untility file, or at the top of the file so that
+    ##             they do not change due to re-indenting.  Otherwise re-indenting for flow control will trigger
+    ##             their hash to change.
+    ## HACK: TODO: REMOVE 'transforms_list' it is not used.  That will change all the hashes
+    ## HACK: TODO: Need to run all python files through the code beutifiers.  It has gotten pretty ugly.
     outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template','transforms_list','passive_deformed_templates']),
                 run_without_submitting=True,
                 name='OutputSpec')
+
+    if mode == 'SINGLE_IMAGEXX':
+      ### HACK:  A more general utility that is reused should be created.
+      print "HACK: DOING SINGLE_IMAGE ", mode
+      def GetFirstListElement(this_list):
+          return this_list[0]
+      antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('images', GetFirstListElement ), 'template')] ), ])
+      ##HACK THIS DOES NOT WORK BECAUSE FILE NAMES ARE WRONG.
+      antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('ListOfPassiveImagesDictionararies', GetFirstListElement ), 'passive_deformed_templates')] ), ])
+      return antsTemplateBuildSingleIterationWF
+
+    print "HACK: DOING MULTI_IMAGE ", mode
+    ##import sys
+    ##sys.exit(-1)
+
+
 
     ### NOTE MAP NODE! warp each of the original images to the provided fixed_image as the template
     BeginANTS=pe.MapNode(interface=ants.ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
@@ -44,13 +70,18 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE):
     BeginANTS.inputs.radius = [5]
     BeginANTS.inputs.transformation_model = 'SyN'
     BeginANTS.inputs.gradient_step_length = 0.25
-    BeginANTS.inputs.number_of_iterations = [50, 35, 15]
+    if mode == 'SINGLE_IMAGE_IMAGE':
+        ## HACK:  Just short circuit time consuming step if only registering a single image.
+        BeginANTS.inputs.number_of_iterations = [1]
+        BeginANTS.inputs.number_of_affine_iterations = [1]
+    else:
+        BeginANTS.inputs.number_of_iterations = [50, 35, 15]
+        BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
     BeginANTS.inputs.use_histogram_matching = True
     BeginANTS.inputs.mi_option = [32, 16000]
     BeginANTS.inputs.regularization = 'Gauss'
     BeginANTS.inputs.regularization_gradient_field_sigma = 3
     BeginANTS.inputs.regularization_deformation_field_sigma = 0
-    BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
