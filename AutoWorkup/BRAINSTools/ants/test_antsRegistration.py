@@ -5,31 +5,38 @@
 import antsRegistration
 
 test = antsRegistration.antsRegistration()
-test.inputs.fixed_image = ['/Volumes/scratch/antsbuildtemplate/TEST_CACHE_3images_antsReg1/buildtemplateparallel/initAvgWF/InitAvgImages/MYtemplate.nii.gz']
-test.inputs.moving_image = ['/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/02_T1_half.nii.gz']
-test.inputs.metric = "CC"
-test.inputs.output_transform_prefix = "MY"
-#test.inputs.fixed_image_mask = "SUBJ_A_small_T2_mask.nii.gz"
-#test.inputs.moving_image_mask = "SUBJ_B_small_T2_mask.nii.gz"
-#test.inputs.initial_fixed_transform = "20120430_1348_txfmv2fv_affine.mat"
-test.inputs.transform = ["Affine[1.0]","SyN[0.25,3.0,0.0]"]
-test.inputs.number_of_iterations = [[50, 35, 15], [50, 35, 15]]
-#test.inputs.convergence_threshold = 1e-6
-#test.inputs.convergence_window_size = 10
-test.inputs.shrink_factors = [[3,2,1],[3,2,1]]
-test.inputs.smoothing_sigmas = [[0,0,0],[0,0,0]]
-test.inputs.use_histogram_matching = True
-#test.inputs.output_warped_image = True
-#test.inputs.output_warped_image = "BtoA"
+test.inputs.fixed_image = ['/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/t1_average_BRAINSABC_clipped.nii.gz']*2
+test.inputs.moving_image = ['/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/template_t1_clipped.nii.gz']*2
+test.inputs.output_transform_prefix = "t1_average_BRAINSABC_To_template_t1_clipped"
+test.inputs.initial_moving_transform = '/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/lmk_init.mat'
+test.inputs.transform = ['Affine', 'SyN']
+test.inputs.transform_parameters = [(2.0,), (0.25, 3.0, 0.0)]
+test.inputs.number_of_iterations = [[1500, 200], [100, 50, 30]]
+test.inputs.dimension = 3
+test.inputs.write_composite_transform = True
+test.inputs.metric = ['Mattes']*2
+test.inputs.metric_weight = [1]*2 # Default (value ignored currently by ANTs)
+test.inputs.number_of_bins = [32]*2
+test.inputs.sampling_strategy = ['Random', None]
+test.inputs.sampling_percentage = [0.05, None]
+test.inputs.convergence_threshold = [1.e-8, 1.e-9]
+test.inputs.convergence_window_size = [20]*2
+test.inputs.smoothing_sigmas = [[1,0], [2,1,0]]
+test.inputs.shrink_factors = [[2,1], [3,2,1]]
+test.inputs.use_estimate_learning_rate_once = [True, True]
+test.inputs.use_histogram_matching = [True, True] # This is the default
+test.inputs.output_warped_image = 't1_average_BRAINSABC_To_template_t1_clipped_INTERNAL_WARPED.nii.gz'
 #test.inputs.output_inverse_warped_image = True
 
-#result = test.run()
-#print result.outputs
+result = test.run()
+print result.outputs
 
-target = 'antsRegistration --dimensionality 3 --output MY --metric "CC[/Volumes/scratch/antsbuildtemplate/TEST_CACHE_3images_antsReg1/buildtemplateparallel/initAvgWF/InitAvgImages/MYtemplate.nii.gz,/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/02_T1_half.nii.gz,1,5]" --transform "Affine[1.0]" --convergence "[50x35x15,1e-06,10]" --shrink-factors 3x2x1 --smoothing-sigmas 0x0x0 --metric "CC[/Volumes/scratch/antsbuildtemplate/TEST_CACHE_3images_antsReg1/buildtemplateparallel/initAvgWF/InitAvgImages/MYtemplate.nii.gz,/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/02_T1_half.nii.gz,1,5]" --transform "SyN[0.25,3.0,0.0]" --convergence "[50x35x15,1e-06,10]" --shrink-factors 3x2x1 --smoothing-sigmas 0x0x0 --use-histogram-matching 1'
+target = 'antsRegistration --dimensionality 3 --initial-moving-transform [/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/lmk_init.mat,0] --output [t1_average_BRAINSABC_To_template_t1_clipped,t1_average_BRAINSABC_To_template_t1_clipped_INTERNAL_WARPED.nii.gz] --transform Affine[2.0] --metric Mattes[/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/t1_average_BRAINSABC_clipped.nii.gz,/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/template_t1_clipped.nii.gz,1,32,Random,0.05] --convergence [1500x200,1e-08,20] --smoothing-sigmas 1x0 --shrink-factors 2x1 --use-estimate-learning-rate-once 1 --use-histogram-matching 1 --transform SyN[0.25,3.0,0.0] --metric Mattes[/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/t1_average_BRAINSABC_clipped.nii.gz,/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/template_t1_clipped.nii.gz,1,32] --convergence [100x50x30,1e-09,20] --smoothing-sigmas 2x1x0 --shrink-factors 3x2x1 --use-estimate-learning-rate-once 1 --use-histogram-matching 1 --write-composite-transform 1'
 
 print test.cmdline
+print ' test cmdline'
 print '++++++++++++++++'
+print '    target'
 print target
-
+print ''
 assert test.cmdline.strip() == target.strip()
