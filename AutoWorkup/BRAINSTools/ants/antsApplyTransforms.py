@@ -112,9 +112,26 @@ class AntsApplyTransformsInputSpec(ANTSCommandInputSpec):
     output_warped_file_name = File(argstr='--output %s', mandatory=True, desc=(''))
     print_out_composite_warp_file = traits.Enum(0, 1, requires=["output_warped_file_name"], desc=(''))
     interpolation = traits.Str(argstr='--interpolation %s', mandatory = True)
+    print_out_composite_warp_file = traits.Enum(0, 1, requires=["output_warped_file_name"], desc=('')) # TODO: Change to boolean
+    interpolation = traits.Enum('Linear',
+                                'NearestNeighbor',
+                                'CosineWindowedSinc',
+                                'WelchWindowedSinc',
+                                'HammingWindowedSinc',
+                                'LanczosWindowedSinc',
+                                # 'MultiLabel',
+                                # 'Gaussian',
+                                # 'BSpline',
+                                argstr='%s', mandatory = True)
+    # TODO: Implement these options for multilabel, gaussian, and bspline
+    # interpolation_sigma = traits.Float(requires=['interpolation'])
+    # interpolation_alpha = traits.Float(requires=['interpolation_sigma'])
+    # bspline_order = traits.Int(3, requires=['interpolation'])
     default_value = traits.Int(argstr='--default-value %d', mandatory = True)
     transforms = traits.List(File(exists=True), argstr='%s', mandatory=True, desc=(''))
     invert_transforms_list = traits.List(traits.Enum(0, 1), requires=["transforms"])
+
+    invert_transforms_list = traits.List(traits.Bool(), requires=["transforms"]) # TODO: Update change to boolean
 
 class AntsApplyTransformsOutputSpec(TraitedSpec):
     warped_image = File(exists=True, desc='Warped image')
@@ -145,6 +162,8 @@ class AntsApplyTransforms(ANTSCommand):
                     raise Exception("ERROR: The useInverse list must have the same number of entries as the transformsFileName list.")
             else:
                 retval.append("--transform %s"%(self.inputs.transforms[ii]))
+            else:
+                retval.append("--transform %s" % self.inputs.transforms[ii])
         return " ".join(retval)
 
     def _getOutputWarpedFileName(self):
@@ -158,6 +177,9 @@ class AntsApplyTransforms(ANTSCommand):
             return self._getOutputWarpedFileName()
         elif opt == "transforms":
             return self._getTransformFileNames()
+        elif opt == 'interpolation':
+            # TODO: handle multilabel, gaussian, and bspline options
+            return '--interpolation %s' % self.inputs.interpolation
         return super(AntsApplyTransforms, self)._format_arg(opt, spec, val)
 
     def _list_outputs(self):
