@@ -85,7 +85,7 @@ version: 3.0.0
 
 documentation-url: http://www.slicer.org/slicerWiki/index.php/Documentation/4.1/Modules/BRAINSFit
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Hans J. Johnson, hans-johnson -at- uiowa.edu, http://www.psychiatry.uiowa.edu
 

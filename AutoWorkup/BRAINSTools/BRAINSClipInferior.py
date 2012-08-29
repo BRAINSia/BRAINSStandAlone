@@ -21,7 +21,7 @@ class BRAINSClipInferior(SlicerCommandLine):
 category: Utilities.BRAINS
 
 description: This program will read the inputVolume as a short int image, write the BackgroundFillValue everywhere inferior to the lower bound, and write the resulting clipped short int image in the outputVolume.
-    
+
 
 version: 1.0
 

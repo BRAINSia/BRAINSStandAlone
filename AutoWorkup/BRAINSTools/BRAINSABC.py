@@ -49,7 +49,7 @@ class BRAINSABC(SlicerCommandLine):
 category: Segmentation.Specialized
 
 description: Atlas-based tissue segmentation method.  This is an algorithmic extension of work done by XXXX at UNC and Utah XXXX need more description here.
-  
+
 
 """
 

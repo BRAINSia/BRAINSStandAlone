@@ -59,4 +59,3 @@ modules_list = [
 
 launcher=['']
 generate_all_classes(modules_list=modules_list, launcher=[])
-

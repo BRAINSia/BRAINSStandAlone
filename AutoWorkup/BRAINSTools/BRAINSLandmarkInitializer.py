@@ -23,7 +23,7 @@ description: Create transformation file (*mat) from a pair of landmarks (*fcsv) 
 
 version:  1.0
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Eunyoung Regina Kim
 

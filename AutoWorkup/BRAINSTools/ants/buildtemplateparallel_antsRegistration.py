@@ -62,7 +62,7 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):
     ##[['af1.mat', 'wp1.nii'], ['af2.mat', 'wp2.nii'], ['af3.mat', 'wp3.nii']]
     def MakeListsOfTransformLists(warpTransformList, AffineTransformList):
         return map(list, zip(warpTransformList,AffineTransformList))
-    MakeTransformsLists = pe.Node(interface=util.Function(function=MakeListsOfTransformLists,input_names=['warpTransformList', 'AffineTransformList'], output_names=['out']), 
+    MakeTransformsLists = pe.Node(interface=util.Function(function=MakeListsOfTransformLists,input_names=['warpTransformList', 'AffineTransformList'], output_names=['out']),
                     run_without_submitting=True,
                     name='MakeTransformsLists')
     MakeTransformsLists.inputs.ignore_exception = True

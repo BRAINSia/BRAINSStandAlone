@@ -269,6 +269,3 @@ def create_BRAINSCut_XML(rho,phi,theta,model,
     r_struct_fname="{output_dir}/r_{structure}_seg.nii.gz".format(output_dir=output_dir,structure=structure)
     l_struct_fname="{output_dir}/l_{structure}_seg.nii.gz".format(output_dir=output_dir,structure=structure)
     return os.path.realpath(xml_filename), [ r_struct_fname, l_struct_fname ]
-
-
-

@@ -41,4 +41,3 @@ class gtractTransformToDeformationField(CommandLine):
                 else:
                     return ""
         return super(gtractTransformToDeformationField, self)._format_arg(name, spec, value)
-

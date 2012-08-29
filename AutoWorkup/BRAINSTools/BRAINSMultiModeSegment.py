@@ -24,15 +24,15 @@ class BRAINSMultiModeSegment(SlicerCommandLine):
 category: Utilities.BRAINS
 
 description: This tool creates binary regions based on segmenting multiple image modalitities at once.
-  
+
 
 version: 2.4.1
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Hans J. Johnson, hans-johnson -at- uiowa.edu, http://www.psychiatry.uiowa.edu
 
-acknowledgements: Hans Johnson(1,3,4); Gregory Harris(1), Vincent Magnotta(1,2,3);   (1=University of Iowa Department of Psychiatry, 2=University of Iowa Department of Radiology, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering)  
+acknowledgements: Hans Johnson(1,3,4); Gregory Harris(1), Vincent Magnotta(1,2,3);   (1=University of Iowa Department of Psychiatry, 2=University of Iowa Department of Radiology, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering)
 
 """
 

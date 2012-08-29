@@ -15,5 +15,3 @@ print "--dimensionality 3    --input SUBJ_B_T1_resampled.nii.gz    --reference-i
 res = at.run()
 
 print res.outputs
-
-

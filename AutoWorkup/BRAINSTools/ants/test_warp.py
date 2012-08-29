@@ -12,7 +12,7 @@ test.inputs.transformation_series = ['{0}MY01_T1_halfAffine.txt'.format(imagedir
 test.inputs.invert_affine = [1]
 
 
-#'{0}MY02_T1_halfAffine.txt'.format(imagedir), 
+#'{0}MY02_T1_halfAffine.txt'.format(imagedir),
 #result = test.run()
 #print result.outputs
 

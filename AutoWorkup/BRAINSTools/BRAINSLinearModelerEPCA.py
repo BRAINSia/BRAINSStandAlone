@@ -17,10 +17,10 @@ class BRAINSLinearModelerEPCA(SlicerCommandLine):
 
 category: Utilities.BRAINS
 
-description: 
+description:
       Training linear model using EPCA. Implementation based on my MS thesis, "A METHOD FOR AUTOMATED LANDMARK CONSTELLATION DETECTION USING EVOLUTIONARY PRINCIPAL COMPONENTS AND STATISTICAL SHAPE MODELS"
 
-    
+
 
 version: 1.0
 

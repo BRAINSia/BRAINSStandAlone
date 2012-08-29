@@ -16,5 +16,3 @@ print "N4BiasFieldCorrection --image-dimension 3 --input-image SUBJ_A_small_T1.n
 res = n4.run()
 
 print res.outputs
-
-

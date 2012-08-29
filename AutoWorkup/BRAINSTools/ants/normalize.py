@@ -458,7 +458,7 @@ class WarpImageMultiTransform(ANTSCommand):
                     affine_counter += 1
                 return ' '.join(series)
             else:
-              return ' '.join(val)
+                return ' '.join(val)
 
         return super(WarpImageMultiTransform, self)._format_arg(opt, spec, val)
 
@@ -470,4 +470,3 @@ class WarpImageMultiTransform(ANTSCommand):
                                                       self.inputs.out_postfix,
                                                       ext)))
         return outputs
-

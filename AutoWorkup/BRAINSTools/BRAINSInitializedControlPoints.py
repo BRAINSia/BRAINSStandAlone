@@ -19,19 +19,19 @@ class BRAINSInitializedControlPointsOutputSpec(TraitedSpec):
 class BRAINSInitializedControlPoints(SlicerCommandLine):
     """title: Initialized Control Points (BRAINS)
 
-category:  Utilities.BRAINS 
+category:  Utilities.BRAINS
 
-description: 
+description:
   Outputs bspline control points as landmarks
-  
+
 
 version: 0.1.0.$Revision: 916 $(alpha)
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Mark Scully
 
-acknowledgements: 
+acknowledgements:
 This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  Additional support for Mark Scully and Hans Johnson at the University of Iowa.
 
 

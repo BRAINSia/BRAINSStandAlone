@@ -44,14 +44,14 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
                 name='OutputSpec')
 
     if mode == 'SINGLE_IMAGEXX':
-      ### HACK:  A more general utility that is reused should be created.
-      print "HACK: DOING SINGLE_IMAGE ", mode
-      def GetFirstListElement(this_list):
-          return this_list[0]
-      antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('images', GetFirstListElement ), 'template')] ), ])
-      ##HACK THIS DOES NOT WORK BECAUSE FILE NAMES ARE WRONG.
-      antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('ListOfPassiveImagesDictionararies', GetFirstListElement ), 'passive_deformed_templates')] ), ])
-      return antsTemplateBuildSingleIterationWF
+        ### HACK:  A more general utility that is reused should be created.
+        print "HACK: DOING SINGLE_IMAGE ", mode
+        def GetFirstListElement(this_list):
+            return this_list[0]
+        antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('images', GetFirstListElement ), 'template')] ), ])
+        ##HACK THIS DOES NOT WORK BECAUSE FILE NAMES ARE WRONG.
+        antsTemplateBuildSingleIterationWF.connect( [ (inputSpec, outputSpec, [(('ListOfPassiveImagesDictionararies', GetFirstListElement ), 'passive_deformed_templates')] ), ])
+        return antsTemplateBuildSingleIterationWF
 
     print "HACK: DOING MULTI_IMAGE ", mode
     ##import sys
@@ -185,18 +185,18 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
         tranCount=len(transformation_series)
         passiveImagesCount = len(ListOfPassiveImagesDictionararies[0])
         if subjCount != tranCount:
-          print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
-          sys.exit(-1)
+            print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
+            sys.exit(-1)
         for subjIndex in range(0,subjCount):
             if passiveImagesCount != len(ListOfPassiveImagesDictionararies[subjIndex]):
-                 print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
-                 sys.exit(-1)
+                print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
+                sys.exit(-1)
             subjImgDictionary=ListOfPassiveImagesDictionararies[subjIndex]
             subjToAtlasTransform=transformation_series[subjIndex]
             for imgname,img in subjImgDictionary.items():
-               flattened_images.append(img)
-               flattened_image_nametypes.append(imgname)
-               flattened_transforms.append(subjToAtlasTransform)
+                flattened_images.append(img)
+                flattened_image_nametypes.append(imgname)
+                flattened_transforms.append(subjToAtlasTransform)
         return flattened_images,flattened_transforms,flattened_image_nametypes
     FlattenTransformAndImagesListNode = pe.Node( Function(function=FlattenTransformAndImagesList,
                                   input_names = ['ListOfPassiveImagesDictionararies','transformation_series'],
@@ -224,15 +224,15 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
         image_type_list=list()
         ## make empty_list, this is not efficient, but it works
         for name in flattened_image_nametypes:
-           image_dictionary_of_lists[name]=list()
+            image_dictionary_of_lists[name]=list()
         for index in range(0,all_images_size):
-          curr_name=flattened_image_nametypes[index]
-          curr_file=deformedPassiveImages[index]
-          image_dictionary_of_lists[curr_name].append(curr_file)
+            curr_name=flattened_image_nametypes[index]
+            curr_file=deformedPassiveImages[index]
+            image_dictionary_of_lists[curr_name].append(curr_file)
         for image_type,image_list in image_dictionary_of_lists.items():
-          nested_imagetype_list.append(image_list)
-          outputAverageImageName_list.append('AVG_'+image_type+'.nii.gz')
-          image_type_list.append('WARP_AVG_'+image_type)
+            nested_imagetype_list.append(image_list)
+            outputAverageImageName_list.append('AVG_'+image_type+'.nii.gz')
+            image_type_list.append('WARP_AVG_'+image_type)
         print "\n"*10
         print "HACK: ", nested_imagetype_list
         print "HACK: ", outputAverageImageName_list

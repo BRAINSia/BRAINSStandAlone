@@ -115,7 +115,7 @@ class AntsApplyTransformsInputSpec(ANTSCommandInputSpec):
     default_value = traits.Int(argstr='--default-value %d', mandatory = True)
     transforms = traits.List(File(exists=True), argstr='%s', mandatory=True, desc=(''))
     invert_transforms_list = traits.List(traits.Enum(0, 1), requires=["transforms"])
-    
+
 class AntsApplyTransformsOutputSpec(TraitedSpec):
     warped_image = File(exists=True, desc='Warped image')
 
@@ -134,7 +134,7 @@ class AntsApplyTransforms(ANTSCommand):
     _cmd = '/ipldev/scratch/johnsonhj/src/ANTS-Darwin-clang/bin/antsApplyTransforms'
     input_spec = AntsApplyTransformsInputSpec
     output_spec = AntsApplyTransformsOutputSpec
-    
+
     def _getTransformFileNames(self):
         retval = []
         for ii in range(len(self.inputs.transforms)):
@@ -143,10 +143,10 @@ class AntsApplyTransforms(ANTSCommand):
                     retval.append("--transform [%s,%s]"%(self.inputs.transforms[ii], self.inputs.invert_transforms_list[ii]))
                 else:
                     raise Exception("ERROR: The useInverse list must have the same number of entries as the transformsFileName list.")
-            else:                    
-                retval.append("--transform %s"%(self.inputs.transforms[ii]))    
+            else:
+                retval.append("--transform %s"%(self.inputs.transforms[ii]))
         return " ".join(retval)
-        
+
     def _getOutputWarpedFileName(self):
         if isdefined(self.inputs.print_out_composite_warp_file):
             return "--output [%s,%s]"%(self.inputs.output_warped_file_name, self.inputs.print_out_composite_warp_file)

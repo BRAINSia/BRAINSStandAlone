@@ -18,14 +18,14 @@ class GenerateLabelMapFromProbabilityMap(SlicerCommandLine):
 
 category: Utilities.BRAINS
 
-description: 
+description:
     Given a list of probability maps for labels, create a discrete label map where only the highest probability region is used for the labeling.
-  
+
 
 version: 0.1
 
 contributor: University of Iowa Department of Psychiatry, http:://www.psychiatry.uiowa.edu
-  
+
 
 """
 

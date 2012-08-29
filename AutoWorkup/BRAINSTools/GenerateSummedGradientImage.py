@@ -24,7 +24,7 @@ description: Automatic FeatureImages using neural networks
 
 version:  1.0
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Greg Harris, Eun Young Kim
 

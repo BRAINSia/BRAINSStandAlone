@@ -22,7 +22,7 @@ category: Filtering.FeatureDetection
 
 description:  Image Smoothing using Gradient Anisotropic Diffuesion Filer
 
-contributor:  This tool was developed by Eun Young Kim by modifying ITK Example 
+contributor:  This tool was developed by Eun Young Kim by modifying ITK Example
 
 """
 

@@ -42,4 +42,3 @@ class gtractInvertDeformationField(CommandLine):
                 else:
                     return ""
         return super(gtractInvertDeformationField, self)._format_arg(name, spec, value)
-
