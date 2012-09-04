@@ -326,8 +326,8 @@ class antsRegistration(CommandLine):
                 # Happens only on recursive call below.
                 # Return a string, NOT a list!
                 return '%s%dInverse%s' % (prefix, count, suffix)
-        return [self._outputFileNames(prefix, count, transform, True),
-                '%s%d%s' % (prefix, count, suffix)
+        return [ self._outputFileNames(prefix, count, transform, True),
+                '%s%d%s' % (prefix, count, suffix)]
 
     def _list_outputs(self):
         outputs = self._outputs().get()
@@ -342,24 +342,28 @@ class antsRegistration(CommandLine):
             fileNames = self._outputFileNames(self.inputs.output_transform_prefix,
                                               transformCount,
                                               self.inputs.transform[count])
-            for name in fileNames:
-                outputs['output_transform'].append(os.path.abspath(name))
+            if len(fileNames) == 1:
+                is_invertable = True
+                outputs['forward_transforms'].append(os.path.abspath(fileNames[0]))
+            elif len(fileNames) == 2:
+                is_invertable = False
+                outputs['forward_transforms'].append(os.path.abspath(fileNames[1]))
             else:
-                transform_suffix = '%dWarp.nii.gz' % transformCount
-                fileName = self.inputs.output_transform_prefix + transform_suffix
-                outputs['warp_transform'].append(os.path.abspath(fileName))
-                inverse_suffix = '%dInverseWarp.nii.gz' % transformCount
-                inverseName = self.inputs.output_transform_prefix + inverse_suffix
-                outputs['inverse_warp_transform'].append(os.path.abspath(inverseName))
+                assert len(fileNames) <= 2
+                assert len(fileNames) > 0
+            if self.inputs.invert_initial_moving_transform:
+                outputs['forward_invert_flags'].append(True)
+            else:
+                outputs['forward_invert_flags'].append(False)
+            outputs['reverse_transforms'].append(os.path.abspath(fileNames[0]))
+            outputs['reverse_invert_flags'].append(is_invertable)
             transformCount += 1
-        if isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
-            outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_image)
-        if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
-            outputs['inverse_warped_image'] = os.path.abspath(self.inputs.output_inverse_warped_image)
+        outputs['reverse_transforms'].reverse()
+        outputs['reverse_invert_flags'].reverse()
         if self.inputs.write_composite_transform:
             fileName = self.inputs.output_transform_prefix + 'Composite.h5'
             outputs['composite_transform'] = os.path.abspath(fileName)
-            if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
-                fileName = self.inputs.output_transform_prefix + 'InverseComposite.h5'
-                outputs['inverse_composite_transform'] = os.path.abspath(fileName)
+            fileName = self.inputs.output_transform_prefix + 'InverseComposite.h5'
+            outputs['inverse_composite_transform'] = os.path.abspath(fileName)
+
         return outputs
