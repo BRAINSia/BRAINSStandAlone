@@ -7,15 +7,6 @@ else(VTK_FOUND)
   message(FATAL_ERROR "VTK not found. Please set VTK_DIR.")
 endif(VTK_FOUND)
 
-set(VTK_LIBRARIES
-  vtkCommon
-  vtkFiltering
-  vtkImaging
-  vtkGraphics
-  vtkGenericFiltering
-  vtkIO
-)
-
 include_directories(
   ${VTK_INCLUDE_DIRS}
 #  ${CMAKE_CURRENT_SOURCE_DIR}/../basicimg
