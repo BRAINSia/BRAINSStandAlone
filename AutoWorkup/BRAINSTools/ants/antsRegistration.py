@@ -160,7 +160,7 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     moving_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
     # Input flags
     dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
-    invert_initial_moving_transform = traits.Bool(desc='', requires=["initial_moving_transform"])
+    invert_initial_moving_transform = traits.Bool(default=False, usedefault=True, desc='', requires=["initial_moving_transform"])
     # Metric flags
     metric = traits.List(traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes"),
                          mandatory=True, desc="")
@@ -183,7 +183,7 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     use_histogram_matching = traits.List(traits.Bool(argstr='%s', default=True, usedefault=True))
     # Transform flags
     write_composite_transform = traits.Bool(argstr='%s', default=False, usedefault=True, desc='')
-    transform = traits.List(traits.Enum('Rigid', 'Affine', 'CompositeAffine',
+    transforms = traits.List(traits.Enum('Rigid', 'Affine', 'CompositeAffine',
                                         'Similarity', 'Translation', 'BSpline',
                                         'GaussianDisplacementField', 'TimeVaryingVelocityField',
                                         'TimeVaryingBSplineVelocityField', 'SyN', 'BSplineSyN',
@@ -213,8 +213,8 @@ class antsRegistrationOutputSpec(TraitedSpec):
     reverse_transforms = traits.List(File(exists=True), desc='List of output transforms for reverse registration')
     forward_invert_flags = traits.List(traits.Bool(), desc='List of flags corresponding to the forward transforms')
     reverse_invert_flags = traits.List(traits.Bool(), desc='List of flags corresponding to the reverse transforms')
-    composite_transform = File(exists=True, desc='Composite transform file')
-    inverse_composite_transform = File(exists=True, desc='Inverse composite transform file')
+    composite_transform = traits.List(File(exists=True), desc='Composite transform file')
+    inverse_composite_transform = traits.List(File(exists=True), desc='Inverse composite transform file')
 
 
 class antsRegistration(CommandLine):
@@ -255,7 +255,7 @@ class antsRegistration(CommandLine):
 
     def _formatTransform(self, index):
         retval = []
-        retval.append('%s[' % self.inputs.transform[index])
+        retval.append('%s[' % self.inputs.transforms[index])
         parameters = ','.join([str(element) for element in self.inputs.transform_parameters[index]])
         retval.append('%s' % parameters)
         retval.append(']')
@@ -263,7 +263,7 @@ class antsRegistration(CommandLine):
 
     def _formatRegistration(self):
         retval = []
-        for ii in range(len(self.inputs.transform)):
+        for ii in range(len(self.inputs.transforms)):
             retval.append('--transform %s' % (self._formatTransform(ii)))
             retval.append('--metric %s' % self._formatMetric(ii))
             retval.append('--convergence %s' % self._formatConvergence(ii))
@@ -289,11 +289,11 @@ class antsRegistration(CommandLine):
         self._histogramBinsCount = 0
         if opt == 'moving_image_mask':
             return '--masks [%s,%s]' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
-        elif opt == 'transform':
-            self.numberOfTransforms = len(self.inputs.transform)
+        elif opt == 'transforms':
+            self.numberOfTransforms = len(self.inputs.transforms)
             return self._formatRegistration()
         elif opt == 'initial_moving_transform':
-            if isdefined(self.inputs.invert_initial_moving_transform) and self.inputs.invert_initial_moving_transform:
+            if self.inputs.invert_initial_moving_transform:
                 return '--initial-moving-transform [%s,1]' % self.inputs.initial_moving_transform
             else:
                 return '--initial-moving-transform [%s,0]' % self.inputs.initial_moving_transform
@@ -312,16 +312,17 @@ class antsRegistration(CommandLine):
         return super(antsRegistration, self)._format_arg(opt, spec, val)
 
     def _outputFileNames(self, prefix, count, transform, inverse=False):
-        transformMap = {'Rigid':'Rigid.mat',
+        self.transformMap = {'Rigid':'Rigid.mat',
                         'Affine':'Affine.mat',
                         'CompositeAffine':'Affine.mat',
                         'Similarity':'Similarity.mat',
                         'Translation':'Translation.mat',
                         'BSpline':'BSpline.txt'}
-        if transform in transformMap.keys():
-            suffix = tranformMap[transform]
+        if transform in self.transformMap.keys():
+            suffix = self.transformMap[transform]
             return ['%s%d%s' % (prefix, count, suffix)]
         else:
+            suffix = 'Warp.nii.gz'
             if inverse:
                 # Happens only on recursive call below.
                 # Return a string, NOT a list!
@@ -332,16 +333,20 @@ class antsRegistration(CommandLine):
     def _list_outputs(self):
         outputs = self._outputs().get()
         transformCount = 0
-        if isdefined(self.inputs.initial_moving_transform):
-            transformCount += 1
         outputs['forward_transforms'] = []
         outputs['forward_invert_flags'] = []
         outputs['reverse_transforms'] = []
         outputs['reverse_invert_flags'] = []
+        if isdefined(self.inputs.initial_moving_transform):
+            outputs['forward_transforms'].append(self.inputs.initial_moving_transform)
+            outputs['forward_invert_flags'].append(self.inputs.invert_initial_moving_transform)
+            outputs['reverse_transforms'].append(self.inputs.initial_moving_transform)
+            outputs['reverse_invert_flags'].append(not self.inputs.invert_initial_moving_transform)
+            transformCount += 1
         for count in range(self.numberOfTransforms):
             fileNames = self._outputFileNames(self.inputs.output_transform_prefix,
                                               transformCount,
-                                              self.inputs.transform[count])
+                                              self.inputs.transforms[count])
             if len(fileNames) == 1:
                 is_invertable = True
                 outputs['forward_transforms'].append(os.path.abspath(fileNames[0]))
@@ -351,19 +356,20 @@ class antsRegistration(CommandLine):
             else:
                 assert len(fileNames) <= 2
                 assert len(fileNames) > 0
-            if self.inputs.invert_initial_moving_transform:
-                outputs['forward_invert_flags'].append(True)
-            else:
-                outputs['forward_invert_flags'].append(False)
+            outputs['forward_invert_flags'].append(not is_invertable)
             outputs['reverse_transforms'].append(os.path.abspath(fileNames[0]))
             outputs['reverse_invert_flags'].append(is_invertable)
+            # if self.inputs.invert_initial_moving_transform:
+            #     outputs['forward_invert_flags'].append(True)
+            # else:
+            #     outputs['forward_invert_flags'].append(False)
             transformCount += 1
         outputs['reverse_transforms'].reverse()
         outputs['reverse_invert_flags'].reverse()
         if self.inputs.write_composite_transform:
             fileName = self.inputs.output_transform_prefix + 'Composite.h5'
-            outputs['composite_transform'] = os.path.abspath(fileName)
+            outputs['composite_transform'] = [os.path.abspath(fileName)]
             fileName = self.inputs.output_transform_prefix + 'InverseComposite.h5'
-            outputs['inverse_composite_transform'] = os.path.abspath(fileName)
+            outputs['inverse_composite_transform'] = [os.path.abspath(fileName)]
 
         return outputs
