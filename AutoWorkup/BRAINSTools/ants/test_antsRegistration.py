@@ -1,6 +1,6 @@
-# from nipype import config, logging
+#!/usr/bin/env python
+# from nipype import config
 # config.enable_debug_mode()
-# logging.update_logging(config)
 
 import antsRegistration
 
