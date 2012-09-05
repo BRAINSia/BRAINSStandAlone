@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
 """The antsRegistration module provides basic functions for interfacing with ants functions.
 
 COMMAND:
@@ -147,47 +149,74 @@ from nipype.interfaces.base import (CommandLine, CommandLineInputSpec,
                                     OutputMultiPath, isdefined,
                                     File, Directory)
 from nipype.utils.filemanip import split_filename
-#from nipype.interfaces.ants.base import ANTSCommand, ANTSCommandInputSpec
 
-#class antsRegistrationInputSpec(ANTSCommandInputSpec):
+
 class antsRegistrationInputSpec(CommandLineInputSpec):
-    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
-    fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
-    moving_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
-
-    metric = traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes", mandatory=True, desc="")
-    # TODO: Metric has not yet been implemented in the executable
-    metric_weight = traits.Int(1,requires=['metric'], usedefault=True, desc="Note that the metricWeight is currently not used. Rather, it is a temporary place holder until multivariate metrics are available for a single stage.")
-    radius = traits.Int(5,requires=['metric'], usedefault=True,desc='')
-
-    sampling_strategy = traits.Enum("Regular", "Random", requires=['metric'], default='Regular', desc='')
-    sampling_percentage = traits.Range(low=0.0, high=1.0, require=['metric'], desc='')
+    # Initial inputs
     fixed_image_mask = File(mandatory=False, desc=(''), requires=['moving_image_mask'], exists=True)
     moving_image_mask = File(argstr='%s', mandatory=False, desc='', requires=['fixed_image_mask'], exists=True)
     initial_moving_transform = File(argstr='%s', desc='', exists=True)
-    invert_initial_moving_transform = traits.Bool(desc='', requires=["initial_moving_transform"])
-    transform = traits.List(traits.Str(),argstr='%s', mandatory = True)
-
-    use_estimate_learning_rate_once = traits.Bool(argstr="--use-estimate-learning-rate-once")
-    use_histogram_matching = traits.Bool(argstr='%s', default=True, usedefault=True)
+    fixed_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+    moving_image = InputMultiPath(File(exists=True), mandatory=True, desc=('image to apply transformation to (generally a coregistered functional)') )
+    # Input flags
+    dimension = traits.Enum(3, 2, argstr='--dimensionality %d', usedefault=True, desc='image dimension (2 or 3)')
+    invert_initial_moving_transform = traits.Bool(default=False, usedefault=True, desc='', requires=["initial_moving_transform"])
+    # Metric flags
+    metric = traits.List(traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes"),
+                         mandatory=True, desc="")
+    metric_weight = traits.List(traits.Int(1, usedefault=True),
+                                requires=['metric'], mandatory=True,
+                                desc="Note that the metricWeight is currently not used. \
+                                Rather, it is a temporary place holder until multivariate \
+                                metrics are available for a single stage.")
+    radius = traits.List(traits.Int(5, usedefault=True),
+                         requires=['metric_weight'], desc='')
+    number_of_bins = traits.List(traits.Int(5, usedefault=True),
+                                 requires=['metric_weight'], desc='')
+    sampling_strategy = traits.List(traits.Either(traits.Enum("Regular", "Random", usedefault=True),
+                                                  None),
+                                    requires=['metric_weight'], desc='')
+    sampling_percentage = traits.List(traits.Either(traits.Range(low=0.0, high=1.0),
+                                                    None),
+                                      requires=['sampling_strategy'], desc='')
+    use_estimate_learning_rate_once = traits.List(traits.Bool(), desc='')
+    use_histogram_matching = traits.List(traits.Bool(argstr='%s', default=True, usedefault=True))
+    # Transform flags
+    write_composite_transform = traits.Bool(argstr='%s', default=False, usedefault=True, desc='')
+    transforms = traits.List(traits.Enum('Rigid', 'Affine', 'CompositeAffine',
+                                        'Similarity', 'Translation', 'BSpline',
+                                        'GaussianDisplacementField', 'TimeVaryingVelocityField',
+                                        'TimeVaryingBSplineVelocityField', 'SyN', 'BSplineSyN',
+                                        'Exponential', 'BSplineExponential'), argstr='%s', mandatory=True)
+    # TODO: transform_parameters currently supports rigid, affine, composite affine, translation, bspline, gaussian displacement field (gdf), and SyN -----ONLY-----!
+    transform_parameters = traits.List(
+        traits.Either(
+            traits.Float(),
+            traits.Tuple(traits.Float()),
+            traits.Tuple(traits.Float(), # gdf & syn
+                         traits.Float(),
+                         traits.Float())))
+    # Convergence flags
     number_of_iterations = traits.List(traits.List(traits.Int()))
     smoothing_sigmas = traits.List(traits.List(traits.Int()))
     shrink_factors = traits.List(traits.List(traits.Int()))
-
-    convergence_threshold = traits.Float(1e-6,requires=['number_of_iterations'],usedefault=True)
-    convergence_window_size = traits.Int(10,requires=['number_of_iterations', 'convergence_threshold'],usedefault=True)
+    convergence_threshold = traits.List(traits.Float(1e-6), requires=['number_of_iterations'], usedefault=True)
+    convergence_window_size = traits.List(traits.Int(10), requires=['convergence_threshold'], usedefault=True)
+    # Output flags
     output_transform_prefix = traits.Str("transform", usedefault=True, argstr="%s", desc="")
     output_warped_image = traits.Either(traits.Bool, File(), hash_files=False, desc="")
     output_inverse_warped_image = traits.Either(traits.Bool, File(), hash_files=False, requires=['output_warped_image'], desc="")
 
-class antsRegistrationOutputSpec(TraitedSpec):
-    affine_transform = File(exists=True, desc='Affine transform file')
-    warp_transform = File(exists=True, desc='Warp transform')
-    inverse_warp_transform = File(exists=True, desc='Inverse warp transform')
-    warped_image = File(exists=True, desc='Warped image')
-    inverse_warped_image = File(exists=True, desc='Inverse warped image')
 
-#class antsRegistration(ANTSCommand):
+class antsRegistrationOutputSpec(TraitedSpec):
+    forward_transforms = traits.List(File(exists=True), desc='List of output transforms for forward registration')
+    reverse_transforms = traits.List(File(exists=True), desc='List of output transforms for reverse registration')
+    forward_invert_flags = traits.List(traits.Bool(), desc='List of flags corresponding to the forward transforms')
+    reverse_invert_flags = traits.List(traits.Bool(), desc='List of flags corresponding to the reverse transforms')
+    composite_transform = traits.List(File(exists=True), desc='Composite transform file')
+    inverse_composite_transform = traits.List(File(exists=True), desc='Inverse composite transform file')
+
+
 class antsRegistration(CommandLine):
     """
     Examples
@@ -198,53 +227,149 @@ class antsRegistration(CommandLine):
     input_spec = antsRegistrationInputSpec
     output_spec = antsRegistrationOutputSpec
 
-    def formatTransform(self):
+    def _requiredMetricParameters(self, index):
+        if self.inputs.metric[index] in ['MI', 'Mattes']:
+            retval = '%d' % self.inputs.number_of_bins[self._histogramBinsCount]
+            self._histogramBinsCount += 1
+        else:
+            retval = '%d' % self.inputs.radius[self._radiusCount]
+            self._radiusCount += 1
+        return retval
+
+    def _optionalMetricParameters(self, index):
+        if self.inputs.sampling_strategy[index] is not None:
+            if isdefined(self.inputs.sampling_percentage):
+                return ',%s,%g' % (self.inputs.sampling_strategy[index], self.inputs.sampling_percentage[index])
+            else:
+                return ',%s' % self.inputs.sampling_strategy[index]
+        return ''
+
+    def _formatMetric(self, index):
         retval = []
-        for ii in range(len(self.inputs.transform)):
-            retval.append('--metric "%s[%s,%s,%d,%d]"' % (self.inputs.metric, self.inputs.fixed_image[0], self.inputs.moving_image[0],self.inputs.metric_weight,self.inputs.radius))
-            retval.append('--transform "%s"' % self.inputs.transform[ii])
-            retval.append(self.formatConvergence(ii))
-            retval.append('--shrink-factors %s' % "x".join([str(i) for i in self.inputs.shrink_factors[ii]]))
-            retval.append('--smoothing-sigmas %s' % "x".join([str(i) for i in self.inputs.smoothing_sigmas[ii]]))
+        retval.append('%s[%s,%s,%g,' % (self.inputs.metric[index], self.inputs.fixed_image[0],
+                                        self.inputs.moving_image[0], self.inputs.metric_weight[index]))
+        retval.append(self._requiredMetricParameters(index))
+        retval.append(self._optionalMetricParameters(index))
+        retval.append(']')
+        return "".join(retval)
+
+    def _formatTransform(self, index):
+        retval = []
+        retval.append('%s[' % self.inputs.transforms[index])
+        parameters = ','.join([str(element) for element in self.inputs.transform_parameters[index]])
+        retval.append('%s' % parameters)
+        retval.append(']')
+        return "".join(retval)
+
+    def _formatRegistration(self):
+        retval = []
+        for ii in range(len(self.inputs.transforms)):
+            retval.append('--transform %s' % (self._formatTransform(ii)))
+            retval.append('--metric %s' % self._formatMetric(ii))
+            retval.append('--convergence %s' % self._formatConvergence(ii))
+            retval.append('--smoothing-sigmas %s' % self._antsJoinList(self.inputs.smoothing_sigmas[ii]))
+            retval.append('--shrink-factors %s' % self._antsJoinList(self.inputs.shrink_factors[ii]))
+            if isdefined(self.inputs.use_estimate_learning_rate_once):
+                retval.append('--use-estimate-learning-rate-once %d' % self.inputs.use_estimate_learning_rate_once[ii])
+            if isdefined(self.inputs.use_histogram_matching):
+                retval.append('--use-histogram-matching %d' % self.inputs.use_histogram_matching[ii])
         return " ".join(retval)
 
-    def formatConvergence(self, ii):
-        convergence_iter = "x".join([str(i) for i in self.inputs.number_of_iterations[ii]])
-        return '--convergence "[%s,%g,%d]"' % (convergence_iter,
-                                            self.inputs.convergence_threshold,
-                                            self.inputs.convergence_window_size)
+    def _antsJoinList(self, antsList):
+        return "x".join([str(i) for i in antsList])
+
+    def _formatConvergence(self, ii):
+        convergence_iter = self._antsJoinList(self.inputs.number_of_iterations[ii])
+        return '[%s,%g,%d]' % (convergence_iter,
+                               self.inputs.convergence_threshold[ii],
+                               self.inputs.convergence_window_size[ii])
 
     def _format_arg(self, opt, spec, val):
+        self._radiusCount = 0
+        self._histogramBinsCount = 0
         if opt == 'moving_image_mask':
-            return '--masks "[%s,%s]"' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
-        elif opt == 'transform':
-            return self.formatTransform()
+            return '--masks [%s,%s]' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
+        elif opt == 'transforms':
+            self.numberOfTransforms = len(self.inputs.transforms)
+            return self._formatRegistration()
         elif opt == 'initial_moving_transform':
-            if isdefined(self.inputs.invert_initial_moving_transform) and self.inputs.invert_initial_moving_transform:
-                return '--initial-moving-transform "[%s,1]"' % self.inputs.initial_moving_transform
+            if self.inputs.invert_initial_moving_transform:
+                return '--initial-moving-transform [%s,1]' % self.inputs.initial_moving_transform
             else:
-                return '--initial-moving-transform "[%s,0]"' % self.inputs.initial_moving_transform
+                return '--initial-moving-transform [%s,0]' % self.inputs.initial_moving_transform
         elif opt == 'output_transform_prefix':
             if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
-                return '--output "[%s,%s,%s]"' % (self.inputs.output_transform_prefix, self.inputs.output_warped_image, self.inputs.output_inverse_warped_image )
+                return '--output [%s,%s,%s]' % (self.inputs.output_transform_prefix, self.inputs.output_warped_image, self.inputs.output_inverse_warped_image )
             elif isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
-                return '--output "[%s,%s]"'     % (self.inputs.output_transform_prefix, self.inputs.output_warped_image )
+                return '--output [%s,%s]'     % (self.inputs.output_transform_prefix, self.inputs.output_warped_image )
             else:
                 return '--output %s' % self.inputs.output_transform_prefix
-        elif opt == 'use_histogram_matching':
-            if self.inputs.use_histogram_matching:
-                return '--use-histogram-matching 1'
+        elif opt == 'write_composite_transform':
+            if self.inputs.write_composite_transform:
+                return '--write-composite-transform 1'
             else:
-                return '--use-histogram-matching 0'
+                return '--write-composite-transform 0'
         return super(antsRegistration, self)._format_arg(opt, spec, val)
+
+    def _outputFileNames(self, prefix, count, transform, inverse=False):
+        self.transformMap = {'Rigid':'Rigid.mat',
+                        'Affine':'Affine.mat',
+                        'CompositeAffine':'Affine.mat',
+                        'Similarity':'Similarity.mat',
+                        'Translation':'Translation.mat',
+                        'BSpline':'BSpline.txt'}
+        if transform in self.transformMap.keys():
+            suffix = self.transformMap[transform]
+            return ['%s%d%s' % (prefix, count, suffix)]
+        else:
+            suffix = 'Warp.nii.gz'
+            if inverse:
+                # Happens only on recursive call below.
+                # Return a string, NOT a list!
+                return '%s%dInverse%s' % (prefix, count, suffix)
+        return [ self._outputFileNames(prefix, count, transform, True),
+                '%s%d%s' % (prefix, count, suffix)]
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['affine_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '0Affine.mat')
-        outputs['warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1Warp.nii.gz')
-        outputs['inverse_warp_transform'] = os.path.abspath(self.inputs.output_transform_prefix + '1InverseWarp.nii.gz')
-        if isdefined(self.inputs.output_warped_image) and self.inputs.output_warped_image:
-            outputs['warped_image'] = os.path.abspath(self.inputs.output_warped_image)
-        if isdefined(self.inputs.output_inverse_warped_image) and self.inputs.output_inverse_warped_image:
-            outputs['inverse_warped_image'] = os.path.abspath(self.inputs.output_inverse_warped_image)
+        transformCount = 0
+        outputs['forward_transforms'] = []
+        outputs['forward_invert_flags'] = []
+        outputs['reverse_transforms'] = []
+        outputs['reverse_invert_flags'] = []
+        if isdefined(self.inputs.initial_moving_transform):
+            outputs['forward_transforms'].append(self.inputs.initial_moving_transform)
+            outputs['forward_invert_flags'].append(self.inputs.invert_initial_moving_transform)
+            outputs['reverse_transforms'].append(self.inputs.initial_moving_transform)
+            outputs['reverse_invert_flags'].append(not self.inputs.invert_initial_moving_transform)
+            transformCount += 1
+        for count in range(self.numberOfTransforms):
+            fileNames = self._outputFileNames(self.inputs.output_transform_prefix,
+                                              transformCount,
+                                              self.inputs.transforms[count])
+            if len(fileNames) == 1:
+                is_invertable = True
+                outputs['forward_transforms'].append(os.path.abspath(fileNames[0]))
+            elif len(fileNames) == 2:
+                is_invertable = False
+                outputs['forward_transforms'].append(os.path.abspath(fileNames[1]))
+            else:
+                assert len(fileNames) <= 2
+                assert len(fileNames) > 0
+            outputs['forward_invert_flags'].append(not is_invertable)
+            outputs['reverse_transforms'].append(os.path.abspath(fileNames[0]))
+            outputs['reverse_invert_flags'].append(is_invertable)
+            # if self.inputs.invert_initial_moving_transform:
+            #     outputs['forward_invert_flags'].append(True)
+            # else:
+            #     outputs['forward_invert_flags'].append(False)
+            transformCount += 1
+        outputs['reverse_transforms'].reverse()
+        outputs['reverse_invert_flags'].reverse()
+        if self.inputs.write_composite_transform:
+            fileName = self.inputs.output_transform_prefix + 'Composite.h5'
+            outputs['composite_transform'] = [os.path.abspath(fileName)]
+            fileName = self.inputs.output_transform_prefix + 'InverseComposite.h5'
+            outputs['inverse_composite_transform'] = [os.path.abspath(fileName)]
+
         return outputs
