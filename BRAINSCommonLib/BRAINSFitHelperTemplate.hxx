@@ -1686,8 +1686,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       bulkAffineTransform->SetIdentity();
           
       CompositeTransformType::Pointer initialSyNTransform = CompositeTransformType::New();
-      //CompositeTransformType::TransformTypePointer outputSyNTransform = CompositeTransformType::New();
-      CompositeTransformType::TransformTypePointer outputSyNTransform;
+      CompositeTransformType::Pointer outputSyNTransform = CompositeTransformType::New();
+      //CompositeTransformType::TransformTypePointer outputSyNTransform;
       
       if( m_CurrentGenericTransform.IsNotNull() )
         {
