@@ -31,7 +31,8 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
 
     antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'ANTSTemplateBuildSingleIterationWF_'+iterationPhasePrefix)
 
-    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image','ListOfPassiveImagesDictionararies']),
+    inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image',
+                'ListOfPassiveImagesDictionararies']),
                 run_without_submitting=True,
                 name='InputSpec')
     ## HACK: TODO: Need to move all local functions to a common untility file, or at the top of the file so that
@@ -39,7 +40,8 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
     ##             their hash to change.
     ## HACK: TODO: REMOVE 'transforms_list' it is not used.  That will change all the hashes
     ## HACK: TODO: Need to run all python files through the code beutifiers.  It has gotten pretty ugly.
-    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template','transforms_list','passive_deformed_templates']),
+    outputSpec = pe.Node(interface=util.IdentityInterface(fields=['template','transforms_list',
+                'passive_deformed_templates']),
                 run_without_submitting=True,
                 name='OutputSpec')
 
