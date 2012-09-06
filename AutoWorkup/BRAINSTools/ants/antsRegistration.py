@@ -164,23 +164,20 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     # Metric flags
     metric = traits.List(traits.Enum("CC", "MeanSquares", "Demons", "GC", "MI", "Mattes"),
                          mandatory=True, desc="")
-    metric_weight = traits.List(traits.Int(1, usedefault=True),
+    metric_weight = traits.List(traits.Int(1), usedefault=True,
                                 requires=['metric'], mandatory=True,
                                 desc="Note that the metricWeight is currently not used. \
                                 Rather, it is a temporary place holder until multivariate \
                                 metrics are available for a single stage.")
-    radius = traits.List(traits.Int(5, usedefault=True),
-                         requires=['metric_weight'], desc='')
-    number_of_bins = traits.List(traits.Int(5, usedefault=True),
+    ###  This is interpreted as number_of_bins for MI and Mattes, and as radius for all other metrics
+    radius_or_number_of_bins = traits.List(traits.Int(5), usedefault=True,
                                  requires=['metric_weight'], desc='')
-    sampling_strategy = traits.List(traits.Either(traits.Enum("Regular", "Random", usedefault=True),
-                                                  None),
+    sampling_strategy = traits.List(trait=traits.Enum("Regular", "Random", None), value=['Regular'], minlen=1, usedefault=True,
                                     requires=['metric_weight'], desc='')
-    sampling_percentage = traits.List(traits.Either(traits.Range(low=0.0, high=1.0),
-                                                    None),
+    sampling_percentage = traits.List(trait=traits.Either(traits.Range(low=0.0, high=1.0),None),value=[None],minlen=1,
                                       requires=['sampling_strategy'], desc='')
     use_estimate_learning_rate_once = traits.List(traits.Bool(), desc='')
-    use_histogram_matching = traits.List(traits.Bool(argstr='%s', default=True, usedefault=True))
+    use_histogram_matching = traits.List(traits.Bool(argstr='%s'), default=True, usedefault=True)
     # Transform flags
     write_composite_transform = traits.Bool(argstr='%s', default=False, usedefault=True, desc='')
     transforms = traits.List(traits.Enum('Rigid', 'Affine', 'CompositeAffine',
@@ -200,8 +197,8 @@ class antsRegistrationInputSpec(CommandLineInputSpec):
     number_of_iterations = traits.List(traits.List(traits.Int()))
     smoothing_sigmas = traits.List(traits.List(traits.Int()))
     shrink_factors = traits.List(traits.List(traits.Int()))
-    convergence_threshold = traits.List(traits.Float(1e-6), requires=['number_of_iterations'], usedefault=True)
-    convergence_window_size = traits.List(traits.Int(10), requires=['convergence_threshold'], usedefault=True)
+    convergence_threshold = traits.List(trait=traits.Float(), value=[1e-6],minlen=1, requires=['number_of_iterations'], usedefault=True)
+    convergence_window_size = traits.List(trait=traits.Int(), value=[10],minlen=1, requires=['convergence_threshold'], usedefault=True)
     # Output flags
     output_transform_prefix = traits.Str("transform", usedefault=True, argstr="%s", desc="")
     output_warped_image = traits.Either(traits.Bool, File(), hash_files=False, desc="")
@@ -227,17 +224,9 @@ class antsRegistration(CommandLine):
     input_spec = antsRegistrationInputSpec
     output_spec = antsRegistrationOutputSpec
 
-    def _requiredMetricParameters(self, index):
-        if self.inputs.metric[index] in ['MI', 'Mattes']:
-            retval = '%d' % self.inputs.number_of_bins[self._histogramBinsCount]
-            self._histogramBinsCount += 1
-        else:
-            retval = '%d' % self.inputs.radius[self._radiusCount]
-            self._radiusCount += 1
-        return retval
 
     def _optionalMetricParameters(self, index):
-        if self.inputs.sampling_strategy[index] is not None:
+        if len(self.inputs.sampling_strategy) < index and self.inputs.sampling_strategy[index] is not None:
             if isdefined(self.inputs.sampling_percentage):
                 return ',%s,%g' % (self.inputs.sampling_strategy[index], self.inputs.sampling_percentage[index])
             else:
@@ -246,9 +235,9 @@ class antsRegistration(CommandLine):
 
     def _formatMetric(self, index):
         retval = []
-        retval.append('%s[%s,%s,%g,' % (self.inputs.metric[index], self.inputs.fixed_image[0],
-                                        self.inputs.moving_image[0], self.inputs.metric_weight[index]))
-        retval.append(self._requiredMetricParameters(index))
+        retval.append('%s[%s,%s,%g,%d' % (self.inputs.metric[index], self.inputs.fixed_image[0],
+                                        self.inputs.moving_image[0], self.inputs.metric_weight[index],
+                                        self.inputs.radius_or_number_of_bins[index]))
         retval.append(self._optionalMetricParameters(index))
         retval.append(']')
         return "".join(retval)
@@ -280,13 +269,17 @@ class antsRegistration(CommandLine):
 
     def _formatConvergence(self, ii):
         convergence_iter = self._antsJoinList(self.inputs.number_of_iterations[ii])
-        return '[%s,%g,%d]' % (convergence_iter,
-                               self.inputs.convergence_threshold[ii],
-                               self.inputs.convergence_window_size[ii])
+        if len( self.inputs.convergence_threshold ) < ii:
+            convergence_value=self.inputs.convergence_threshold[ii]
+        else:
+            convergence_value=self.inputs.convergence_threshold[0]
+        if len( self.inputs.convergence_window_size ) < ii:
+            convergence_ws=self.inputs.convergence_window_size[ii]
+        else:
+            convergence_ws=self.inputs.convergence_window_size[0]
+        return '[%s,%g,%d]' % (convergence_iter, convergence_value, convergence_ws)
 
     def _format_arg(self, opt, spec, val):
-        self._radiusCount = 0
-        self._histogramBinsCount = 0
         if opt == 'moving_image_mask':
             return '--masks [%s,%s]' % (self.inputs.fixed_image_mask, self.inputs.moving_image_mask)
         elif opt == 'transforms':

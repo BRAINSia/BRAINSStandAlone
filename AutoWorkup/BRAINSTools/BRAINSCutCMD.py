@@ -17,7 +17,7 @@ def addProbabilityMapElement( probabilityMap, maskName, outputStream ):
 
 def xmlGenerator( args ):
     outputStream = open( args.xmlFilename, 'w')
-    registrationID="BSpline"
+    registrationID="BSpline_ROI"
 
     outputStream.write( "<AutoSegProcessDescription>\n" )
 
@@ -25,13 +25,11 @@ def xmlGenerator( args ):
     # template
     #
     outputStream.write( "  <DataSet Name=\"template\" Type=\"Atlas\" >\n")
-    outputStream.write( "      <Image Type=\"T1\" Filename=\""+args.inputTemplateT1+"\" />\n")
-    outputStream.write( "      <Image Type=\"T2\" Filename=\"na\" />\n")
-    outputStream.write( "      <Image Type=\"SG\" Filename=\"na\" />\n")
-
-
-    #if args.inputTemplateBrainMask != "NA" :
-    #    outputStream.write( "      <Mask Type=\"RegistrationROI\" Filename=\""+args.inputTemplateBrainMask+"\" />\n")
+    outputStream.write( "      <Image Type=\"T1\" Filename=\"{fn}\" />\n".format(fn=args.inputTemplateT1))
+    outputStream.write( "      <Image Type=\"T2\" Filename=\"{fn}\" />\n".format(fn="na"))
+    outputStream.write( "      <Image Type=\"GadSG\" Filename=\"{fn}\" />\n".format(fn="na"))
+    outputStream.write( "      <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn="na"))
+    outputStream.write( "      <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputTemplateRegistrationROIFilename))
 
     outputStream.write( "      <SpatialLocation Type=\"rho\" Filename=\""+args.inputTemplateRhoFilename+"\" />\n")
     outputStream.write( "      <SpatialLocation Type=\"phi\" Filename=\""+args.inputTemplatePhiFilename+"\" />\n")
@@ -63,8 +61,8 @@ def xmlGenerator( args ):
     # random forest parameters
     #
     outputStream.write( "   <RandomForestParameters \n")
-    outputStream.write( "      MaxDepth= \"-1\" \n")     #dummy
-    outputStream.write( "      MaxTreeCount= \"-1\" \n") # dummy
+    outputStream.write( "      MaxDepth= \"100\" \n")     #dummy
+    outputStream.write( "      MaxTreeCount= \"100\" \n") # dummy
     outputStream.write( "      MinSampleCount= \"5\"\n")
     outputStream.write( "      UseSurrogates= \"false\" \n")
     outputStream.write( "      CalcVarImportance= \"false\"\n")
@@ -73,12 +71,12 @@ def xmlGenerator( args ):
     #
     # ANN Parameters
     #
-    outputStream.write( "   <ANNParameters Iterations             = \"10\" \n")
-    outputStream.write( "                     MaximumVectorsPerEpoch = \"10000\"\n")
+    outputStream.write( "   <ANNParameters Iterations             = \"5\" \n")
+    outputStream.write( "                     MaximumVectorsPerEpoch = \"70000\"\n")
     outputStream.write( "                     EpochIterations        = \"100\"\n")
     outputStream.write( "                     ErrorInterval          = \"1\"\n")
     outputStream.write( "                     DesiredError           = \"0.000001\"\n")
-    outputStream.write( "                     NumberOfHiddenNodes    = \"60\"\n")
+    outputStream.write( "                     NumberOfHiddenNodes    = \"100\"\n")
     outputStream.write( "                     ActivationSlope        = \"1.0\"\n")
     outputStream.write( "                     ActivationMinMax       = \"1.0\"\n")
     outputStream.write( "    />\n")
@@ -87,24 +85,20 @@ def xmlGenerator( args ):
     # apply conditions
     #
     outputStream.write( "<ApplyModel         CutOutThresh           = \"0.05\"\n")
-    outputStream.write( "                    MaskThresh             = \"0.4\" \n")
+    outputStream.write( "                    MaskThresh             = \"0.5\" \n")
     outputStream.write( "                    GaussianSmoothingSigma = \"0.0\" \n")
     outputStream.write( "   />\n")
 
     #
     # add probability maps (ROIs)
     #
-    addProbabilityMapElement( args.probabilityMapsLeftAccumben,    "l_accumben", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftCaudate,     "l_caudate", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftPutamen,     "l_putamen", outputStream);
-    addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_globus", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftThalamus,    "l_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftHippocampus, "l_hippocampus", outputStream);
 
-    addProbabilityMapElement( args.probabilityMapsRightAccumben,   "r_accumben", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightCaudate,    "r_caudate", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightPutamen,    "r_putamen", outputStream);
-    addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_globus", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightThalamus,   "r_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightHippocampus,"r_hippocampus", outputStream);
 
@@ -115,16 +109,14 @@ def xmlGenerator( args ):
     outputStream.write( "      OutputDir=\"./\" >\n")
     outputStream.write( "    <Image Type=\"T1\" Filename=\""+args.inputSubjectT1Filename+"\" />\n")
     outputStream.write( "    <Image Type=\"T2\" Filename=\""+args.inputSubjectT2Filename+"\" />\n")
-    outputStream.write( "    <Image Type=\"SG\" Filename=\""+args.inputSubjectSGFilename+"\" />\n")
+    outputStream.write( "    <Image Type=\"GadSG\" Filename=\""+args.inputSubjectGadSGFilename+"\" />\n")
+    outputStream.write( "    <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectTotalGMFilename))
+    outputStream.write( "    <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectRegistrationROIFilename))
 
-    outputStream.write( "    <Mask Type=\"l_accumben\" Filename=\""+args.outputBinaryLeftAccumben+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_accumben\" Filename=\""+args.outputBinaryRightAccumben+"\" />\n")
     outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n")
     outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n")
     outputStream.write( "    <Mask Type=\"l_putamen\" Filename=\""+args.outputBinaryLeftPutamen+"\" />\n")
     outputStream.write( "    <Mask Type=\"r_putamen\" Filename=\""+args.outputBinaryRightPutamen+"\" />\n")
-    outputStream.write( "    <Mask Type=\"l_globus\" Filename=\""+args.outputBinaryLeftGlobus+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_globus\" Filename=\""+args.outputBinaryRightGlobus+"\" />\n")
     outputStream.write( "    <Mask Type=\"l_thalamus\" Filename=\""+args.outputBinaryLeftThalamus+"\" />\n")
     outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n")
     outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
@@ -156,11 +148,12 @@ brainscutParser = argparse.ArgumentParser( description ='BRAINSCut command line 
 #
 brainscutParser.add_argument('--inputSubjectT1Filename', help='T1 subject filename', required=True )
 brainscutParser.add_argument('--inputSubjectT2Filename', help='T2 subject filename', required=True )
-brainscutParser.add_argument('--inputSubjectSGFilename', help='SG subject filename', required=True )
+brainscutParser.add_argument('--inputSubjectGadSGFilename', help='GadSG subject filename', required=True )
 brainscutParser.add_argument('--inputSubjectBrainMaskFilename', help='BrainMask subject filename' )
+brainscutParser.add_argument('--inputSubjectRegistrationROIFilename', help='template brain mask filename' )
 
 brainscutParser.add_argument('--inputTemplateT1', help='template T1-weighted filename', required=True )
-brainscutParser.add_argument('--inputTemplateBrainMask', help='template brain mask filename' )
+brainscutParser.add_argument('--inputTemplateRegistrationROIFilename', help='template brain region filename', required=True )
 
 brainscutParser.add_argument('--inputTemplateRhoFilename', help='template rho filename', required=True )
 brainscutParser.add_argument('--inputTemplatePhiFilename', help='template phi filename', required=True )
