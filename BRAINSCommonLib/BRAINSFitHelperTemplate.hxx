@@ -1679,6 +1679,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       }
     else if(currentTransformType == "SyN")
       {
+#ifdef USE_ANTS
       //
       // Process the bulkAffineTransform for SyN's transform initializer
       //
@@ -1791,6 +1792,11 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           // Now turn of the initiallize code to off
           localInitializeTransformMode = "Off";
         }
+#else
+          std::cout << "******* Error: BRAINSFit cannot do the SyN registration ***" 
+                    << "\n******* To use SyN option, you should also build ANTS ***" << std::endl;
+          itkGenericExceptionMacro( << "******* Error: To use SyN registration, build ANTS too." << std::endl );
+#endif
       }
     else
       {
