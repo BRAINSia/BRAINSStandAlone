@@ -17,7 +17,7 @@ import antsAverageImages
 import antsAverageAffineTransform
 import antsMultiplyImages
 import antsRegistration
-import antsWarp
+import antsApplyTransform
 import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import Merge, Split, Function, Rename, IdentityInterface
@@ -65,47 +65,56 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     BeginANTS=pe.MapNode(interface=antsRegistration.antsRegistration(), name = 'BeginANTS', iterfield=['moving_image'])
     BeginANTS.inputs.dimension = 3
     BeginANTS.inputs.output_transform_prefix = iterationPhasePrefix+'_tfm'
-    BeginANTS.inputs.metric = ['CC','CC']
-    BeginANTS.inputs.metric_weight = [1.0,1.0]
-    BeginANTS.inputs.radius_or_number_of_bins = [5,5]
-    BeginANTS.inputs.transforms = ["Affine","SyN"]
-    BeginANTS.inputs.transform_parameters [ [1], [0.25,3.0,0.0] ]
+    BeginANTS.inputs.transforms =               ["Affine",           "SyN"]
+    BeginANTS.inputs.transform_parameters =     [[1],                [0.25,3.0,0.0]]
+    BeginANTS.inputs.metric =                   ['CC',               'CC']
+    BeginANTS.inputs.metric_weight =            [1.0,                1.0]
+    BeginANTS.inputs.radius_or_number_of_bins = [5,                  5]
     if mode == 'SINGLE_IMAGE_IMAGE':
         ## HACK:  Just short circuit time consuming step if only registering a single image.
-        BeginANTS.inputs.number_of_iterations = [ [1], [1] ]
+        BeginANTS.inputs.number_of_iterations = [[1],                [1]]
     else:
         BeginANTS.inputs.number_of_iterations = [[1000, 1000, 1000], [50, 35, 15]]
-    BeginANTS.inputs.use_histogram_matching = True
-    BeginANTS.inputs.shrink_factors = [[3,2,1],[3,2,1]]
-    BeginANTS.inputs.smoothing_sigmas = [[0,0,0],[0,0,0]]
+    BeginANTS.inputs.use_histogram_matching =   [True,               True]
+    BeginANTS.inputs.shrink_factors =           [[3,2,1],            [3,2,1]]
+    BeginANTS.inputs.smoothing_sigmas =         [[0,0,0],            [0,0,0]]
+    #BeginANTS.inputs.mi_option = [32, 16000]
+    #BeginANTS.inputs.regularization = 'Gauss'
+    #BeginANTS.inputs.regularization_gradient_field_sigma = 3
+    #BeginANTS.inputs.regularization_deformation_field_sigma = 0
+    #BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
-    ## Utility Function
-    ## This will make a list of list pairs for defining the concatenation of transforms
-    ## wp=['wp1.nii','wp2.nii','wp3.nii']
-    ## af=['af1.mat','af2.mat','af3.mat']
-    ## ll=map(list,zip(af,wp))
-    ## ll
-    ##[['af1.mat', 'wp1.nii'], ['af2.mat', 'wp2.nii'], ['af3.mat', 'wp3.nii']]
-    def MakeListsOfTransformLists(warpTransformList, AffineTransformList):
-        return map(list, zip(warpTransformList,AffineTransformList))
-    MakeTransformsLists = pe.Node(interface=util.Function(function=MakeListsOfTransformLists,
-                    input_names=['warpTransformList', 'AffineTransformList'],
-                    output_names=['out']),
-                    run_without_submitting=True,
-                    name='MakeTransformsLists')
-    MakeTransformsLists.inputs.ignore_exception = True
-    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', MakeTransformsLists, 'warpTransformList')
-    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', MakeTransformsLists, 'AffineTransformList')
+    ## Now transform all the images
+    wimtdeformed = pe.MapNode(interface = antsApplyTransform.AntsApplyTransforms(), name ='wimtdeformed',
+                              iterfield=['transforms',
+                                         'invert_transforms_flags',
+                                         'reference_image'])
+    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'fixed_image', wimtdeformed, 'input_file_name')
+    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', wimtdeformed, 'reference_image')
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'forward_transforms', wimtdeformed, 'transforms')
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'forward_invert_flags', wimtdeformed, 'invert_transform_flags')
 
-    ## Now warp all the moving_images images
-    wimtdeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(),
-                     iterfield=['transformation_series', 'moving_image'],
-                     name ='wimtdeformed')
-    antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', wimtdeformed, 'moving_image')
-    antsTemplateBuildSingleIterationWF.connect(MakeTransformsLists, 'out', wimtdeformed, 'transformation_series')
+    def sortTransforms(invert_flags, transforms):
+        ### Nota bene: The outputs will include the initial_moving_transform from antsRegistration (which depends on what
+        ###            the invert_initial_moving_transform is set to)
+        matched = map(list, zip(invert_flags, transforms))
+        non_invertable = []
+        invertable = []
+        for flag, transform in matched:
+            if flag:
+                invertable.append(transform)
+            else:
+                non_invertable.append(transform)
+        return invertable, non_invertable
 
+    sortForward = pe.Node(interface=util.Function(function=sortTransforms,
+                                                  input_names=['invert_flags', 'transforms'],
+                                                  output_names=['invertable', 'non_invertable']))
+    sortForward.inputs.ignore_exception = True
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'forward_transforms', sortForward, 'transforms')
+    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'forward_invert_flags', sortForward, 'invert_flags')
 
     ##  Shape Update Next =====
     ## Now  Average All moving_images deformed images together to create an updated template average
@@ -119,14 +128,14 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     AvgAffineTransform = pe.Node(interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform')
     AvgAffineTransform.inputs.dimension = 3
     AvgAffineTransform.inputs.output_affine_transform = iterationPhasePrefix+'Affine.mat'
-    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms')
+    antsTemplateBuildSingleIterationWF.connect(sortForward, 'invertable', AvgAffineTransform, 'transforms')
 
     ## Now average the warp fields togther
     AvgWarpImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgWarpImages')
     AvgWarpImages.inputs.dimension = 3
     AvgWarpImages.inputs.output_average_image = iterationPhasePrefix+'warp.nii.gz'
     AvgWarpImages.inputs.normalize = 1
-    antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'warp_transform', AvgWarpImages, 'images')
+    antsTemplateBuildSingleIterationWF.connect(sortForward, 'non_invertable', AvgWarpImages, 'images')
 
     ## Now average the images together
     ## TODO:  For now GradientStep is set to 0.25 as a hard coded default value.
