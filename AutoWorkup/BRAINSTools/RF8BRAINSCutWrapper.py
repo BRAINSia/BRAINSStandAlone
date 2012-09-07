@@ -15,7 +15,7 @@ import os
 import warnings
 
 ### CommandLine
-class RF12BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
+class RF8BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
     ### subject specific
     inputSubjectT1Filename = File( desc="Subject T1 Volume", exists=True, mandatory=True, argstr="--inputSubjectT1Filename %s")
     inputSubjectT2Filename = File( desc="Subject T2 Volume", exists=True, mandatory=True, argstr="--inputSubjectT2Filename %s")
@@ -60,7 +60,7 @@ class RF12BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
     outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = False, mandatory = True, argstr="--outputBinaryLeftThalamus %s")
     outputBinaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = False, mandatory = True, argstr="--outputBinaryRightThalamus %s")
 
-class RF12BRAINSCutWrapperCLOutputSpec(TraitedSpec):
+class RF8BRAINSCutWrapperCLOutputSpec(TraitedSpec):
     xmlFilename = File( desc = "Net configuration xml file", exists = True, mandatory = True)
 
     outputBinaryLeftCaudate = File( desc = "Output binary file of left caudate", exists = True, mandatory = True)
@@ -75,13 +75,13 @@ class RF12BRAINSCutWrapperCLOutputSpec(TraitedSpec):
     outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True)
     outputBinaryRightThalamus = File( desc = "Output binary file:0 of right thalamus", exists = True, mandatory = True)
 
-class RF12BRAINSCutWrapper(CommandLine):
+class RF8BRAINSCutWrapper(CommandLine):
     """
     A script to wrap the complexity of BRAINSCut into a single script.
     """
     _cmd = 'BRAINSCutCMD.py'
-    input_spec = RF12BRAINSCutWrapperCLInputSpec
-    output_spec = RF12BRAINSCutWrapperCLOutputSpec
+    input_spec = RF8BRAINSCutWrapperCLInputSpec
+    output_spec = RF8BRAINSCutWrapperCLOutputSpec
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
@@ -101,5 +101,5 @@ class RF12BRAINSCutWrapper(CommandLine):
         return outputs
 
 #if __name__ == '__main__':
-#    RF12Test = RF12BRAINSCutWrapper(sys.argv)
-#    RF12Test.run()
+#    RF8Test = RF8BRAINSCutWrapper(sys.argv)
+#    RF8Test.run()

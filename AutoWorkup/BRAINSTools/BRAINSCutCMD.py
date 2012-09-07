@@ -113,14 +113,14 @@ def xmlGenerator( args ):
     outputStream.write( "    <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectTotalGMFilename))
     outputStream.write( "    <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectRegistrationROIFilename))
 
-    outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n")
-    outputStream.write( "    <Mask Type=\"l_putamen\" Filename=\""+args.outputBinaryLeftPutamen+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_putamen\" Filename=\""+args.outputBinaryRightPutamen+"\" />\n")
-    outputStream.write( "    <Mask Type=\"l_thalamus\" Filename=\""+args.outputBinaryLeftThalamus+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n")
-    outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
-    outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_putamen\" Filename=\""+args.outputBinaryLeftPutamen+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_putamen\" Filename=\""+args.outputBinaryRightPutamen+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_thalamus\" Filename=\""+args.outputBinaryLeftThalamus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n")
 
     #if args.inputSubjectBrainMaskFilename != "NA":
     #    outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
@@ -148,6 +148,7 @@ brainscutParser = argparse.ArgumentParser( description ='BRAINSCut command line 
 #
 brainscutParser.add_argument('--inputSubjectT1Filename', help='T1 subject filename', required=True )
 brainscutParser.add_argument('--inputSubjectT2Filename', help='T2 subject filename', required=True )
+brainscutParser.add_argument('--inputSubjectTotalGMFilename', help='TotalGM filename', required=True )
 brainscutParser.add_argument('--inputSubjectGadSGFilename', help='GadSG subject filename', required=True )
 brainscutParser.add_argument('--inputSubjectBrainMaskFilename', help='BrainMask subject filename' )
 brainscutParser.add_argument('--inputSubjectRegistrationROIFilename', help='template brain mask filename' )
@@ -169,19 +170,18 @@ brainscutParser.add_argument('--vectorNormalization', help='feature vector norma
                              default="true" )
 
 # probability maps
-brainscutParser.add_argument('--probabilityMapsLeftAccumben', help='model probability maps for left accumben' , required=True)
-brainscutParser.add_argument('--probabilityMapsRightAccumben', help='model probability maps for right accumben' , required=True)
 brainscutParser.add_argument('--probabilityMapsLeftCaudate', help='model probability maps for left caudate' , required=True)
 brainscutParser.add_argument('--probabilityMapsRightCaudate', help='model probability maps for right caudate' , required=True)
 brainscutParser.add_argument('--probabilityMapsLeftPutamen', help='model probability maps for left putamen' , required=True)
 brainscutParser.add_argument('--probabilityMapsRightPutamen', help='model probability maps for right putamen' , required=True)
-brainscutParser.add_argument('--probabilityMapsLeftGlobus', help='model probability maps for left globus' , required=True)
-brainscutParser.add_argument('--probabilityMapsRightGlobus', help='model probability maps for right globus' , required=True)
 brainscutParser.add_argument('--probabilityMapsLeftThalamus', help='model probability maps for left thalamus' , required=True)
 brainscutParser.add_argument('--probabilityMapsRightThalamus', help='model probability maps for right thalamus' , required=True)
 brainscutParser.add_argument('--probabilityMapsLeftHippocampus', help='model probability maps for left hippocampus' , required=True)
 brainscutParser.add_argument('--probabilityMapsRightHippocampus', help='model probability maps for right hippocampus' , required=True)
-
+#brainscutParser.add_argument('--probabilityMapsLeftAccumben', help='model probability maps for left accumben' , required=True)
+#brainscutParser.add_argument('--probabilityMapsRightAccumben', help='model probability maps for right accumben' , required=True)
+#brainscutParser.add_argument('--probabilityMapsLeftGlobus', help='model probability maps for left globus' , required=True)
+#brainscutParser.add_argument('--probabilityMapsRightGlobus', help='model probability maps for right globus' , required=True)
 
 brainscutParser.add_argument('--deformationFromTemplateToSubject', help="deformationFromTemplateToSubject")
 brainscutParser.add_argument('--deformationFromSubjectToTemplate', help="deformationFromSubjectToTemplate")
@@ -189,18 +189,18 @@ brainscutParser.add_argument('--deformationFromSubjectToTemplate', help="deforma
 #
 # output arguments
 #
-brainscutParser.add_argument('--outputBinaryLeftAccumben', help='output binary file name for left accumben' )
-brainscutParser.add_argument('--outputBinaryRightAccumben', help='output binary file name for right accumben' )
 brainscutParser.add_argument('--outputBinaryLeftCaudate', help='output binary file name for left caudate' )
 brainscutParser.add_argument('--outputBinaryRightCaudate', help='output binary file name for right caudate' )
 brainscutParser.add_argument('--outputBinaryLeftPutamen', help='output binary file name for left putamen' )
 brainscutParser.add_argument('--outputBinaryRightPutamen', help='output binary file name for right putamen' )
-brainscutParser.add_argument('--outputBinaryLeftGlobus', help='output binary file name for left globus' )
-brainscutParser.add_argument('--outputBinaryRightGlobus', help='output binary file name for right globus' )
 brainscutParser.add_argument('--outputBinaryLeftThalamus', help='output binary file name for left thalamus' )
 brainscutParser.add_argument('--outputBinaryRightThalamus', help='output binary file name for right thalamus' )
 brainscutParser.add_argument('--outputBinaryLeftHippocampus', help='output binary file name for left hippocampus' )
 brainscutParser.add_argument('--outputBinaryRightHippocampus', help='output binary file name for right hippocampus' )
+#brainscutParser.add_argument('--outputBinaryLeftAccumben', help='output binary file name for left accumben' )
+#brainscutParser.add_argument('--outputBinaryRightAccumben', help='output binary file name for right accumben' )
+#brainscutParser.add_argument('--outputBinaryLeftGlobus', help='output binary file name for left globus' )
+#brainscutParser.add_argument('--outputBinaryRightGlobus', help='output binary file name for right globus' )
 
 brainscutParser.add_argument('--xmlFilename',help='BRAINSCut xml configuration filename', default="output.xml")
 
