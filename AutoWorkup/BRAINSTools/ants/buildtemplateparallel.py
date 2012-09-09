@@ -22,6 +22,33 @@ import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import Merge, Split, Function, Rename, IdentityInterface
 
+## Flatten and return equal length transform and images lists.
+def FlattenTransformAndImagesList(ListOfPassiveImagesDictionararies,transformation_series):
+    import sys
+    print("HACK:  DEBUG: ListOfPassiveImagesDictionararies\n{lpi}\n".format(lpi=ListOfPassiveImagesDictionararies))
+    subjCount=len(ListOfPassiveImagesDictionararies)
+    tranCount=len(transformation_series)
+    if subjCount != tranCount:
+        print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
+        sys.exit(-1)
+    flattened_images=list()
+    flattened_image_nametypes=list()
+    flattened_transforms=list()
+    passiveImagesCount = len(ListOfPassiveImagesDictionararies[0])
+    for subjIndex in range(0,subjCount):
+        #if passiveImagesCount != len(ListOfPassiveImagesDictionararies[subjIndex]):
+        #    print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
+        #    sys.exit(-1)
+        subjImgDictionary=ListOfPassiveImagesDictionararies[subjIndex]
+        subjToAtlasTransform=transformation_series[subjIndex]
+        for imgname,img in subjImgDictionary.items():
+            flattened_images.append(img)
+            flattened_image_nametypes.append(imgname)
+            flattened_transforms.append(subjToAtlasTransform)
+    print("HACK: flattened images    {0}\n".format(flattened_images))
+    print("HACK: flattened nametypes {0}\n".format(flattened_image_nametypes))
+    print("HACK: flattened txfms     {0}\n".format(flattened_transforms))
+    return flattened_images,flattened_transforms,flattened_image_nametypes
 ##
 ## NOTE:  The modes can be either 'SINGLE_IMAGE' or 'MULTI'
 ##        'SINGLE_IMAGE' is quick shorthand when you are building an atlas with a single subject, then registration can
@@ -178,28 +205,6 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
     ######
     ##############################################
     ## Now warp all the ListOfPassiveImagesDictionararies images
-    ## Flatten and return equal length transform and images lists.
-    def FlattenTransformAndImagesList(ListOfPassiveImagesDictionararies,transformation_series):
-        flattened_images=list()
-        flattened_image_nametypes=list()
-        flattened_transforms=list()
-        subjCount=len(ListOfPassiveImagesDictionararies)
-        tranCount=len(transformation_series)
-        passiveImagesCount = len(ListOfPassiveImagesDictionararies[0])
-        if subjCount != tranCount:
-            print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
-            sys.exit(-1)
-        for subjIndex in range(0,subjCount):
-            if passiveImagesCount != len(ListOfPassiveImagesDictionararies[subjIndex]):
-                print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
-                sys.exit(-1)
-            subjImgDictionary=ListOfPassiveImagesDictionararies[subjIndex]
-            subjToAtlasTransform=transformation_series[subjIndex]
-            for imgname,img in subjImgDictionary.items():
-                flattened_images.append(img)
-                flattened_image_nametypes.append(imgname)
-                flattened_transforms.append(subjToAtlasTransform)
-        return flattened_images,flattened_transforms,flattened_image_nametypes
     FlattenTransformAndImagesListNode = pe.Node( Function(function=FlattenTransformAndImagesList,
                                   input_names = ['ListOfPassiveImagesDictionararies','transformation_series'],
                                   output_names = ['flattened_images','flattened_transforms','flattened_image_nametypes']),

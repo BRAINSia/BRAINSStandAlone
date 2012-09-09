@@ -72,7 +72,7 @@ class BRAINSABCext(BRAINSABC):
         else:
             outputs['outputT2AverageImage']=None
         if 'PD' in self.inputs.inputVolumeTypes:
-            outputs['outputPDAverageImage']=os.path.abspath('PD_average_BRAINSABC.nii.gz')
+            outputs['outputPDAverageImage']=os.path.abspath('pd_average_BRAINSABC.nii.gz')
         else:
             outputs['outputPDAverageImage']=None
         if 'FL' in self.inputs.inputVolumeTypes:

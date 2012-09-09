@@ -14,7 +14,7 @@ class ANTSCommandInputSpec(CommandLineInputSpec):
     """Base Input Specification for all ANTS Commands
     """
 
-    num_threads = traits.Int(1, usedefault=True,
+    num_threads = traits.Int(-1, usedefault=True,
                              desc="Number of ITK threads to use")
 
 
@@ -23,7 +23,7 @@ class ANTSCommand(CommandLine):
     """
 
     input_spec = ANTSCommandInputSpec
-    _num_threads = 1
+    _num_threads = -1
 
     def __init__(self, **inputs):
         super(ANTSCommand, self).__init__(**inputs)
