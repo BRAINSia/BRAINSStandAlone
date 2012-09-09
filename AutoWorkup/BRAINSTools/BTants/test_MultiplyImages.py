@@ -2,7 +2,7 @@
 # config.enable_debug_mode()
 # logging.update_logging(config)
 
-import antsMultiplyImages
+import BRAINSTools.BTants.antsMultiplyImages
 
 imagedir = "/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/"
 

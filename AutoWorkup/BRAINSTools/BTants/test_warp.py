@@ -1,5 +1,5 @@
 
-import antsWarp
+import BRAINSTools.BTants.antsWarp
 
 imagedir = "/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/"
 

@@ -13,12 +13,12 @@
 import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
-import antsAverageImages
-import antsAverageAffineTransform
-import antsMultiplyImages
-import antsRegistration
-import antsWarp
-import antsMultiplyImages
+import BRAINSTools.BTants.antsAverageImages
+import BRAINSTools.BTants.antsAverageAffineTransform
+import BRAINSTools.BTants.antsMultiplyImages
+import BRAINSTools.BTants.antsRegistration
+import BRAINSTools.BTants.antsWarp
+import BRAINSTools.BTants.antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 
 def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix):

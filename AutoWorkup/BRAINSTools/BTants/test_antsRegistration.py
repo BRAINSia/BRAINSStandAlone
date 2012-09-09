@@ -2,7 +2,7 @@
 # from nipype import config
 # config.enable_debug_mode()
 
-import antsRegistration
+import BRAINSTools.BTants.antsRegistration
 
 test = antsRegistration.antsRegistration()
 test.inputs.fixed_image = ['/hjohnson/HDNI/20120828_ANTS_NIPYPE_TESTING/inputData/t1_average_BRAINSABC_clipped.nii.gz']*2

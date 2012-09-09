@@ -10,26 +10,53 @@
 ##
 #################################################################################
 
-import argparse
 import nipype.pipeline.engine as pe
 import nipype.interfaces.utility as util
-import antsAverageImages
-import antsAverageAffineTransform
-import antsMultiplyImages
-import antsRegistration
-import antsWarp
-import antsMultiplyImages
 from nipype.interfaces.io import DataGrabber
 from nipype.interfaces.utility import Merge, Split, Function, Rename, IdentityInterface
 
+from BRAINSTools.BTants import *
+from BRAINSTools.BTants.ants import *
+from BRAINSTools.BTants.antsWarp import *
+from BRAINSTools.BTants.antsAverageImages import *
+from BRAINSTools.BTants.antsAverageAffineTransform import *
+from BRAINSTools.BTants.antsMultiplyImages import *
+
+## Flatten and return equal length transform and images lists.
+def FlattenTransformAndImagesList(ListOfPassiveImagesDictionararies,transformation_series):
+    import sys
+    print("HACK:  DEBUG: ListOfPassiveImagesDictionararies\n{lpi}\n".format(lpi=ListOfPassiveImagesDictionararies))
+    subjCount=len(ListOfPassiveImagesDictionararies)
+    tranCount=len(transformation_series)
+    if subjCount != tranCount:
+        print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
+        sys.exit(-1)
+    flattened_images=list()
+    flattened_image_nametypes=list()
+    flattened_transforms=list()
+    passiveImagesCount = len(ListOfPassiveImagesDictionararies[0])
+    for subjIndex in range(0,subjCount):
+        #if passiveImagesCount != len(ListOfPassiveImagesDictionararies[subjIndex]):
+        #    print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
+        #    sys.exit(-1)
+        subjImgDictionary=ListOfPassiveImagesDictionararies[subjIndex]
+        subjToAtlasTransform=transformation_series[subjIndex]
+        for imgname,img in subjImgDictionary.items():
+            flattened_images.append(img)
+            flattened_image_nametypes.append(imgname)
+            flattened_transforms.append(subjToAtlasTransform)
+    print("HACK: flattened images    {0}\n".format(flattened_images))
+    print("HACK: flattened nametypes {0}\n".format(flattened_image_nametypes))
+    print("HACK: flattened txfms     {0}\n".format(flattened_transforms))
+    return flattened_images,flattened_transforms,flattened_image_nametypes
 ##
 ## NOTE:  The modes can be either 'SINGLE_IMAGE' or 'MULTI'
 ##        'SINGLE_IMAGE' is quick shorthand when you are building an atlas with a single subject, then registration can
 ##                    be short-circuted
 ##        any other string indicates the normal mode that you would expect and replicates the shell script build_template_parallel.sh
-def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER_QUEUE,mode='MULTI'):
+def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='MULTI'):
 
-    antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'antsRegistrationTemplateBuildSingleIterationWF_'+iterationPhasePrefix)
+    antsTemplateBuildSingleIterationWF = pe.Workflow(name = 'ANTSTemplateBuildSingleIterationWF_'+iterationPhasePrefix)
 
     inputSpec = pe.Node(interface=util.IdentityInterface(fields=['images', 'fixed_image',
                 'ListOfPassiveImagesDictionararies']),
@@ -62,22 +89,28 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
 
 
     ### NOTE MAP NODE! warp each of the original images to the provided fixed_image as the template
-    BeginANTS=pe.MapNode(interface=antsRegistration.antsRegistration(), name = 'BeginANTS', iterfield=['moving_image'])
+    BeginANTS=pe.MapNode(interface=ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
+    many_cpu_BeginANTS_options_dictionary={'qsub_args': '-S /bin/bash -pe smp1 8-12 -l mem_free=6000M -o /dev/null -e /dev/null '+CLUSTER_QUEUE, 'overwrite': True}
+    BeginANTS.plugin_args=many_cpu_BeginANTS_options_dictionary
     BeginANTS.inputs.dimension = 3
     BeginANTS.inputs.output_transform_prefix = iterationPhasePrefix+'_tfm'
-    BeginANTS.inputs.metric = ['CC','CC']
-    BeginANTS.inputs.metric_weight = [1.0,1.0]
-    BeginANTS.inputs.radius_or_number_of_bins = [5,5]
-    BeginANTS.inputs.transforms = ["Affine","SyN"]
-    BeginANTS.inputs.transform_parameters [ [1], [0.25,3.0,0.0] ]
+    BeginANTS.inputs.metric = ['CC']
+    BeginANTS.inputs.metric_weight = [1.0]
+    BeginANTS.inputs.radius = [5]
+    BeginANTS.inputs.transformation_model = 'SyN'
+    BeginANTS.inputs.gradient_step_length = 0.25
     if mode == 'SINGLE_IMAGE_IMAGE':
         ## HACK:  Just short circuit time consuming step if only registering a single image.
-        BeginANTS.inputs.number_of_iterations = [ [1], [1] ]
+        BeginANTS.inputs.number_of_iterations = [1]
+        BeginANTS.inputs.number_of_affine_iterations = [1]
     else:
-        BeginANTS.inputs.number_of_iterations = [[1000, 1000, 1000], [50, 35, 15]]
+        BeginANTS.inputs.number_of_iterations = [50, 35, 15]
+        BeginANTS.inputs.number_of_affine_iterations = [10000,10000,10000,10000,10000]
     BeginANTS.inputs.use_histogram_matching = True
-    BeginANTS.inputs.shrink_factors = [[3,2,1],[3,2,1]]
-    BeginANTS.inputs.smoothing_sigmas = [[0,0,0],[0,0,0]]
+    BeginANTS.inputs.mi_option = [32, 16000]
+    BeginANTS.inputs.regularization = 'Gauss'
+    BeginANTS.inputs.regularization_gradient_field_sigma = 3
+    BeginANTS.inputs.regularization_deformation_field_sigma = 0
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', BeginANTS, 'moving_image')
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'fixed_image', BeginANTS, 'fixed_image')
 
@@ -100,7 +133,7 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', MakeTransformsLists, 'AffineTransformList')
 
     ## Now warp all the moving_images images
-    wimtdeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(),
+    wimtdeformed = pe.MapNode(interface = WarpImageMultiTransform(),
                      iterfield=['transformation_series', 'moving_image'],
                      name ='wimtdeformed')
     antsTemplateBuildSingleIterationWF.connect(inputSpec, 'images', wimtdeformed, 'moving_image')
@@ -109,20 +142,20 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
 
     ##  Shape Update Next =====
     ## Now  Average All moving_images deformed images together to create an updated template average
-    AvgDeformedImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgDeformedImages')
+    AvgDeformedImages=pe.Node(interface=AntsAverageImages(), name='AvgDeformedImages')
     AvgDeformedImages.inputs.dimension = 3
     AvgDeformedImages.inputs.output_average_image = iterationPhasePrefix+'.nii.gz'
     AvgDeformedImages.inputs.normalize = 1
     antsTemplateBuildSingleIterationWF.connect(wimtdeformed, "output_image", AvgDeformedImages, 'images')
 
     ## Now average all affine transforms together
-    AvgAffineTransform = pe.Node(interface=antsAverageAffineTransform.AntsAverageAffineTransform(), name = 'AvgAffineTransform')
+    AvgAffineTransform = pe.Node(interface=AntsAverageAffineTransform(), name = 'AvgAffineTransform')
     AvgAffineTransform.inputs.dimension = 3
     AvgAffineTransform.inputs.output_affine_transform = iterationPhasePrefix+'Affine.mat'
     antsTemplateBuildSingleIterationWF.connect(BeginANTS, 'affine_transform', AvgAffineTransform, 'transforms')
 
     ## Now average the warp fields togther
-    AvgWarpImages=pe.Node(interface=antsAverageImages.AntsAverageImages(), name='AvgWarpImages')
+    AvgWarpImages=pe.Node(interface=AntsAverageImages(), name='AvgWarpImages')
     AvgWarpImages.inputs.dimension = 3
     AvgWarpImages.inputs.output_average_image = iterationPhasePrefix+'warp.nii.gz'
     AvgWarpImages.inputs.normalize = 1
@@ -131,14 +164,14 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     ## Now average the images together
     ## TODO:  For now GradientStep is set to 0.25 as a hard coded default value.
     GradientStep = 0.25
-    GradientStepWarpImage=pe.Node(interface=antsMultiplyImages.AntsMultiplyImages(), name='GradientStepWarpImage')
+    GradientStepWarpImage=pe.Node(interface=AntsMultiplyImages(), name='GradientStepWarpImage')
     GradientStepWarpImage.inputs.dimension = 3
     GradientStepWarpImage.inputs.second_input = -1.0 * GradientStep
     GradientStepWarpImage.inputs.output_product_image = iterationPhasePrefix+'warp.nii.gz'
     antsTemplateBuildSingleIterationWF.connect(AvgWarpImages, 'average_image', GradientStepWarpImage, 'first_input')
 
     ## Now create the new template shape based on the average of all deformed images
-    UpdateTemplateShape = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'UpdateTemplateShape')
+    UpdateTemplateShape = pe.Node(interface = WarpImageMultiTransform(), name = 'UpdateTemplateShape')
     UpdateTemplateShape.inputs.invert_affine = [1]
     antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', UpdateTemplateShape, 'reference_image')
     antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', UpdateTemplateShape, 'transformation_series')
@@ -156,7 +189,7 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     antsTemplateBuildSingleIterationWF.connect(AvgAffineTransform, 'affine_transform', ApplyInvAverageAndFourTimesGradientStepWarpImage, 'averageAffineTranform')
     antsTemplateBuildSingleIterationWF.connect(UpdateTemplateShape, 'output_image', ApplyInvAverageAndFourTimesGradientStepWarpImage, 'gradientStepWarp')
 
-    ReshapeAverageImageWithShapeUpdate = pe.Node(interface = antsWarp.WarpImageMultiTransform(), name = 'ReshapeAverageImageWithShapeUpdate')
+    ReshapeAverageImageWithShapeUpdate = pe.Node(interface = WarpImageMultiTransform(), name = 'ReshapeAverageImageWithShapeUpdate')
     ReshapeAverageImageWithShapeUpdate.inputs.invert_affine = [1]
     ReshapeAverageImageWithShapeUpdate.inputs.out_postfix = '_Reshaped'
     antsTemplateBuildSingleIterationWF.connect(AvgDeformedImages, 'average_image', ReshapeAverageImageWithShapeUpdate, 'moving_image')
@@ -172,35 +205,13 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     ######
     ##############################################
     ## Now warp all the ListOfPassiveImagesDictionararies images
-    ## Flatten and return equal length transform and images lists.
-    def FlattenTransformAndImagesList(ListOfPassiveImagesDictionararies,transformation_series):
-        flattened_images=list()
-        flattened_image_nametypes=list()
-        flattened_transforms=list()
-        subjCount=len(ListOfPassiveImagesDictionararies)
-        tranCount=len(transformation_series)
-        passiveImagesCount = len(ListOfPassiveImagesDictionararies[0])
-        if subjCount != tranCount:
-            print "ERROR:  subjCount must equal tranCount {0} != {1}".format(subjCount,tranCount)
-            sys.exit(-1)
-        for subjIndex in range(0,subjCount):
-            if passiveImagesCount != len(ListOfPassiveImagesDictionararies[subjIndex]):
-                print "ERROR:  all image lengths must be equal {0} != {1}".format(passiveImagesCount,len(ListOfPassiveImagesDictionararies[subjIndex]))
-                sys.exit(-1)
-            subjImgDictionary=ListOfPassiveImagesDictionararies[subjIndex]
-            subjToAtlasTransform=transformation_series[subjIndex]
-            for imgname,img in subjImgDictionary.items():
-                flattened_images.append(img)
-                flattened_image_nametypes.append(imgname)
-                flattened_transforms.append(subjToAtlasTransform)
-        return flattened_images,flattened_transforms,flattened_image_nametypes
     FlattenTransformAndImagesListNode = pe.Node( Function(function=FlattenTransformAndImagesList,
                                   input_names = ['ListOfPassiveImagesDictionararies','transformation_series'],
                                   output_names = ['flattened_images','flattened_transforms','flattened_image_nametypes']),
                                   run_without_submitting=True, name="99_FlattenTransformAndImagesList")
     antsTemplateBuildSingleIterationWF.connect( inputSpec,'ListOfPassiveImagesDictionararies', FlattenTransformAndImagesListNode, 'ListOfPassiveImagesDictionararies' )
     antsTemplateBuildSingleIterationWF.connect( MakeTransformsLists ,'out', FlattenTransformAndImagesListNode, 'transformation_series' )
-    wimtPassivedeformed = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(),
+    wimtPassivedeformed = pe.MapNode(interface = WarpImageMultiTransform(),
                      iterfield=['transformation_series', 'moving_image'],
                      name ='wimtPassivedeformed')
     antsTemplateBuildSingleIterationWF.connect(FlattenTransformAndImagesListNode, 'flattened_images',     wimtPassivedeformed, 'moving_image')
@@ -241,7 +252,7 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     antsTemplateBuildSingleIterationWF.connect(wimtPassivedeformed, 'output_image', RenestDeformedPassiveImagesNode, 'deformedPassiveImages')
     antsTemplateBuildSingleIterationWF.connect(FlattenTransformAndImagesListNode, 'flattened_image_nametypes', RenestDeformedPassiveImagesNode, 'flattened_image_nametypes')
     ## Now  Average All passive moving_images deformed images together to create an updated template average
-    AvgDeformedPassiveImages=pe.MapNode(interface=antsAverageImages.AntsAverageImages(),
+    AvgDeformedPassiveImages=pe.MapNode(interface=AntsAverageImages(),
       iterfield=['images','output_average_image'],
       name='AvgDeformedPassiveImages')
     AvgDeformedPassiveImages.inputs.dimension = 3
@@ -250,7 +261,7 @@ def antsRegistrationTemplateBuildSingleIterationWF(iterationPhasePrefix,,CLUSTER
     antsTemplateBuildSingleIterationWF.connect(RenestDeformedPassiveImagesNode, "outputAverageImageName_list", AvgDeformedPassiveImages, 'output_average_image')
 
     ## -- TODO:  Now neeed to reshape all the passive images as well
-    ReshapeAveragePassiveImageWithShapeUpdate = pe.MapNode(interface = antsWarp.WarpImageMultiTransform(),
+    ReshapeAveragePassiveImageWithShapeUpdate = pe.MapNode(interface = WarpImageMultiTransform(),
       iterfield=['moving_image','reference_image','out_postfix'],
       name = 'ReshapeAveragePassiveImageWithShapeUpdate')
     ReshapeAveragePassiveImageWithShapeUpdate.inputs.invert_affine = [1]

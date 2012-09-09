@@ -2,7 +2,7 @@
 # config.enable_debug_mode()
 # logging.update_logging(config)
 
-import antsApplyTransforms
+import BRAINSTools.BTants.antsApplyTransforms
 
 test = antsApplyTransforms.AntsApplyTransforms()
 test.inputs.input_file_name = '/hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST/SUBJ_B_T1_resampled.nii.gz'

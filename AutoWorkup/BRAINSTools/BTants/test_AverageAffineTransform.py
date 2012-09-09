@@ -2,7 +2,7 @@
 # config.enable_debug_mode()
 # logging.update_logging(config)
 
-import antsAverageAffineTransform
+import BRAINSTools.BTants.antsAverageAffineTransform
 
 imagedir = "/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/"
 

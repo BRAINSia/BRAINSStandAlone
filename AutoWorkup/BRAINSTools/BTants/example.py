@@ -1,13 +1,13 @@
 # from nipype import config, logging
 # config.enable_debug_mode()
 # logging.update_logging(config)
-import ants
+import BRAINSTools.BTants.ants
 
 testDir = '/hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST'
 fixed = testDir + '/SUBJ_A_T1_resampled.nii.gz'
 moving = testDir + '/SUBJ_B_T1_resampled.nii.gz'
 
-test = ants.ANTS()
+test = ANTS()
 test.inputs.dimension = 3
 test.inputs.output_naming = 'OrigANTS_20120430_1348_ANTS6_'
 test.inputs.image_metric = ['CC']

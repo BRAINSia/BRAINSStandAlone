@@ -12,10 +12,10 @@
 #################################################################################
 
 ### USE ANTS
-#from buildtemplateparallel import antsSimpleAverageWF, antsTemplateBuildSingleIterationWF
+#from BRAINSTools.BTants.buildtemplateparallel import antsSimpleAverageWF, BRAINSTools.BTants.antsTemplateBuildSingleIterationWF
 ### USE ANTS REGISTRATION
-from antsSimpleAverageWF import antsSimpleAverageWF
-from buildtemplateparallel_antsRegistration import antsTemplateBuildSingleIterationWF
+from BRAINSTools.BTants.antsSimpleAverageWF import antsSimpleAverageWF
+from BRAINSTools.BTants.buildtemplateparallel_antsRegistration import antsTemplateBuildSingleIterationWF
 import nipype.pipeline.engine as pe
 import argparse
 import nipype.interfaces.utility as util

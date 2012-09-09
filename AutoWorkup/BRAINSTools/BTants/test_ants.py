@@ -2,7 +2,7 @@
 # config.enable_debug_mode()
 # logging.update_logging(config)
 
-import ants
+import BRAINSTools.BTants.ants
 import datetime
 start_time = datetime.datetime.now()
 
@@ -12,7 +12,7 @@ testDir = '/hjohnson/HDNI/EXPERIEMENTS/ANTS_NIPYPE_SMALL_TEST'
 fixed = testDir + '/SUBJ_A_T1_resampled.nii.gz'
 moving = testDir + '/SUBJ_B_T1_resampled.nii.gz'
 
-test = ants.ANTS()
+test = ANTS()
 #test.inputs.dimension = 3
 #test.inputs.output_transform_prefix = 'OrigANTS_20120430_1348_ANTS6_'
 #test.inputs.metric = ['CC']
