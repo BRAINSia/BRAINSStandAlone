@@ -78,5 +78,5 @@ class AntsAverageImages(ANTSCommand):
 
     def _list_outputs(self):
         outputs = self._outputs().get()
-        outputs['average_image'] = os.path.abspath(self.inputs.output_average_image)
+        outputs['average_image'] = os.path.realpath(self.inputs.output_average_image)
         return outputs
