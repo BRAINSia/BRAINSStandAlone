@@ -8,7 +8,7 @@ import argparse
 import subprocess
 
 def addProbabilityMapElement( probabilityMap, maskName, outputStream ):
-    outputStream.write( "  <ProbabilityMap StructureID    = \""+ maskName + "\" \n")
+    outputStream.write( "  <ProbabilityMap StructureID    = \""+ maskName + "\"\n")
     outputStream.write( "      Gaussian       = \"0.5\"\n")
     outputStream.write( "      GenerateVector = \"true\"\n")
     outputStream.write( "      Filename       = \""+ probabilityMap+"\"\n")
@@ -40,38 +40,39 @@ def xmlGenerator( args ):
     # Registration
     #
     outputStream.write( "  <RegistrationConfiguration \n")
-    outputStream.write( "          ImageTypeToUse  = \"T1\" \n")
-    outputStream.write( "          ID              = \""+registrationID+"\" \n")
-    outputStream.write( "          BRAINSROIAutoDilateSize= \"1\" \n")
+    outputStream.write( "          ImageTypeToUse  = \"T1\"\n")
+    outputStream.write( "          ID              = \""+registrationID+"\"\n")
+    outputStream.write( "          BRAINSROIAutoDilateSize= \"1\"\n")
     outputStream.write( "   />\n")
 
     #
     # training vector configuration  (feature vector)
     #
 
-    outputStream.write( "   <NeuralNetParams MaskSmoothingValue     = \"0.0\" \n")
+    outputStream.write( "   <NeuralNetParams MaskSmoothingValue     = \"0.0\"\n")
     outputStream.write( "          GradientProfileSize    = \"1\"\n")
-    outputStream.write( "          TrainingVectorFilename = \""+args.trainingVectorFilename+"\" \n")
-    outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\" \n")
-    outputStream.write( "          TestVectorFilename     = \"na\" \n")
-    outputStream.write( "          Normalization          = \""+args.vectorNormalization+"\" \n")
+    outputStream.write( "          TrainingVectorFilename = \""+args.trainingVectorFilename+"\"\n")
+    # outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\"\n")
+    outputStream.write( "          TrainingModelFilename  = \"/nfsscratch/PREDICT/TEST_BRAINSCut/20120828ANNModel_Model_RF100.txt\"\n")
+    outputStream.write( "          TestVectorFilename     = \"na\"\n")
+    outputStream.write( "          Normalization          = \""+args.vectorNormalization+"\"\n")
     outputStream.write( "   />\n")
 
     #
     # random forest parameters
     #
     outputStream.write( "   <RandomForestParameters \n")
-    outputStream.write( "      MaxDepth= \"100\" \n")     #dummy
-    outputStream.write( "      MaxTreeCount= \"100\" \n") # dummy
+    outputStream.write( "      MaxDepth= \"100\"\n")     #dummy
+    outputStream.write( "      MaxTreeCount= \"100\"\n") # dummy
     outputStream.write( "      MinSampleCount= \"5\"\n")
-    outputStream.write( "      UseSurrogates= \"false\" \n")
+    outputStream.write( "      UseSurrogates= \"false\"\n")
     outputStream.write( "      CalcVarImportance= \"false\"\n")
     outputStream.write( "      />\n")
 
     #
     # ANN Parameters
     #
-    outputStream.write( "   <ANNParameters Iterations             = \"5\" \n")
+    outputStream.write( "   <ANNParameters Iterations             = \"5\"\n")
     outputStream.write( "                     MaximumVectorsPerEpoch = \"70000\"\n")
     outputStream.write( "                     EpochIterations        = \"100\"\n")
     outputStream.write( "                     ErrorInterval          = \"1\"\n")
@@ -85,8 +86,8 @@ def xmlGenerator( args ):
     # apply conditions
     #
     outputStream.write( "<ApplyModel         CutOutThresh           = \"0.05\"\n")
-    outputStream.write( "                    MaskThresh             = \"0.5\" \n")
-    outputStream.write( "                    GaussianSmoothingSigma = \"0.0\" \n")
+    outputStream.write( "                    MaskThresh             = \"0.5\"\n")
+    outputStream.write( "                    GaussianSmoothingSigma = \"0.0\"\n")
     outputStream.write( "   />\n")
 
     #
@@ -129,7 +130,7 @@ def xmlGenerator( args ):
         outputStream.write( '    <Registration SubjToAtlasRegistrationFilename="'+args.deformationFromSubjectToTemplate+'"\n')
     else:
         outputStream.write( '    <Registration SubjToAtlasRegistrationFilename="" \n')
-    outputStream.write( "       AtlasToSubjRegistrationFilename=\""+args.deformationFromTemplateToSubject+"\" \n")
+    outputStream.write( "       AtlasToSubjRegistrationFilename=\""+args.deformationFromTemplateToSubject+"\"\n")
     outputStream.write( "       ID=\""+registrationID+"\" /> \n")
     outputStream.write( "  </DataSet>\n")
 
@@ -212,14 +213,15 @@ if args.xmlFilename != "":
 else:
     print("no xml filename is given to process")
 
+#                 " --modelFilename " + args.modelFilename +
 
-subprocess.call(["BRAINSCut" +
-                 " --applyModel " +
+BRAINSCutCommand=["BRAINSCut" + " --applyModel " +
                  " --netConfiguration " + args.xmlFilename +
-                 " --modelFilename " + args.modelFilename +
-                 " --method RandomForest"
-                 ],
-                 shell=True)
+                 " --method RandomForest" +
+                 " --numberOfTrees 100  --randomTreeDepth 100"
+                 ]
+print("HACK:  BRAINCUT COMMAND: {0}".format(BRAINSCutCommand))
+subprocess.call(BRAINSCutCommand, shell=True)
 """
 script to be run
   /ipldev/scratch/eunyokim/src/BRAINS20111028/build-Darwin-Debug/lib/BRAINSCut  --applyModel --netConfiguration /ipldev/scratch/eunyokim/src/BRAINS20111028/build-Darwin/BRAINSTools-build/BRAINSCut/TestSuite/TestSuite/NetConfigurations/output.xml --modelFilename /hjohnson/HDNI/PREDICT_TRAINING/regina_ann/TrainingModels/BRAINSAutoWorkUpTest/GadSG/Test9/TrainedModels/20110919ANNModel_allSubcorticals.txtD0050NT0050   --method RandomForest

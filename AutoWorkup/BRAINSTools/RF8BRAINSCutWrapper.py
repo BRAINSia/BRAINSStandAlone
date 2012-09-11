@@ -73,7 +73,7 @@ class RF8BRAINSCutWrapperCLOutputSpec(TraitedSpec):
     outputBinaryRightPutamen = File( desc = "Output binary file of right putamen", exists = True, mandatory = True)
 
     outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True)
-    outputBinaryRightThalamus = File( desc = "Output binary file:0 of right thalamus", exists = True, mandatory = True)
+    outputBinaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = True, mandatory = True)
 
 class RF8BRAINSCutWrapper(CommandLine):
     """
