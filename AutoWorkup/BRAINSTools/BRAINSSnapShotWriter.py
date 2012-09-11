@@ -63,6 +63,7 @@ class BRAINSSnapShotWriter(CommandLine):
     """
     Example
     -------
+    TODO: The test does NOT point to existing files in the test data, so it will fail until that is corrected
 
     >>> import BRAINSSnapShotWriter
     >>> bssw = BRAINSSnapShotWriter.BRAINSSnapShotWriter()
