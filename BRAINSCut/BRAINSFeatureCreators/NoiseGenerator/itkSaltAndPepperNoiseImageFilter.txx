@@ -10,8 +10,8 @@
   Copyright (c) 2004 Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -32,21 +32,20 @@ SaltAndPepperNoiseImageFilter<TInputImage, TOutputImage>
   m_Probability = 0.01;
 }
 
-
 template <class TInputImage, class TOutputImage>
 void
 SaltAndPepperNoiseImageFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData( const OutputImageRegionType &outputRegionForThread,
+::ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                         ThreadIdType threadId)
 {
-  InputImageConstPointer  inputPtr = this->GetInput();
-  OutputImagePointer outputPtr = this->GetOutput(0);
-  
+  InputImageConstPointer inputPtr = this->GetInput();
+  OutputImagePointer     outputPtr = this->GetOutput(0);
+
   // create a random generator per thread
-  typename Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::Pointer rand = 
-      Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::New();
+  typename Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::Pointer rand =
+    Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::New();
   rand->Initialize();
-  
+
   // Define the portion of the input to walk for this thread, using
   // the CallCopyOutputRegionToInputRegion method allows for the input
   // and output images to be different dimensions
@@ -54,15 +53,15 @@ SaltAndPepperNoiseImageFilter<TInputImage, TOutputImage>
   this->CallCopyOutputRegionToInputRegion(inputRegionForThread, outputRegionForThread);
 
   // Define the iterators
-  ImageRegionConstIterator<TInputImage>  inputIt(inputPtr, inputRegionForThread);
-  ImageRegionIterator<TOutputImage> outputIt(outputPtr, outputRegionForThread);
+  ImageRegionConstIterator<TInputImage> inputIt(inputPtr, inputRegionForThread);
+  ImageRegionIterator<TOutputImage>     outputIt(outputPtr, outputRegionForThread);
 
-  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels());
+  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels() );
 
   inputIt.GoToBegin();
   outputIt.GoToBegin();
 
-  while( !inputIt.IsAtEnd() ) 
+  while( !inputIt.IsAtEnd() )
     {
     if( rand->GetVariate() < m_Probability )
       {
@@ -94,10 +93,10 @@ SaltAndPepperNoiseImageFilter<TInputImage, TOutputImage>
 ::PrintSelf(std::ostream& os,
             Indent indent) const
 {
-    Superclass::PrintSelf(os, indent);
-    os << indent << "Probability: " 
-       << static_cast<typename NumericTraits<double>::PrintType>(this->GetProbability())
-       << std::endl;
+  Superclass::PrintSelf(os, indent);
+  os << indent << "Probability: "
+     << static_cast<typename NumericTraits<double>::PrintType>(this->GetProbability() )
+     << std::endl;
 }
 
 } /* namespace itk */

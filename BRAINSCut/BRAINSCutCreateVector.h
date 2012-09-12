@@ -4,29 +4,26 @@
 #include "BRAINSCutDataHandler.h"
 #include "FeatureInputVector.h"
 
-class BRAINSCutCreateVector 
+class BRAINSCutCreateVector
 {
 public:
   BRAINSCutCreateVector( BRAINSCutDataHandler dataHandler );
 
   void SetTrainingDataSet();
+
   void SetTrainingVectorFilename();
 
   void CreateVectors();
 
   int  CreateSubjectVectors( DataSet& subject, std::ofstream& outputStream);
 
-  void WriteCurrentVectors( InputVectorMapType& pairedInput, 
-                            OutputVectorMapType& pairedOutput,
+  void WriteCurrentVectors( InputVectorMapType& pairedInput, OutputVectorMapType& pairedOutput,
                             std::ofstream& outputStream );
 
-  void WriteHeaderFile( std::string vectorFilename,
-                        int inputVectorSize, 
-                        int outputVectorSize, 
-                        int numberOfInputVector);
+  void WriteHeaderFile( std::string vectorFilename, int inputVectorSize, int outputVectorSize, int numberOfInputVector);
 
 private:
-  BRAINSCutDataHandler myDataHandler;
+  BRAINSCutDataHandler                         myDataHandler;
   BRAINSCutConfiguration::TrainDataSetListType trainDataSetList;
 
   int inputVectorSize;
@@ -38,6 +35,7 @@ private:
                                        int roiNumber);
 
   inline std::string GetROIBinaryFilename( DataSet& subject, std::string roiName);
+
   inline scalarType GetBinaryValue( scalarType value);
 
 };

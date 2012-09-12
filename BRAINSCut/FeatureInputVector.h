@@ -128,7 +128,7 @@ private:
     std::string ROIName, WorkingImageType::IndexType currentPixelIndex );
 
   inline std::pair<scalarType, scalarType>  SetMinMaxOfSubject( BinaryImageType::Pointer & labelImage,
-                                                           const WorkingImagePointer & Image );
+                                                                const WorkingImagePointer & Image );
 
 };
 #endif

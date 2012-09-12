@@ -3,7 +3,7 @@
 
 #include "BRAINSCutDataHandler.h"
 
-//typedef CvANN_MLP_Revision neuralNetType;
+// typedef CvANN_MLP_Revision neuralNetType;
 typedef CvANN_MLP neuralNetType;
 
 namespace
@@ -41,6 +41,7 @@ public:
   unsigned int GetRecordSize();
 
   void SetBufferRecordSize();
+
   void SetShuffled(bool shuffled);
 
   int GetTotalVectorSize();
@@ -53,7 +54,7 @@ public:
 
   scalarType *            ReadBufferFromFileStream( std::ifstream& fileStream );
 
-  void                    RandomizeTrainingVector( );
+  void                    RandomizeTrainingVector();
 
   pairedTrainingSetType * GetTrainingDataSet();
 

@@ -736,6 +736,7 @@ int Solver::select_working_set(int & out_i, int & out_j)
   int    Gmax_idx = -1;
   int    Gmin_idx = -1;
   double obj_diff_min = INF;
+
   for( int t = 0; t < active_size; t++ )
     {
     if( y[t] == +1 )
@@ -843,6 +844,7 @@ int Solver::max_violating_pair(int & out_i, int & out_j)
   int    Gmax1_idx = -1;
   double Gmax2 = -INF;    // max { y_i * grad(f)_i | i in I_low(\alpha) }
   int    Gmax2_idx = -1;
+
   for( int i = 0; i < active_size; i++ )
     {
     if( y[i] == +1 )   // y = +1
@@ -1004,6 +1006,7 @@ double Solver::calculate_rho()
   double r;
   int    nr_free = 0;
   double ub = INF, lb = -INF, sum_free = 0;
+
   for( int i = 0; i < active_size; i++ )
     {
     double yG = y[i] * G[i];
@@ -1108,6 +1111,7 @@ static void solve_c_svc(const svm_problem *prob, const svm_parameter *param,
   double *minus_ones = new double[l];
   schar * y = new schar[l];
   int     i;
+
   for( i = 0; i < l; i++ )
     {
     alpha[i] = 0;
@@ -1207,6 +1211,7 @@ void sigmoid_train(int l,
 {
   double prior1 = 0, prior0 = 0;
   int    i;
+
   for( i = 0; i < l; i++ )
     {
     if( labels[i] > 0 )
@@ -1353,6 +1358,7 @@ void multiclass_probability(int k, double * *r, double *p)
   double * *Q = Malloc(double *, k);
   double *  Qp = Malloc(double, k);
   double    pQp, eps = 0.005 / k;
+
   for( t = 0; t < k; t++ )
     {
     p[t] = 1.0 / k;  // Valid if k = 1
@@ -1430,6 +1436,7 @@ void svm_binary_svc_probability(const svm_problem *prob,
   int     i;
   int *   perm = Malloc(int, prob->l_svm);
   double *dec_values = Malloc(double, prob->l_svm);
+
   for( i = 0; i < prob->l_svm; i++ )
     {
     perm[i] = i;
@@ -1537,6 +1544,7 @@ void svm_group_classes(const svm_problem *prob,
   int *count = Malloc(int, max_nr_class);
   int *data_label = Malloc(int, l);
   int  i;
+
   for( i = 0; i < l; i++ )
     {
     int this_label = (int)prob->y_svm[i];
@@ -1782,6 +1790,7 @@ void svm_predict_values(const svm_model *model,
   int     i;
   int     l = model->l;
   double *kvalue = Malloc(double, l);
+
   for( i = 0; i < l; i++ )
     {
     kvalue[i] = Kernel::k_function(x, model->SV[i], model->param);

@@ -1,11 +1,11 @@
 #include "BRAINSCutVectorTrainingSet.h"
 #include "BRAINSCutExceptionStringHandler.h"
-#include "ShuffleVectors.h" 
+#include "ShuffleVectors.h"
 
 #include <fstream>
-//#include <vnl/vnl_random.h>
+// #include <vnl/vnl_random.h>
 
-//#include <fcntl.h>
+// #include <fcntl.h>
 
 // ---------------------------//
 BRAINSCutVectorTrainingSet
@@ -22,8 +22,8 @@ BRAINSCutVectorTrainingSet
   currentTrainingSubSet(NULL)
 
 {
-  //trainingVectorFilename = vectorFilename;
-  //trainingHeaderFilename += ".hdr";
+  // trainingVectorFilename = vectorFilename;
+  // trainingHeaderFilename += ".hdr";
 }
 
 // ---------------------------//
@@ -104,7 +104,7 @@ BRAINSCutVectorTrainingSet
   bufferRecordSize = ( inputVectorSize + outputVectorSize + LineGuardSize );
 }
 
-void 
+void
 BRAINSCutVectorTrainingSet
 ::SetShuffled(bool shuffledTrue)
 {
@@ -171,17 +171,17 @@ GetFileStreamToRead( std::string filename, std::ifstream& fileStreamToRead)
     fileStreamToRead.open( filename.c_str(),
                            std::ios::in | std::ios::binary );
     }
-    catch( std::ifstream::failure e)
-      {
-        std::cout <<"Exception opening file::"
-           <<filename<<std::endl
-           <<e.what()<<std::endl;
-      } 
-    catch( BRAINSCutExceptionStringHandler& e )
-      {
-      std::cout << e.Error();
-      exit(EXIT_FAILURE);
-      }
+  catch( std::ifstream::failure e )
+    {
+    std::cout << "Exception opening file::"
+              << filename << std::endl
+              << e.what() << std::endl;
+    }
+  catch( BRAINSCutExceptionStringHandler& e )
+    {
+    std::cout << e.Error();
+    exit(EXIT_FAILURE);
+    }
   if( !fileStreamToRead.is_open() )
     {
     std::string msg( "Cannot Open FileStream of " );
@@ -225,7 +225,7 @@ BRAINSCutVectorTrainingSet
   std::string temporaryResultFilename = trainingVectorFilename;
   temporaryResultFilename += "Shuffled";
 
-  const int samplingProportion = 1; // shuffle order only (without up/down sampling)
+  const int        samplingProportion = 1; // shuffle order only (without up/down sampling)
   ShuffleVectors * my_ShuffleVector = new ShuffleVectors(  trainingVectorFilename,
                                                            temporaryResultFilename,
                                                            samplingProportion );
@@ -302,8 +302,7 @@ BRAINSCutVectorTrainingSet
 
   scalarType * pairedInputBuffer = new scalarType[subSetSize * inputVectorSize];
   scalarType * pairedOutputBuffer = new scalarType[subSetSize * outputVectorSize];
-  scalarType * pairedOutputBufferRF = new scalarType[subSetSize ]; // RandomForest
-
+  scalarType * pairedOutputBufferRF = new scalarType[subSetSize];  // RandomForest
   for( unsigned int i = 0; i < subSetSize  && !readInFile.eof(); i++ )
     {
     currentBuffer = ReadBufferFromFileStream( readInFile );
@@ -312,17 +311,17 @@ BRAINSCutVectorTrainingSet
     for( int j = 0; j < outputVectorSize; j++ )
       {
       pairedOutputBuffer[i * outputVectorSize + j] = currentBuffer[j];
-      if( currentBuffer[j] > 0.5F && tempOutput == 0)
+      if( currentBuffer[j] > 0.5F && tempOutput == 0 )
         {
-        tempOutput=j+1;
+        tempOutput = j + 1;
         }
-      else if(  currentBuffer[j] > 0.5F && tempOutput != 0)
+      else if(  currentBuffer[j] > 0.5F && tempOutput != 0 )
         {
-        std::cout<<"A voxel belongs to more than a structure"<<std::endl;
+        std::cout << "A voxel belongs to more than a structure" << std::endl;
         exit(EXIT_FAILURE);
         }
       }
-    pairedOutputBufferRF[i] =tempOutput;
+    pairedOutputBufferRF[i] = tempOutput;
     for( int j = 0; j < inputVectorSize; j++ )
       {
       pairedInputBuffer[i * inputVectorSize + j] = currentBuffer[j + outputVectorSize];

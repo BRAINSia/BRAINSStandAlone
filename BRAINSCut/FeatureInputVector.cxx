@@ -40,8 +40,8 @@ FeatureInputVector
       SpatialLocationImages.find("phi") == SpatialLocationImages.end()  ||
       SpatialLocationImages.find("theta") == SpatialLocationImages.end()  )
     {
-    itkGenericExceptionMacro(<< "::number of images for spatial location should be 3 not " 
-                             << SpatialLocationImages.size());
+    itkGenericExceptionMacro(<< "::number of images for spatial location should be 3 not "
+                             << SpatialLocationImages.size() );
     }
   spatialLocations = SpatialLocationImages;
 }
@@ -325,6 +325,7 @@ FeatureInputVector
   int hashValue = 0;
 
   unsigned int lastDimensionIndex = DIMENSION - 1;
+
   for( unsigned int i = 0; i < (lastDimensionIndex); i++ )
     {
     hashValue += index[i];
@@ -341,6 +342,7 @@ FeatureInputVector
   WorkingImageType::IndexType key;
 
   int remainedOffSet = offSet;
+
   for( int d = DIMENSION - 1; d >= 0; d-- )
     {
     key[d] = remainedOffSet % ConstantHashIndexSize[d];
@@ -365,7 +367,7 @@ FeatureInputVector
             << " * Max : " << statisticCalculator->GetMaximum(1)
             << std::endl; */
   return minmaxPairType( std::pair<scalarType, scalarType>( statisticCalculator->GetMinimum(1),
-                                                       statisticCalculator->GetMaximum(1) ) );
+                                                            statisticCalculator->GetMaximum(1) ) );
 }
 
 void
@@ -373,6 +375,7 @@ FeatureInputVector
 ::NormalizationOfVector( InputVectorMapType& currentFeatureVector, std::string ROIName )
 {
   minmaxPairVectorType currentMinmaxPairVector = minmax.find(ROIName)->second;
+
   for( InputVectorMapType::iterator eachInputVector = currentFeatureVector.begin();
        eachInputVector != currentFeatureVector.end();
        ++eachInputVector )

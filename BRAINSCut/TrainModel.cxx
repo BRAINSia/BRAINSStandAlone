@@ -310,20 +310,20 @@ void ANNTrain( // NetConfiguration & prob,
 
   int                   lastSubSetNumber = -1;
   neural_data_set_type *TrainSetPtr = 0;
-  //const std::string     ANNHeaderTestVectorFilename = ANNTestVectorFilename + ".hdr";
-  std::ifstream         testfilestr;
-  //TODO: DELETE neural_data_set_type *TestSetPtr = 0;
-  //TODO: DELETE int                   test_InputVectorSize = 0;
-  //TODO: DELETE int                   test_OutputVectorSize = 0;
-  //TODO: DELETE int                   test_NumberTrainingVectorsFromFile = 0;
-  std::ifstream         testVectorStr;
+  // const std::string     ANNHeaderTestVectorFilename = ANNTestVectorFilename + ".hdr";
+  std::ifstream testfilestr;
+  // TODO: DELETE neural_data_set_type *TestSetPtr = 0;
+  // TODO: DELETE int                   test_InputVectorSize = 0;
+  // TODO: DELETE int                   test_OutputVectorSize = 0;
+  // TODO: DELETE int                   test_NumberTrainingVectorsFromFile = 0;
+  std::ifstream testVectorStr;
   testfilestr.close();
   // To trace minimum traininig point
   double TrainSet_MinimumMSE = 100.0; int TrainSet_MinimumMSEPoint = 0;
 
   // To trace minimum traininig point
-  //TODO: DELETE double TestSet_MinimumMSE = 100.0;
-  //TODO: DELETE int TestSet_MinimumMSEPoint = 0;
+  // TODO: DELETE double TestSet_MinimumMSE = 100.0;
+  // TODO: DELETE int TestSet_MinimumMSEPoint = 0;
   // OPENCV Training Model Creation
   int                layer[] = { InputVectorSize, HiddenVectorSize, OutputVectorSize };
   neural_vector_type layerStructure = cvCreateMat( 1, 3, CV_32SC1 );
@@ -535,7 +535,8 @@ void ANNTrain( // NetConfiguration & prob,
 
 static int Train(NetConfiguration & ANNConfiguration, int verbose)
 {
-  TrainingVectorConfigurationType *model = ANNConfiguration.Get<TrainingVectorConfigurationType>("TrainingVectorConfiguration");
+  TrainingVectorConfigurationType *model = ANNConfiguration.Get<TrainingVectorConfigurationType>(
+      "TrainingVectorConfiguration");
 
   ANNParams *annParams = ANNConfiguration.Get<ANNParams>("ANNParams");
 

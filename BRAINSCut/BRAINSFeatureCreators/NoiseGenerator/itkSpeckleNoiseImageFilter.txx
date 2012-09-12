@@ -10,8 +10,8 @@
   Copyright (c) 2004 Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -32,23 +32,22 @@ SpeckleNoiseImageFilter<TInputImage, TOutputImage>
   m_StandardDeviation = 1.0;
 }
 
-
 template <class TInputImage, class TOutputImage>
 void
 SpeckleNoiseImageFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData( const OutputImageRegionType &outputRegionForThread,
+::ThreadedGenerateData( const OutputImageRegionType & outputRegionForThread,
                         ThreadIdType threadId)
 {
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  InputImageConstPointer  inputPtr = this->GetInput();
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
+  InputImageConstPointer inputPtr = this->GetInput();
+  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   OutputImagePointer outputPtr = this->GetOutput(0);
-  
+
   // create a random generator per thread
-  typename Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::Pointer rand = 
-      Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::New();
+  typename Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::Pointer rand =
+    Statistics::ThreadSafeMersenneTwisterRandomVariateGenerator::New();
   rand->Initialize();
-  
+
   // Define the portion of the input to walk for this thread, using
   // the CallCopyOutputRegionToInputRegion method allows for the input
   // and output images to be different dimensions
@@ -56,30 +55,31 @@ SpeckleNoiseImageFilter<TInputImage, TOutputImage>
   this->CallCopyOutputRegionToInputRegion(inputRegionForThread, outputRegionForThread);
 
   // Define the iterators
-  ImageRegionConstIterator<TInputImage>  inputIt(inputPtr, inputRegionForThread);
-  ImageRegionIterator<TOutputImage> outputIt(outputPtr, outputRegionForThread);
+  ImageRegionConstIterator<TInputImage> inputIt(inputPtr, inputRegionForThread);
+  ImageRegionIterator<TOutputImage>     outputIt(outputPtr, outputRegionForThread);
 
-  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels());
+  ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels() );
 
   inputIt.GoToBegin();
   outputIt.GoToBegin();
 
   // choose the value of the gamma distribution so that the mean is 1 and the variance depend
   // on m_StandardDeviation
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   double theta = m_StandardDeviation * m_StandardDeviation;
   double k = 1 / theta;
   double floork = itk::Math::Floor<double>( k );
   double delta = k - floork;
   double v0 = itk::Math::e / ( itk::Math::e + delta );
 
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
-  while( !inputIt.IsAtEnd() ) 
+  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
+  while( !inputIt.IsAtEnd() )
     {
     // first generate the gamma distributed random variable
     // ref http://en.wikipedia.org/wiki/Gamma_distribution#Generating_gamma-distributed_random_variables
     double xi;
     double nu;
+
     do
       {
       double v1 = 1.0 - rand->GetVariateWithOpenUpperRange(); // open *lower* range -- (0,1]
@@ -97,13 +97,14 @@ SpeckleNoiseImageFilter<TInputImage, TOutputImage>
         }
       }
     while( nu > vcl_exp( -xi ) * vcl_pow( xi, delta - 1.0 ) );
+
     double gamma = xi;
-    for( int i=0; i<floork; i++ )
+    for( int i = 0; i < floork; i++ )
       {
-      gamma -= vcl_log( 1.0 - rand->GetVariateWithOpenUpperRange() ); 
+      gamma -= vcl_log( 1.0 - rand->GetVariateWithOpenUpperRange() );
       }
     gamma *= theta;
-    // ok, so now apply multiplicative noise    
+    // ok, so now apply multiplicative noise
     double out = gamma * inputIt.Get();
     // and clip the value to fit in the range (saturation)
     out = std::min( (double)NumericTraits<OutputImagePixelType>::max(), out );
@@ -113,7 +114,8 @@ SpeckleNoiseImageFilter<TInputImage, TOutputImage>
     ++outputIt;
     progress.CompletedPixel();  // potential exception thrown here
     }
-  std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
+
+  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 }
 
 template <class TInputImage, class TOutputImage>
@@ -122,10 +124,10 @@ SpeckleNoiseImageFilter<TInputImage, TOutputImage>
 ::PrintSelf(std::ostream& os,
             Indent indent) const
 {
-    Superclass::PrintSelf(os, indent);
-    os << indent << "StandardDeviation: " 
-       << static_cast<typename NumericTraits<double>::PrintType>(this->GetStandardDeviation())
-       << std::endl;
+  Superclass::PrintSelf(os, indent);
+  os << indent << "StandardDeviation: "
+     << static_cast<typename NumericTraits<double>::PrintType>(this->GetStandardDeviation() )
+     << std::endl;
 }
 
 } /* namespace itk */

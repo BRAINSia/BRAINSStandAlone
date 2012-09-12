@@ -44,9 +44,9 @@ ShuffleVectors::ReadHeader()
   filestr.open( m_inputHeaderFilename.c_str() );
   if( !filestr.is_open() )
     {
-      std::cout<< "Error: Could not open ANN vector file"
-               << std::endl
-               << m_inputHeaderFilename;
+    std::cout << "Error: Could not open ANN vector file"
+              << std::endl
+              << m_inputHeaderFilename;
     }
   for( int tags = 0; tags < 3; tags++ )
     {
@@ -71,12 +71,12 @@ ShuffleVectors::ReadHeader()
 
   filestr.close();
 
-  std::cout<<"IVS = "<<m_IVS<<std::endl;
-  std::cout<<"OVS = "<<m_OVS<<std::endl;
+  std::cout << "IVS = " << m_IVS << std::endl;
+  std::cout << "OVS = " << m_OVS << std::endl;
 
   m_output_TVC = std::floor( (float)m_input_TVC * m_resampleProportion + 0.5F );
-  std::cout<<m_input_TVC <<" * " <<m_resampleProportion << " = "
-           <<"m_output_TVC == " <<m_output_TVC<<std::endl;
+  std::cout << m_input_TVC << " * " << m_resampleProportion << " = "
+            << "m_output_TVC == " << m_output_TVC << std::endl;
 }
 
 void
@@ -87,8 +87,8 @@ ShuffleVectors::WriteHeader()
   filestr.open( m_outputHeaderFilename.c_str() );
   if( !filestr.is_open() )
     {
-      std::cout<< "Error: Could not open ANN vector file"
-               <<std::endl;
+    std::cout << "Error: Could not open ANN vector file"
+              << std::endl;
     }
   filestr << "IVS " <<  m_IVS << std::endl;
   filestr << "OVS " <<  m_OVS << std::endl;
@@ -131,8 +131,8 @@ ShuffleVectors::ShuffleOrder()
 
   if( rval == 0 )
     {
-      std::cout<< "Can't allocate shuffled ordering"
-               <<std::endl;
+    std::cout << "Can't allocate shuffled ordering"
+              << std::endl;
     }
   for( unsigned long i = 0; i < m_output_TVC; i++ )
     {
@@ -161,8 +161,7 @@ ShuffleVectors::ShuffleVectors() :
 {
 }
 
-ShuffleVectors::ShuffleVectors(const std::string& inputVectorFilename, 
-                               const std::string& outputVectorFilename,
+ShuffleVectors::ShuffleVectors(const std::string& inputVectorFilename, const std::string& outputVectorFilename,
                                float resampleProportion  ) :
   m_IVS(0),
   m_OVS(0),
@@ -179,13 +178,13 @@ ShuffleVectors::ShuffleVectors(const std::string& inputVectorFilename,
 
   if( inputVectorFilename == "" || outputVectorFilename == "" )
     {
-      std::cout<< " Filenames for inputVector and outputVector are neccessary"
-               << std::endl;
+    std::cout << " Filenames for inputVector and outputVector are neccessary"
+              << std::endl;
     }
   else if( inputVectorFilename == outputVectorFilename )
     {
-      std::cout<< "ERROR:  Can not use the same file for input and output."
-               << inputVectorFilename;
+    std::cout << "ERROR:  Can not use the same file for input and output."
+              << inputVectorFilename;
     }
   else
     {
@@ -197,9 +196,9 @@ ShuffleVectors::ShuffleVectors(const std::string& inputVectorFilename,
 
   if( !itksys::SystemTools::FileExists( inputVectorFilename.c_str(), false ) )
     {
-    std::cout<<"ERROR: Cannot open " <<inputVectorFilename
-             <<". \n The file does not exist."
-             <<std::endl;
+    std::cout << "ERROR: Cannot open " << inputVectorFilename
+              << ". \n The file does not exist."
+              << std::endl;
     }
   m_resampleProportion = resampleProportion;
 
@@ -215,10 +214,10 @@ ShuffleVectors::Shuffling()
   std::ifstream inputVectorFileStream;
 
   inputVectorFileStream.open( m_inputVectorFilename.c_str(),
-                std::ios::in | std::ios::binary);
+                              std::ios::in | std::ios::binary);
   if( !inputVectorFileStream.is_open() )
     {
-      std::cout<< "Can't open " << m_inputVectorFilename ;
+    std::cout << "Can't open " << m_inputVectorFilename;
     }
 
   int shuffledFile =
@@ -227,7 +226,7 @@ ShuffleVectors::Shuffling()
          S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if( shuffledFile == -1 )
     {
-      std::cout<< "Can't open output file " << m_outputVectorFilename;
+    std::cout << "Can't open output file " << m_outputVectorFilename;
     }
   //
   // make a shuffled output ordering
@@ -244,13 +243,13 @@ ShuffleVectors::Shuffling()
 
   float VectorsPerPercent = m_input_TVC / 100.0F;
   int   current_percent = 0;
-  /** 
+  /**
    * shuffle process goes through entire input vector file and then
-   * include only those have (randomly assigned) index less 
+   * include only those have (randomly assigned) index less
    * than a desired output size
    */
-  for( unsigned int vectorIndex = 0; 
-       vectorIndex < m_output_TVC; 
+  for( unsigned int vectorIndex = 0;
+       vectorIndex < m_output_TVC;
        vectorIndex++ )
     {
     if( vectorIndex > current_percent * VectorsPerPercent )
@@ -258,13 +257,13 @@ ShuffleVectors::Shuffling()
       current_percent += 1;
       if( current_percent % 5 == 0 )
         {
-        std::cout << current_percent << "% "<<std::endl;
+        std::cout << current_percent << "% " << std::endl;
         }
       }
 
-    if( (vectorIndex+1) % m_input_TVC == 1 ) // vector index starts from 0
+    if( (vectorIndex + 1) % m_input_TVC == 1 ) // vector index starts from 0
       {
-      std::cout<<"*** Re-open the vector file"<<std::endl;
+      std::cout << "*** Re-open the vector file" << std::endl;
       // read input vector file stream from the first again
       inputVectorFileStream.close();
       inputVectorFileStream.open( m_inputVectorFilename.c_str(),
@@ -274,16 +273,16 @@ ShuffleVectors::Shuffling()
       {
       std::cerr << "Premature end of file at record "
                 << vectorIndex << std::endl
-                << (vectorIndex+1) % m_input_TVC <<" != 1" <<std::endl;
+                << (vectorIndex + 1) % m_input_TVC << " != 1" << std::endl;
       break; // TODO throw error here
       }
 
     // read in the record
     inputVectorFileStream.read( (char *)buf, recordsize );
     /*
-    std::cout<< " randomOrder[ "<< vectorIndex<<" ] :: " 
-             << randomOrder[vectorIndex] 
-             << " < " << m_output_TVC 
+    std::cout<< " randomOrder[ "<< vectorIndex<<" ] :: "
+             << randomOrder[vectorIndex]
+             << " < " << m_output_TVC
              << " ? " << std::endl;
              */
     if( randomOrder[vectorIndex] < static_cast<std::ios::off_type>( m_output_TVC) )
@@ -294,24 +293,24 @@ ShuffleVectors::Shuffling()
       (void)write(shuffledFile, (const char *) buf, recordsize);
       /*
       // debugging code
-      // 
+      //
       for( int dummy_i = 0; dummy_i< m_IVS  + m_OVS +1; dummy_i++ )
         {
         std::cout<<buf[dummy_i]<<" ";
         }
-      std::cout<< " randomOrder[ "<< vectorIndex<<" ] :: " 
-               << randomOrder[vectorIndex] 
+      std::cout<< " randomOrder[ "<< vectorIndex<<" ] :: "
+               << randomOrder[vectorIndex]
                << " @ "
                <<seekval <<std::endl;
       //*/
       }
 
-    if( buf[m_IVS  + m_OVS] != LineGuard)
+    if( buf[m_IVS  + m_OVS] != LineGuard )
       {
       std::cerr << "Record not properly terminated by sentinel value ::  "
                 << buf[m_IVS  + m_OVS] << " != "
-                << LineGuard 
-                << " at Vector index "<<vectorIndex
+                << LineGuard
+                << " at Vector index " << vectorIndex
                 << std::endl;
       exit(EXIT_FAILURE); // TODO throw error here
       }

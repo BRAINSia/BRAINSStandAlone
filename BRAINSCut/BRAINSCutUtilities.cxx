@@ -32,6 +32,7 @@ WorkingImagePointer ReadImageByFilename( const std::string  filename )
   WorkingImagePointer readInImage;
 
   ReadInImagePointer inputImage = itkUtil::ReadImage<ReadInImageType>(filename.c_str() );
+
   readInImage = itkUtil::ScaleAndCast<ReadInImageType,
                                       WorkingImageType>(inputImage,
                                                         ZeroPercentValue,
@@ -44,6 +45,7 @@ WorkingImagePointer ReadImageByFilename( const std::string  filename )
 DisplacementFieldType::Pointer GetDeformationField( std::string filename)
 {
   const bool useTransform( filename.find(".mat") != std::string::npos );
+
   if( useTransform )
     {
     return NULL;
@@ -59,9 +61,10 @@ DisplacementFieldType::Pointer GetDeformationField( std::string filename)
 GenericTransformType::Pointer GetGenericTransform( std::string filename)
 {
   const bool useDeformation( filename.find(".mat") == std::string::npos );
+
   if( useDeformation )
     {
-    std::cout<<"return null deformation"<<std::endl;
+    std::cout << "return null deformation" << std::endl;
     return NULL;
     }
   return itk::ReadTransformFromDisk( filename );

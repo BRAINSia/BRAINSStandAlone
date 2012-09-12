@@ -9,13 +9,12 @@
 #include <itkBinaryMorphologicalClosingImageFilter.h>
 #include <itkSigmoidImageFilter.h>
 
-
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
 
 BRAINSCutApplyModel
 ::BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler )
-:numberOfTrees(-1),
- depthOfTree(-1)
+  : numberOfTrees(-1),
+  depthOfTree(-1)
 {
   myDataHandler = dataHandler;
   // TODO Take this apart to generate registration one by one!
@@ -45,7 +44,7 @@ BRAINSCutApplyModel
 ::SetMethod( std::string inputMethod)
 {
   method = inputMethod;
-  if( method ==  "ANN") 
+  if( method ==  "ANN" )
     {
     myDataHandler.SetTrainConfiguration( "ANNParameters" );
     }
@@ -54,19 +53,20 @@ BRAINSCutApplyModel
     myDataHandler.SetTrainConfiguration( "RandomForestParameters");
     }
 }
+
 /* iterate through subject */
 void
 BRAINSCutApplyModel
 ::Apply()
 {
-  if( method ==  "ANN")
+  if( method ==  "ANN" )
     {
     myDataHandler.SetANNTestingSSEFilename();
     annOutputThreshold = myDataHandler.GetANNOutputThreshold();
     myDataHandler.SetANNModelFilenameAtIteration( trainIteration);
     ReadANNModelFile();
     }
-  else if( method == "RandomForest")
+  else if( method == "RandomForest" )
     {
     if( myDataHandler.GetRandomForestModelFilename() == "" )
       {
@@ -75,10 +75,9 @@ BRAINSCutApplyModel
     ReadRandomForestModelFile();
     }
 
-  typedef BRAINSCutConfiguration::ApplyDataSetListType::iterator  ApplySubjectIteratorType;
+  typedef BRAINSCutConfiguration::ApplyDataSetListType::iterator ApplySubjectIteratorType;
 
   normalization = myDataHandler.GetNormalization();
-
   for( ApplySubjectIteratorType subjectIt = applyDataSetList.begin();
        subjectIt != applyDataSetList.end();
        ++subjectIt )
@@ -111,33 +110,33 @@ BRAINSCutApplyModel
     {
     for( DeformedROIMapType::iterator it = deformedROIs.begin();
          it != deformedROIs.end();
-         ++it)
+         ++it )
       {
-      deformedROIs[it->first]=SmoothImage( it->second, gaussianSmoothingSigma);
+      deformedROIs[it->first] = SmoothImage( it->second, gaussianSmoothingSigma);
       }
-         
+
     }
 
   /** Get input feature vectors based on subject images and deformed ROIs */
   FeatureInputVector inputVectorGenerator;
 
-  inputVectorGenerator.SetGradientSize( myDataHandler.GetGradientSize());
+  inputVectorGenerator.SetGradientSize( myDataHandler.GetGradientSize() );
   inputVectorGenerator.SetImagesOfInterestInOrder( imagesOfInterest );
   inputVectorGenerator.SetImagesOfSpatialLocation( deformedSpatialLocationImageList );
   inputVectorGenerator.SetCandidateROIs( deformedROIs);
-  inputVectorGenerator.SetROIInOrder( myDataHandler.GetROIIDsInOrder());
+  inputVectorGenerator.SetROIInOrder( myDataHandler.GetROIIDsInOrder() );
   inputVectorGenerator.SetInputVectorSize();
   inputVectorGenerator.SetNormalization( normalization );
 
   /* now iterate through the roi */
 
   unsigned int roiIDsOrderNumber = 0;
-  //for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  // for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
   //     roiTyIt != myDataHandler.GetROIIDsInOrder().end();
   //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
   while( roiIDsOrderNumber < myDataHandler.GetROIIDsInOrder().size() )
     {
-    std::string currentROIName = std::string( myDataHandler.GetROIIDsInOrder()[ roiIDsOrderNumber ] );
+    std::string currentROIName = std::string( myDataHandler.GetROIIDsInOrder()[roiIDsOrderNumber] );
 
     ProbabilityMapParser* roiDataSet =
       myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROIName.c_str() );
@@ -146,58 +145,56 @@ BRAINSCutApplyModel
       InputVectorMapType  roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( currentROIName );
       PredictValueMapType predictedOutputVector;
 
-      if( ! computeSSE )
+      if( !computeSSE )
         {
         PredictROI( roiInputVector, predictedOutputVector,
                     roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
         std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, currentROIName );
 
-
-
         /* post processing
          * may include hole-filling(closing), thresholding, and more adjustment
          */
         BinaryImagePointer mask;
-        if( method == "ANN")
-        {
+        if( method == "ANN" )
+          {
           WritePredictROIProbabilityBasedOnReferenceImage( predictedOutputVector,
-                                                         imagesOfInterest.front(),
-                                                         deformedROIs.find( currentROIName )->second,
-                                                         ANNContinuousOutputFilename, 
-                                                         1.0F );
+                                                           imagesOfInterest.front(),
+                                                           deformedROIs.find( currentROIName )->second,
+                                                           ANNContinuousOutputFilename,
+                                                           1.0F );
           mask = PostProcessingANN( ANNContinuousOutputFilename,
-                                                    annOutputThreshold);
-        }
-        else if( method == "RandomForest")
-        {
+                                    annOutputThreshold);
+          }
+        else if( method == "RandomForest" )
+          {
           WritePredictROIProbabilityBasedOnReferenceImage( predictedOutputVector,
-                                                         imagesOfInterest.front(),
-                                                         deformedROIs.find( currentROIName )->second,
-                                                         ANNContinuousOutputFilename, 
-                                                         roiIDsOrderNumber+1 );
+                                                           imagesOfInterest.front(),
+                                                           deformedROIs.find( currentROIName )->second,
+                                                           ANNContinuousOutputFilename,
+                                                           roiIDsOrderNumber + 1 );
           mask = PostProcessingRF( ANNContinuousOutputFilename );
-        }
+          }
 
         std::string roiOutputFilename = GetROIVolumeName( subject, currentROIName );
         itkUtil::WriteImage<BinaryImageType>( mask, roiOutputFilename );
         itkUtil::WriteImage<WorkingImageType>( deformedROIs.find( currentROIName )->second,
-                                               roiOutputFilename+"def.nii.gz");
+                                               roiOutputFilename + "def.nii.gz");
         }
       else /* testing phase */
         {
-        for( int currentIteration= 1; currentIteration<= trainIteration; currentIteration++)
+        for( int currentIteration = 1; currentIteration <= trainIteration; currentIteration++ )
           {
-          myDataHandler.SetANNModelFilenameAtIteration( currentIteration ) ;
+          myDataHandler.SetANNModelFilenameAtIteration( currentIteration );
           PredictROI( roiInputVector, predictedOutputVector,
                       roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
           std::string roiReferenceFilename = GetROIVolumeName( subject, currentROIName );
-          float SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
+          float       SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
 
-          ANNTestingSSEFileStream<<currentROIName
-                                 <<", subjectID, "<< subjectID
-                                 <<", Iteration, "<<currentIteration
-                                 <<", SSE, "<<SSE 
-                                 <<std::endl;
+          ANNTestingSSEFileStream << currentROIName
+                                  << ", subjectID, " << subjectID
+                                  << ", Iteration, " << currentIteration
+                                  << ", SSE, " << SSE
+                                  << std::endl;
           }
         }
 
@@ -209,16 +206,17 @@ BRAINSCutApplyModel
 
 float
 BRAINSCutApplyModel
-::ComputeSSE( const PredictValueMapType& predictedOutputVector, 
+::ComputeSSE( const PredictValueMapType& predictedOutputVector,
               const std::string roiReferenceFilename )
 {
   WorkingImagePointer ReferenceVolume = ReadImageByFilename( roiReferenceFilename );
 
   WorkingImageType::PixelType referenceValue = 0.0F;
-  double SSE=0.0F;
+  double                      SSE = 0.0F;
+
   for( PredictValueMapType::const_iterator it = predictedOutputVector.begin();
        it != predictedOutputVector.end();
-       ++it)
+       ++it )
     {
     WorkingImageType::IndexType indexFromKey = FeatureInputVector::HashIndexFromKey( it->first );
     referenceValue = ReferenceVolume->GetPixel( indexFromKey );
@@ -229,12 +227,10 @@ BRAINSCutApplyModel
   return SSE;
 }
 
-
-
 BinaryImagePointer
 BRAINSCutApplyModel
-::PostProcessingANN( std::string continuousFilename, 
-                                      scalarType threshold )
+::PostProcessingANN( std::string continuousFilename,
+                     scalarType threshold )
 {
   WorkingImagePointer continuousImage = ReadImageByFilename( continuousFilename );
 
@@ -258,9 +254,10 @@ BRAINSCutApplyModel
   WorkingImagePointer labelImage = ReadImageByFilename( labelImageFilename );
 
   BinaryImagePointer maskVolume = itkUtil::ScaleAndCast<WorkingImageType,
-                                     BinaryImageType>( labelImage,
-                                                      0,
-                                                      255);
+                                                        BinaryImageType>( labelImage,
+                                                                          0,
+                                                                          255);
+
   /* Get One label */
   maskVolume = GetOneConnectedRegion( maskVolume );
 
@@ -273,14 +270,14 @@ BinaryImagePointer
 BRAINSCutApplyModel
 ::ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue  )
 {
-  typedef itk::BinaryThresholdImageFilter<WorkingImageType,WorkingImageType> ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<WorkingImageType, WorkingImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
   if( thresholdValue < 0.0F )
-  {
+    {
     std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
     throw BRAINSCutExceptionStringHandler( msg );
-  }
+    }
   thresholder->SetInput( image );
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 1 );
@@ -289,9 +286,9 @@ BRAINSCutApplyModel
   thresholder->Update();
 
   BinaryImagePointer mask = itkUtil::ScaleAndCast<WorkingImageType,
-                                     BinaryImageType>(thresholder->GetOutput(),
-                                                      0,
-                                                      255);
+                                                  BinaryImageType>(thresholder->GetOutput(),
+                                                                   0,
+                                                                   255);
   return mask;
 }
 
@@ -300,14 +297,14 @@ BRAINSCutApplyModel
 ::ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue  )
 {
 
-  typedef itk::BinaryThresholdImageFilter<WorkingImageType,WorkingImageType> ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<WorkingImageType, WorkingImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
   if( thresholdValue < 0.0F )
-  {
+    {
     std::string msg = " ANNOutput Threshold cannot be less than zero. \n";
     throw BRAINSCutExceptionStringHandler( msg );
-  }
+    }
   thresholder->SetInput( image );
   thresholder->SetOutsideValue( 0 );
   thresholder->SetInsideValue( 1 );
@@ -316,18 +313,17 @@ BRAINSCutApplyModel
   thresholder->Update();
 
   BinaryImagePointer mask = itkUtil::ScaleAndCast<WorkingImageType,
-                                     BinaryImageType>(thresholder->GetOutput(),
-                                                      0,
-                                                      255);
+                                                  BinaryImageType>(thresholder->GetOutput(),
+                                                                   0,
+                                                                   255);
   return mask;
 }
-
 
 BinaryImagePointer
 BRAINSCutApplyModel
 ::ExtractLabel( BinaryImagePointer image, unsigned char thresholdValue  )
 {
-  typedef itk::BinaryThresholdImageFilter< BinaryImageType, BinaryImageType> ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<BinaryImageType, BinaryImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
   thresholder->SetInput( image );
@@ -346,14 +342,14 @@ BRAINSCutApplyModel
 ::GetOneConnectedRegion( BinaryImagePointer image )
 {
   /* relabel images if they are disconnected */
-  typedef itk::ConnectedComponentImageFilter< BinaryImageType, BinaryImageType > 
-          ConnectedBinaryImageFilterType;
+  typedef itk::ConnectedComponentImageFilter<BinaryImageType, BinaryImageType>
+  ConnectedBinaryImageFilterType;
   ConnectedBinaryImageFilterType::Pointer relabler = ConnectedBinaryImageFilterType::New();
 
   relabler->SetInput( image );
 
   /* relable images from the largest to smallset one */
-  typedef itk::RelabelComponentImageFilter< BinaryImageType, BinaryImageType> RelabelInOrderFilterType;
+  typedef itk::RelabelComponentImageFilter<BinaryImageType, BinaryImageType> RelabelInOrderFilterType;
   RelabelInOrderFilterType::Pointer relabelInOrder = RelabelInOrderFilterType::New();
 
   relabelInOrder->SetInput( relabler->GetOutput() );
@@ -361,17 +357,17 @@ BRAINSCutApplyModel
 
   BinaryImagePointer multipleLabelVolume = relabelInOrder->GetOutput();
   /* get the label one */
-  BinaryImagePointer resultMask = ExtractLabel( multipleLabelVolume , 1 );
+  BinaryImagePointer resultMask = ExtractLabel( multipleLabelVolume, 1 );
 
-  return resultMask; 
+  return resultMask;
 }
 
 BinaryImagePointer
 BRAINSCutApplyModel
 ::FillHole( BinaryImagePointer mask)
 {
-  typedef itk::BinaryBallStructuringElement < BinaryImageType::PixelType, DIMENSION > KernelType;
-  KernelType ball;
+  typedef itk::BinaryBallStructuringElement<BinaryImageType::PixelType, DIMENSION> KernelType;
+  KernelType           ball;
   KernelType::SizeType ballSize;
 
   /* Create the structuring element- a disk of radius 2 */
@@ -380,9 +376,9 @@ BRAINSCutApplyModel
   ball.CreateStructuringElement();
 
   /* Closing */
-  typedef itk::BinaryMorphologicalClosingImageFilter< BinaryImageType,
-                                                      BinaryImageType,
-                                                      KernelType > ClosingFilterType;
+  typedef itk::BinaryMorphologicalClosingImageFilter<BinaryImageType,
+                                                     BinaryImageType,
+                                                     KernelType> ClosingFilterType;
   ClosingFilterType::Pointer closingFilter = ClosingFilterType::New();
   closingFilter->SetInput( mask );
   closingFilter->SetKernel( ball );
@@ -392,6 +388,7 @@ BRAINSCutApplyModel
 
   return closingFilter->GetOutput();
 }
+
 inline void
 BRAINSCutApplyModel
 ::PredictROI( InputVectorMapType&  roiInputFeatureVector,
@@ -402,7 +399,6 @@ BRAINSCutApplyModel
 
   /* initialize container of output vector*/
   resultOutputVector.clear();
-
   for( InputVectorMapType::iterator it = roiInputFeatureVector.begin();
        it != roiInputFeatureVector.end();
        ++it )
@@ -413,42 +409,42 @@ BRAINSCutApplyModel
 
     /* get open cv type matrix from array for prediction */
     matrixType openCVInputFeature = cvCreateMat( 1, inputVectorSize, CV_32FC1);
-    //std::cout<<FeatureInputVector::HashIndexFromKey( it->first );
+    // std::cout<<FeatureInputVector::HashIndexFromKey( it->first );
     GetOpenCVMatrixFromArray( openCVInputFeature, arrayInputFeatureVector, inputVectorSize);
 
     /* predict */
 
-    if( method == "ANN")
+    if( method == "ANN" )
       {
       matrixType openCVOutput = cvCreateMat( 1, myDataHandler.GetROIIDsInOrder().size(), CV_32FC1);
       openCVANN->predict( openCVInputFeature, openCVOutput );
 
       /* insert result to the result output vector */
       resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),  CV_MAT_ELEM( *openCVOutput,
-                                                                                    scalarType,
-                                                                                    0,
-                                                                                    roiNumber) ) );
+                                                                                           scalarType,
+                                                                                           0,
+                                                                                           roiNumber) ) );
       }
-    else if( method == "RandomForest")
+    else if( method == "RandomForest" )
       {
-        scalarType response=openCVRandomForest.predict( openCVInputFeature );
-        // make binary input
-        /*if( response > 0.5F )
-        {
-          response = 1.0F;
-        }*/
-        resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),
-                                   response ) );
-        //std::cout<<"--> "<<response<<std::endl;
-        }
+      scalarType response = openCVRandomForest.predict( openCVInputFeature );
+      // make binary input
+      /*if( response > 0.5F )
+      {
+        response = 1.0F;
+      }*/
+      resultOutputVector.insert( std::pair<int, scalarType>(  ( it->first ),
+                                                              response ) );
+      // std::cout<<"--> "<<response<<std::endl;
       }
+    }
 }
 
 inline void
 BRAINSCutApplyModel
 ::GetOpenCVMatrixFromArray( matrixType& matrix, scalarType array[], unsigned int inputVectorSize)
 {
-  //for(int i=0; i<inputVectorSize; i++)
+  // for(int i=0; i<inputVectorSize; i++)
   //  {
   //  std::cout<<array[i]<<", ";
   //  }
@@ -464,18 +460,16 @@ BRAINSCutApplyModel
     {
     ANNTestingSSEFileStream.open( myDataHandler.GetANNTestingSSEFilename().c_str(),
                                   std::fstream::out );
-    if( ! ANNTestingSSEFileStream.good() )
+    if( !ANNTestingSSEFileStream.good() )
       {
       std::string errorMsg = " Cannot open the file! :";
       errorMsg += myDataHandler.GetANNTestingSSEFilename();
-      std::cout<<errorMsg<<std::endl;
+      std::cout << errorMsg << std::endl;
       throw BRAINSCutExceptionStringHandler( errorMsg );
       exit( EXIT_FAILURE );
       }
     }
 }
-
-
 
 /** read model files */
 void
@@ -483,6 +477,7 @@ BRAINSCutApplyModel
 ::ReadANNModelFile()
 {
   std::string ANNModelFilename = myDataHandler.GetANNModelFilename();
+
   if( !itksys::SystemTools::FileExists( ANNModelFilename.c_str() ) )
     {
     std::string errorMsg = " File does not exist! :";
@@ -596,7 +591,7 @@ inline std::string
 BRAINSCutApplyModel
 ::GetROIVolumeName( DataSet& subject, std::string currentROIName)
 {
-  std::string givenROIName = subject.GetMaskFilenameByType( currentROIName );
+  std::string       givenROIName = subject.GetMaskFilenameByType( currentROIName );
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
 
   if( givenROIName == "" or givenROIName == "na" )
@@ -606,21 +601,31 @@ BRAINSCutApplyModel
     }
   return givenROIName;
 }
-void 
+
+void
 BRAINSCutApplyModel
 ::SetNumberOfTrees( const int trees)
 {
   if( trees < 0 )
-    numberOfTrees = myDataHandler.GetMaxTreeCount() ;
+    {
+    numberOfTrees = myDataHandler.GetMaxTreeCount();
+    }
   else
+    {
     numberOfTrees = trees;
+    }
 }
-void 
+
+void
 BRAINSCutApplyModel
 ::SetDepthOfTree( const int depth )
 {
-  if( depth <0 )
-    depthOfTree = myDataHandler.GetMaxDepth() ;
+  if( depth < 0 )
+    {
+    depthOfTree = myDataHandler.GetMaxDepth();
+    }
   else
+    {
     depthOfTree = depth;
+    }
 }

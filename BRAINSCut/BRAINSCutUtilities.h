@@ -18,7 +18,7 @@
 
 #include "opencv2/flann/flann.hpp"
 
-//typedef CvANN_MLP_Revision OpenCVMLPType;
+// typedef CvANN_MLP_Revision OpenCVMLPType;
 typedef CvANN_MLP OpenCVMLPType;
 #include <stdint.h>
 
@@ -75,12 +75,16 @@ typedef std::map<int, scalarType>       PredictValueMapType;
 
 const WorkingImageType::IndexType ConstantHashIndexSize = {{255, 255, 255}};
 
-
 std::string GetAtlasToSubjectRegistrationFilename( DataSet& subject);
+
 std::string GetSubjectToAtlasRegistrationFilename( DataSet& subject);
+
 WorkingImagePointer SmoothImage( const WorkingImagePointer image, const float GaussianValue);
+
 WorkingImagePointer ReadImageByFilename( const std::string  filename );
+
 DisplacementFieldType::Pointer GetDeformationField( std::string filename);
+
 GenericTransformType::Pointer GetGenericTransform( std::string filename);
 
 #endif

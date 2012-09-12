@@ -7,41 +7,46 @@
 typedef itk::Image<unsigned char, DIMENSION> BinaryImageType;
 typedef BinaryImageType::Pointer             BinaryImagePointer;
 
-class BRAINSCutApplyModel 
+class BRAINSCutApplyModel
 {
 public:
-  BRAINSCutApplyModel( ){};
+  BRAINSCutApplyModel()
+  {
+  };
   BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler );
 
   void Apply();
 
   void ApplyOnSubject( DataSet& subject);
 
-
   void SetComputeSSE( const bool sse );
+
   void SetMethod( std::string inputMethod);
 
   void SetNumberOfTrees( const int numberOfTree );
+
   void SetDepthOfTree( const int depth );
+
   void ReadANNModelFile();
+
   void ReadRandomForestModelFile();
 
-  BinaryImagePointer PostProcessingANN( std::string continuousFilename, 
-                                        scalarType threshold );
+  BinaryImagePointer PostProcessingANN( std::string continuousFilename, scalarType threshold );
 
   BinaryImagePointer PostProcessingRF( std::string labelImageFilename );
 
   BinaryImagePointer ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue );
+
   BinaryImagePointer ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue );
 
-  BinaryImagePointer ExtractLabel( BinaryImagePointer image, 
-                                   unsigned char thresholdValue );
+  BinaryImagePointer ExtractLabel( BinaryImagePointer image, unsigned char thresholdValue );
+
   BinaryImagePointer GetOneConnectedRegion( BinaryImagePointer image );
 
   BinaryImagePointer FillHole( BinaryImagePointer mask);
 
 private:
-  BRAINSCutDataHandler myDataHandler;
+  BRAINSCutDataHandler                         myDataHandler;
   BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
 
   std::string method;
@@ -49,21 +54,22 @@ private:
   bool        computeSSE;
   int         trainIteration;
 
-  int         numberOfTrees;
-  int         depthOfTree;
+  int numberOfTrees;
+  int depthOfTree;
 
   std::fstream ANNTestingSSEFileStream;
 
-  scalarType annOutputThreshold;
-  scalarType gaussianSmoothingSigma;
+  scalarType      annOutputThreshold;
+  scalarType      gaussianSmoothingSigma;
   OpenCVMLPType * openCVANN;
 
-  CvRTrees    openCVRandomForest;
+  CvRTrees openCVRandomForest;
 
   /* private functions  */
   std::string GetANNModelBaseName();
-  float ComputeSSE(const PredictValueMapType& predictedOutputVector,      
-                   const std::string roiReferenceFilename );
+
+  float ComputeSSE(const PredictValueMapType& predictedOutputVector, const std::string roiReferenceFilename );
+
   /* inline functions */
 
   inline void PredictROI( InputVectorMapType& roiInputFeatureVector, PredictValueMapType& resultOutputVector,

@@ -27,6 +27,7 @@ Parser::StartElement(void *userData,
   // Use GetIfExist( ) instead of Get() for optional attributes
   //
   StringMap attribMap;
+
   for( unsigned i = 0; atts[i] != 0; i += 2 )
     {
     attribMap[std::string(atts[i])] = std::string(atts[i + 1]);
@@ -268,142 +269,142 @@ Parser::StartElement(void *userData,
                                   attribMap.Get("RandomForestParameters",
                                                 "MinSampleCount") );
       ap->SetAttribute<BooleanValue>( "UseSurrogates",
-                                  attribMap.Get("RandomForestParameters",
-                                                "UseSurrogates") );
+                                      attribMap.Get("RandomForestParameters",
+                                                    "UseSurrogates") );
       ap->SetAttribute<BooleanValue>( "CalcVarImportance",
-                                  attribMap.Get("RandomForestParameters",
-                                                "CalcVarImportance") );
+                                      attribMap.Get("RandomForestParameters",
+                                                    "CalcVarImportance") );
       ap->SetAttribute<IntValue>( "MaxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxTreeCount") );
       Local_netConfiguration->Add(ap, Name);
       }
-  else if( Name == "ANNParameters" )
-    {
-    try
+    else if( Name == "ANNParameters" )
       {
-      TrainingParameters *ap = new TrainingParameters("ANNParameters");
-      // ap->SetAttribute<IntValue>( "VectorSize",    attribMap.Get("TrainingParameters",
-      //          "VectorSize") );
-      ap->SetAttribute<IntValue>( "Iterations",
-                                  attribMap.Get("ANNParameters",
-                                                "Iterations") );
-      ap->SetAttribute<IntValue>( "MaximumVectorsPerEpoch",
-                                  attribMap.Get("ANNParameters",
-                                                "MaximumVectorsPerEpoch") );
-      ap->SetAttribute<IntValue>( "EpochIterations",
-                                  attribMap.Get("ANNParameters",
-                                                "EpochIterations") );
-      ap->SetAttribute<IntValue>( "ErrorInterval",
-                                  attribMap.Get("ANNParameters",
-                                                "ErrorInterval") );
-      ap->SetAttribute<FloatValue>( "ActivationSlope",
+      try
+        {
+        TrainingParameters *ap = new TrainingParameters("ANNParameters");
+        // ap->SetAttribute<IntValue>( "VectorSize",    attribMap.Get("TrainingParameters",
+        //          "VectorSize") );
+        ap->SetAttribute<IntValue>( "Iterations",
                                     attribMap.Get("ANNParameters",
-                                                  "ActivationSlope") );
-      ap->SetAttribute<FloatValue>( "ActivationMinMax",
+                                                  "Iterations") );
+        ap->SetAttribute<IntValue>( "MaximumVectorsPerEpoch",
                                     attribMap.Get("ANNParameters",
-                                                  "ActivationMinMax") );
-      ap->SetAttribute<FloatValue>( "DesiredError",
+                                                  "MaximumVectorsPerEpoch") );
+        ap->SetAttribute<IntValue>( "EpochIterations",
                                     attribMap.Get("ANNParameters",
-                                                  "DesiredError") );
-      ap->SetAttribute<IntValue>( "NumberOfHiddenNodes",
-                                  attribMap.Get("ANNParameters",
-                                                "NumberOfHiddenNodes") );
-      // ap->SetAttribute<FloatValue>("LearningRate",
-      //                           attribMap.Get("TrainingParameters",
-      //                                         "LearningRate"));
-      // ap->SetAttribute<FloatValue>("MomentumRate",
-      //                           attribMap.Get("TrainingParameters",
-      //                                         "MomentumRate"));
-      proc->Add(ap, Name);
+                                                  "EpochIterations") );
+        ap->SetAttribute<IntValue>( "ErrorInterval",
+                                    attribMap.Get("ANNParameters",
+                                                  "ErrorInterval") );
+        ap->SetAttribute<FloatValue>( "ActivationSlope",
+                                      attribMap.Get("ANNParameters",
+                                                    "ActivationSlope") );
+        ap->SetAttribute<FloatValue>( "ActivationMinMax",
+                                      attribMap.Get("ANNParameters",
+                                                    "ActivationMinMax") );
+        ap->SetAttribute<FloatValue>( "DesiredError",
+                                      attribMap.Get("ANNParameters",
+                                                    "DesiredError") );
+        ap->SetAttribute<IntValue>( "NumberOfHiddenNodes",
+                                    attribMap.Get("ANNParameters",
+                                                  "NumberOfHiddenNodes") );
+        // ap->SetAttribute<FloatValue>("LearningRate",
+        //                           attribMap.Get("TrainingParameters",
+        //                                         "LearningRate"));
+        // ap->SetAttribute<FloatValue>("MomentumRate",
+        //                           attribMap.Get("TrainingParameters",
+        //                                         "MomentumRate"));
+        proc->Add(ap, Name);
+        }
+      catch( ProcessObjectException& ex )
+        {
+        std::string msg = " ERROR :: One of attribute name of the \"";
+        msg += Name;
+        msg += "\" is not proper, Please check if the xml file is well-formed\n";
+        std::cerr << "****ERROR!!!\n " << msg;
+        throw;
+        }
       }
-    catch( ProcessObjectException& ex )
+    else if( Name == "RandomForestParameters" )
       {
-      std::string msg = " ERROR :: One of attribute name of the \"";
-      msg += Name;
-      msg += "\" is not proper, Please check if the xml file is well-formed\n";
-      std::cerr << "****ERROR!!!\n " << msg;
-      throw;
+      try
+        {
+        TrainingParameters *ap = new TrainingParameters("RandomForest");
+        ap->SetAttribute<IntValue>( "maxDepth",
+                                    attribMap.Get("RandomForestParameters",
+                                                  "maxDepth") );
+        ap->SetAttribute<IntValue>( "minSampleCount",
+                                    attribMap.Get("RandomForestParameters",
+                                                  "minSampleCount") );
+        ap->SetAttribute<BooleanValue>( "useSurrogates",
+                                        attribMap.Get("RandomForestParameters",
+                                                      "useSurrogates") );
+        ap->SetAttribute<BooleanValue>( "calcVarImportance",
+                                        attribMap.Get("RandomForestParameters",
+                                                      "calcVarImportance") );
+        ap->SetAttribute<IntValue>( "maxTreeCount",
+                                    attribMap.Get("RandomForestParameters",
+                                                  "maxTreeCount") );
+        Local_netConfiguration->Add(ap, Name);
+        }
+      catch( BRAINSCutExceptionStringHandler& ex )
+        {
+        std::cerr << ex << std::endl;
+        throw ex;
+        }
+      }
+    else if( Name == "ApplyModel" )
+      {
+      try
+        {
+        ApplyModelType *am = new ApplyModelType;
+        am->SetAttribute<FloatValue>( "MaskThresh",
+                                      attribMap.Get("ApplyModel",
+                                                    "MaskThresh") );
+        am->SetAttribute<FloatValue>( "GaussianSmoothingSigma",
+                                      attribMap.GetIfExist("ApplyModel",
+                                                           "GaussianSmoothingSigma") );
+        proc->Add(am, Name);
+        }
+      catch( ProcessObjectException& ex )
+        {
+        std::string msg = " ERROR :: One of attribute name of the \"";
+        msg += Name;
+        msg += "\" is not proper, Please check if the xml file is well-formed\n";
+        std::cerr << "****ERROR!!!\n " << msg;
+        throw;
+        }
+      }
+    else
+      {
+      std::string message = "The Element name of \"";
+      message += Name;
+      message += "\" is not exist. Please check if the xml file is well-formed\n";
+      std::cerr << "****ERROR!!!\n " << message;
+      ProcessObjectException exception(message);
+      throw exception;
       }
     }
-  else if( Name == "RandomForestParameters" )
-    {
-    try
-      {
-      TrainingParameters *ap = new TrainingParameters("RandomForest");
-      ap->SetAttribute<IntValue>( "maxDepth",
-                                  attribMap.Get("RandomForestParameters",
-                                                "maxDepth") );
-      ap->SetAttribute<IntValue>( "minSampleCount",
-                                  attribMap.Get("RandomForestParameters",
-                                                "minSampleCount") );
-      ap->SetAttribute<BooleanValue>( "useSurrogates",
-                                  attribMap.Get("RandomForestParameters",
-                                                "useSurrogates") );
-      ap->SetAttribute<BooleanValue>( "calcVarImportance",
-                                  attribMap.Get("RandomForestParameters",
-                                                "calcVarImportance") );
-      ap->SetAttribute<IntValue>( "maxTreeCount",
-                                  attribMap.Get("RandomForestParameters",
-                                                "maxTreeCount") );
-      Local_netConfiguration->Add(ap, Name);
-      }
-    catch( BRAINSCutExceptionStringHandler& ex )
-      {
-      std::cerr << ex << std::endl;
-      throw ex;
-      }
-    }
-  else if( Name == "ApplyModel" )
-    {
-    try
-      {
-      ApplyModelType *am = new ApplyModelType;
-      am->SetAttribute<FloatValue>( "MaskThresh",
-                                    attribMap.Get("ApplyModel",
-                                                  "MaskThresh") );
-      am->SetAttribute<FloatValue>( "GaussianSmoothingSigma",
-                                    attribMap.GetIfExist("ApplyModel",
-                                                  "GaussianSmoothingSigma") );
-      proc->Add(am, Name);
-      }
-    catch( ProcessObjectException& ex )
-      {
-      std::string msg = " ERROR :: One of attribute name of the \"";
-      msg += Name;
-      msg += "\" is not proper, Please check if the xml file is well-formed\n";
-      std::cerr << "****ERROR!!!\n " << msg;
-      throw;
-      }
-    }
-  else
-    {
-    std::string message = "The Element name of \"";
-    message += Name;
-    message += "\" is not exist. Please check if the xml file is well-formed\n";
-    std::cerr << "****ERROR!!!\n " << message;
-    ProcessObjectException exception(message);
-    throw exception;
-    }
-}
 
-void
-Parser::EndElement(void *userData,
-                   const XML_Char *name)
-{
-  std::list<ProcessObjectBase *> *stack =
-    static_cast<std::list<ProcessObjectBase *> *>( userData );
-  if( std::string(name) == "DataSet" )
-    {
-    stack->pop_front();
-    }
-}
+  void
+  Parser::EndElement(void *userData,
+                     const XML_Char *name)
+  {
+    std::list<ProcessObjectBase *> *stack =
+      static_cast<std::list<ProcessObjectBase *> *>( userData );
+    if( std::string(name) == "DataSet" )
+      {
+      stack->pop_front();
+      }
+  }
 
-bool ReadXML(const char *filename, ProcessDescription & prob)
-{
-  std::list<ProcessObjectBase *> stack;
-  stack.push_front(&prob);
-  Parser parser(filename);
-  parser.SetUserData(&stack);
-  return parser.Parse();
-}
+  bool ReadXML(const char *filename, ProcessDescription & prob)
+  {
+    std::list<ProcessObjectBase *> stack;
+    stack.push_front(&prob);
+    Parser parser(filename);
+    parser.SetUserData(&stack);
+    return parser.Parse();
+  }

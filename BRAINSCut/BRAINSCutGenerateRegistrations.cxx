@@ -6,27 +6,27 @@
 // ----------------------------------------------------- //
 BRAINSCutGenerateRegistrations
 ::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler )
-{      
+{
   myDataHandler =  dataHandler;
   myDataHandler.SetRegistrationParameters();
   myDataHandler.SetAtlasDataSet();
 }
 
 // ----------------------------------------------------- //
-void 
+void
 BRAINSCutGenerateRegistrations
 ::SetAtlasToSubjectRegistrationOn( bool onOff)
 {
-  atlasToSubjectRegistraionOn=onOff;
+  atlasToSubjectRegistraionOn = onOff;
 }
 
 // ----------------------------------------------------- //
-void 
+void
 BRAINSCutGenerateRegistrations
 ::SetDataSet( bool applyDataSet )
 {
-  //if applyDataSEt==false, then use training dataset 
-  if( applyDataSet)
+  // if applyDataSEt==false, then use training dataset
+  if( applyDataSet )
     {
     subjectDataSets = myDataHandler.GetApplyDataSet();
     }
@@ -37,65 +37,66 @@ BRAINSCutGenerateRegistrations
 }
 
 // ----------------------------------------------------- //
-void 
+void
 BRAINSCutGenerateRegistrations
 ::GenerateRegistrations()
 {
   for( std::list<DataSet *>::iterator subjectIt = subjectDataSets.begin();
        subjectIt != subjectDataSets.end();
-       ++subjectIt)
+       ++subjectIt )
     {
-      const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType( myDataHandler.GetRegistrationImageTypeToUse() ));
+    const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType(
+                                         myDataHandler.GetRegistrationImageTypeToUse() ) );
 
-      const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler.GetRegistrationID() );
-      const std::string SubjectToAtlasRegistrationFilename
-        ( subjectRegistration->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename") );
-      const std::string AtlasToSubjRegistrationFilename
-        ( subjectRegistration->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename") );
-      const std::string SubjectBinaryFilename
-        ( (*subjectIt)->GetMaskFilenameByType( "RegistrationROI" ) );
+    const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler.GetRegistrationID() );
+    const std::string       SubjectToAtlasRegistrationFilename
+      ( subjectRegistration->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename") );
+    const std::string AtlasToSubjRegistrationFilename
+      ( subjectRegistration->GetAttribute<StringValue>("AtlasToSubjRegistrationFilename") );
+    const std::string SubjectBinaryFilename
+      ( (*subjectIt)->GetMaskFilenameByType( "RegistrationROI" ) );
 
-      if( atlasToSubjectRegistraionOn && 
-          (!itksys::SystemTools::FileExists( AtlasToSubjRegistrationFilename.c_str() ) ) )
+    if( atlasToSubjectRegistraionOn &&
+        (!itksys::SystemTools::FileExists( AtlasToSubjRegistrationFilename.c_str() ) ) )
+      {
+      // create directories
+      std::string directory = itksys::SystemTools::GetParentDirectory(
+          SubjectToAtlasRegistrationFilename.c_str() );
+
+      if( !itksys::SystemTools::FileExists( directory.c_str() ) )
         {
-        // create directories 
-        std::string directory = itksys::SystemTools::GetParentDirectory( 
-            SubjectToAtlasRegistrationFilename.c_str() );
-
-        if( ! itksys::SystemTools::FileExists( directory.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( directory.c_str() );
-          }
-        CreateTransformFile(  myDataHandler.GetAtlasFilename(),       // moving image 
-                              subjectFilename,                        // fixed image
-                              myDataHandler.GetAtlasBinaryFilename(), // moving ROI
-                              SubjectBinaryFilename,                  // fixed ROI
-                              AtlasToSubjRegistrationFilename,
-                              false );
+        itksys::SystemTools::MakeDirectory( directory.c_str() );
         }
-      else if( (! atlasToSubjectRegistraionOn) &&
-               (!itksys::SystemTools::FileExists( SubjectToAtlasRegistrationFilename.c_str() ) ) )
+      CreateTransformFile(  myDataHandler.GetAtlasFilename(),         // moving image
+                            subjectFilename,                          // fixed image
+                            myDataHandler.GetAtlasBinaryFilename(),   // moving ROI
+                            SubjectBinaryFilename,                    // fixed ROI
+                            AtlasToSubjRegistrationFilename,
+                            false );
+      }
+    else if( (!atlasToSubjectRegistraionOn) &&
+             (!itksys::SystemTools::FileExists( SubjectToAtlasRegistrationFilename.c_str() ) ) )
+      {
+      // create directories
+      std::string directory = itksys::SystemTools::GetParentDirectory(
+          SubjectToAtlasRegistrationFilename.c_str() );
+
+      if( !itksys::SystemTools::FileExists( directory.c_str() ) )
         {
-        //create directories 
-        std::string directory = itksys::SystemTools::GetParentDirectory( 
-            SubjectToAtlasRegistrationFilename.c_str() );
-
-        if( ! itksys::SystemTools::FileExists( directory.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( directory.c_str() );
-          }
-        CreateTransformFile(  subjectFilename,                  // moving image
-                              myDataHandler.GetAtlasFilename(), // fixed image
-                              SubjectBinaryFilename,            // moving ROI
-                              myDataHandler.GetAtlasBinaryFilename(),              // fixed ROI
-                              SubjectToAtlasRegistrationFilename,
-                              false );
+        itksys::SystemTools::MakeDirectory( directory.c_str() );
         }
-                                                         
+      CreateTransformFile(  subjectFilename,                        // moving image
+                            myDataHandler.GetAtlasFilename(),       // fixed image
+                            SubjectBinaryFilename,                  // moving ROI
+                            myDataHandler.GetAtlasBinaryFilename(), // fixed ROI
+                            SubjectToAtlasRegistrationFilename,
+                            false );
+      }
+
     }
 }
 
-void 
+void
 BRAINSCutGenerateRegistrations
 ::CreateTransformFile(const std::string MovingImageFilename,
                       const std::string FixedImageFilename,
@@ -339,4 +340,3 @@ BRAINSCutGenerateRegistrations
   deformedVolumeWriter->SetInput( DeformedMovingImage );
   deformedVolumeWriter->Update();
 }
-

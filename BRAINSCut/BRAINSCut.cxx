@@ -20,15 +20,14 @@ int main(int argc, char * *argv)
   PARSE_ARGS;
 
   /* Solution from Kent
-   * ITK4 resigration initilization 
+   * ITK4 resigration initilization
    */
   // Call register default transforms
-  //itk::TransformFactoryBase::RegisterDefaultTransforms();
+  // itk::TransformFactoryBase::RegisterDefaultTransforms();
 
-  
   if( !netConfiguration.empty() && modelConfigurationFilename.empty() )
     {
-      modelConfigurationFilename = netConfiguration;
+    modelConfigurationFilename = netConfiguration;
     }
 
   //
@@ -40,17 +39,14 @@ int main(int argc, char * *argv)
     errorMsg += modelConfigurationFilename;
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
-  BRAINSCutDataHandler dataHandler ( modelConfigurationFilename );
+  BRAINSCutDataHandler dataHandler( modelConfigurationFilename );
 
+  BRAINSCutGenerateRegistrations registrationGenerator( dataHandler );
+  const bool                     applyDataSetOff = false;
+  const bool                     applyDataSetOn = true;
+  const bool                     shuffleTrainVector = (NoTrainingVectorShuffling != true );
 
-
-  BRAINSCutGenerateRegistrations registrationGenerator ( dataHandler );
-  const bool applyDataSetOff=false;
-  const bool applyDataSetOn=true;
-  const bool shuffleTrainVector = (NoTrainingVectorShuffling != true ) ;
-
-
-  std::cout<<"shuffleTrainVector::"<< shuffleTrainVector<<std::endl;
+  std::cout << "shuffleTrainVector::" << shuffleTrainVector << std::endl;
 
   if( generateProbability )
     {
@@ -74,43 +70,43 @@ int main(int argc, char * *argv)
     }
   if( trainModel )
     {
-      if( method=="ANN")
+    if( method == "ANN" )
+      {
+      try
         {
-        try
-          {
-          BRAINSCutTrainModel ANNTrain( dataHandler );
-          ANNTrain.InitializeNeuralNetwork( );
-          ANNTrain.InitializeTrainDataSet( shuffleTrainVector );
-          ANNTrain.TrainANN();
-          }
-        catch( BRAINSCutExceptionStringHandler& e )
-          {
-          std::cout << e.Error();
-          }
+        BRAINSCutTrainModel ANNTrain( dataHandler );
+        ANNTrain.InitializeNeuralNetwork();
+        ANNTrain.InitializeTrainDataSet( shuffleTrainVector );
+        ANNTrain.TrainANN();
         }
-      else if( method=="RandomForest")
+      catch( BRAINSCutExceptionStringHandler& e )
         {
-        BRAINSCutTrainModel RandomForestTrain( dataHandler );
-        RandomForestTrain.InitializeRandomForest();
-        RandomForestTrain.InitializeTrainDataSet( shuffleTrainVector);
+        std::cout << e.Error();
+        }
+      }
+    else if( method == "RandomForest" )
+      {
+      BRAINSCutTrainModel RandomForestTrain( dataHandler );
+      RandomForestTrain.InitializeRandomForest();
+      RandomForestTrain.InitializeTrainDataSet( shuffleTrainVector);
 
-        // these set has to be **AFTER** InitializeTrainDataSet
-        if( numberOfTrees > 0 && randomTreeDepth >0 )
-          {
-          RandomForestTrain.TrainRandomForestAt( randomTreeDepth, numberOfTrees );
-          }
-        else
-          {
-          RandomForestTrain.TrainRandomForest();
-          }
+      // these set has to be **AFTER** InitializeTrainDataSet
+      if( numberOfTrees > 0 && randomTreeDepth > 0 )
+        {
+        RandomForestTrain.TrainRandomForestAt( randomTreeDepth, numberOfTrees );
         }
       else
         {
-        std::cout<<"No proper method found to train"
-                 <<std::endl;
-        exit(EXIT_FAILURE);
+        RandomForestTrain.TrainRandomForest();
         }
-   
+      }
+    else
+      {
+      std::cout << "No proper method found to train"
+                << std::endl;
+      exit(EXIT_FAILURE);
+      }
+
     }
   if( applyModel )
     {

@@ -53,7 +53,7 @@ class XMLConfigurationFileParser : public XMLParser
 public:
   XMLConfigurationFileParser(const std::string & filename ) : XMLParser(filename)
   {
-    myConfiguration=new BRAINSCutConfiguration();
+    myConfiguration = new BRAINSCutConfiguration();
   }
 
   virtual void StartElement(void *userData, const XML_Char *name, const XML_Char * *atts);
@@ -65,7 +65,7 @@ public:
   void ValidateDataSets();
 
 private:
-  //void ReadXML();
+  // void ReadXML();
 
   BRAINSCutConfiguration * myConfiguration;
 

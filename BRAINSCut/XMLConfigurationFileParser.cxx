@@ -16,8 +16,8 @@
 
 void
 XMLConfigurationFileParser::StartElement(void *userData,
-                                     const XML_Char *name,
-                                     const XML_Char * *atts)
+                                         const XML_Char *name,
+                                         const XML_Char * *atts)
 {
 
   //
@@ -25,6 +25,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
   //
 
   StringMap attribMap;
+
   for( unsigned i = 0; atts[i] != 0; i += 2 )
     {
     attribMap[std::string(atts[i])] = std::string(atts[i + 1]);
@@ -38,7 +39,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
 
   ElementContainer *current = *( stack->begin() );
 
-  DataSet *         dataSet = static_cast<DataSet *>( current );
+  DataSet * dataSet = static_cast<DataSet *>( current );
 
   //
   // name
@@ -55,9 +56,9 @@ XMLConfigurationFileParser::StartElement(void *userData,
     DataSet *currentDataSet = new DataSet;
     try
       {
-      std::string currentDataSetName( attribMap.Get( Name.c_str() , "Name") );
+      std::string currentDataSetName( attribMap.Get( Name.c_str(), "Name") );
       currentDataSet->SetAttribute<StringValue, std::string>("Name", currentDataSetName);
-      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get( Name.c_str() , "Type") );
+      currentDataSet->SetAttribute<StringValue, std::string>( "Type",   attribMap.Get( Name.c_str(), "Type") );
       if( currentDataSet->GetAttribute<StringValue>("Type") == "Apply" )
         {
         currentDataSet->SetAttribute<StringValue, std::string>( "OutputDir",   attribMap.Get( Name.c_str(), "OutputDir") );
@@ -211,29 +212,29 @@ XMLConfigurationFileParser::StartElement(void *userData,
       throw ex;
       }
     }
-  else if( Name == "TrainingVectorConfiguration" || Name=="NeuralNetParams" ) // TODO Change NeuralNet Param
+  else if( Name == "TrainingVectorConfiguration" || Name == "NeuralNetParams" ) // TODO Change NeuralNet Param
     {
     try
       {
       TrainingVectorConfigurationType *np = new TrainingVectorConfigurationType;
       np->SetAttribute<FloatValue>( "MaskSmoothingValue",
                                     attribMap.Get( Name.c_str(),
-                                                  "MaskSmoothingValue") );
+                                                   "MaskSmoothingValue") );
       np->SetAttribute<IntValue>( "GradientProfileSize",
-                                    attribMap.Get( Name.c_str(),
-                                                "GradientProfileSize") );
+                                  attribMap.Get( Name.c_str(),
+                                                 "GradientProfileSize") );
       np->SetAttribute<StringValue>( "TrainingVectorFilename",
-                                    attribMap.Get( Name.c_str(),
-                                                   "TrainingVectorFilename") );
+                                     attribMap.Get( Name.c_str(),
+                                                    "TrainingVectorFilename") );
       np->SetAttribute<StringValue>( "TestVectorFilename",
-                                    attribMap.Get( Name.c_str(),
-                                                   "TestVectorFilename") );
+                                     attribMap.Get( Name.c_str(),
+                                                    "TestVectorFilename") );
       np->SetAttribute<StringValue>( "TrainingModelFilename",
-                                    attribMap.Get( Name.c_str(),
-                                                   "TrainingModelFilename") );
+                                     attribMap.Get( Name.c_str(),
+                                                    "TrainingModelFilename") );
       np->SetAttribute<StringValue>( "Normalization",
-                                    attribMap.Get( Name.c_str(),
-                                                   "Normalization") );
+                                     attribMap.Get( Name.c_str(),
+                                                    "Normalization") );
       myConfiguration->Add(np, "TrainingVectorConfiguration");
       }
     catch( BRAINSCutExceptionStringHandler& ex )
@@ -254,11 +255,11 @@ XMLConfigurationFileParser::StartElement(void *userData,
                                   attribMap.Get("RandomForestParameters",
                                                 "MinSampleCount") );
       ap->SetAttribute<BooleanValue>( "UseSurrogates",
-                                  attribMap.Get("RandomForestParameters",
-                                                "UseSurrogates") );
+                                      attribMap.Get("RandomForestParameters",
+                                                    "UseSurrogates") );
       ap->SetAttribute<BooleanValue>( "CalcVarImportance",
-                                  attribMap.Get("RandomForestParameters",
-                                                "CalcVarImportance") );
+                                      attribMap.Get("RandomForestParameters",
+                                                    "CalcVarImportance") );
       ap->SetAttribute<IntValue>( "MaxTreeCount",
                                   attribMap.Get("RandomForestParameters",
                                                 "MaxTreeCount") );
@@ -319,7 +320,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
                                                   "MaskThresh") );
       am->SetAttribute<FloatValue>( "GaussianSmoothingSigma",
                                     attribMap.GetIfExist("ApplyModel",
-                                                  "GaussianSmoothingSigma") );
+                                                         "GaussianSmoothingSigma") );
 
       myConfiguration->Add(am, Name);
       }
@@ -340,7 +341,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
 
 void
 XMLConfigurationFileParser::EndElement(void *userData,
-                                   const XML_Char *name)
+                                       const XML_Char *name)
 {
   std::list<ElementContainer *> *stack =
     static_cast<std::list<ElementContainer *> *>( userData );

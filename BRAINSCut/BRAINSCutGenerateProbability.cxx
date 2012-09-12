@@ -7,7 +7,7 @@
 
 /** constructors */
 BRAINSCutGenerateProbability
-::BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler) 
+::BRAINSCutGenerateProbability( BRAINSCutDataHandler dataHandler)
 {
   myDataHandler =  dataHandler;
   try
@@ -20,9 +20,9 @@ BRAINSCutGenerateProbability
     myDataHandler.SetRegionsOfInterest();
     trainingDataSetList = myDataHandler.GetTrainDataSet();
     }
-  catch( BRAINSCutExceptionStringHandler& e ) 
+  catch( BRAINSCutExceptionStringHandler& e )
     {
-    std::cout << e.Error();    
+    std::cout << e.Error();
     }
 
 }
@@ -60,8 +60,8 @@ BRAINSCutGenerateProbability
   /** generating spherical coordinate image does not have to be here */
   GenerateSymmetricalSphericalCoordinateImage();
   /** iterate through the rois*/
-  for( unsigned int currentROIAt = 0; 
-       currentROIAt < myDataHandler.GetROICount(); 
+  for( unsigned int currentROIAt = 0;
+       currentROIAt < myDataHandler.GetROICount();
        currentROIAt++ )
     {
     WorkingImageType::Pointer currentAccumulatedImages;
@@ -77,7 +77,8 @@ BRAINSCutGenerateProbability
       currentROISubjectsCounter++;
       /** deform ROI to Atlas */
 
-      std::string currentRegistrationFilename=myDataHandler.GetSubjectToAtlasRegistrationFilename( *(*currentSubjectIt) );
+      std::string currentRegistrationFilename =
+        myDataHandler.GetSubjectToAtlasRegistrationFilename( *(*currentSubjectIt) );
       /*std::string currentRegistrationFilename =
         (*currentSubjectIt)->GetRegistrationWithID( registrationID )
         ->GetAttribute<StringValue>( "SubjToAtlasRegistrationFIlename");*/
@@ -101,7 +102,7 @@ BRAINSCutGenerateProbability
 
     /** get roi object */
 
-    ProbabilityMapParser *currentROISet = 
+    ProbabilityMapParser *currentROISet =
       myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>(
         "StructureID", currentROIID.c_str() );
     /** smooth the accumulated image */
@@ -152,9 +153,9 @@ BRAINSCutGenerateProbability
 
   WorkingImageType::Pointer rhoImage, phiImage, thetaImage;
 
-  CreateNewFloatImageFromTemplate(rhoImage, myDataHandler.GetAtlasImage());
-  CreateNewFloatImageFromTemplate(phiImage, myDataHandler.GetAtlasImage());
-  CreateNewFloatImageFromTemplate(thetaImage, myDataHandler.GetAtlasImage());
+  CreateNewFloatImageFromTemplate(rhoImage, myDataHandler.GetAtlasImage() );
+  CreateNewFloatImageFromTemplate(phiImage, myDataHandler.GetAtlasImage() );
+  CreateNewFloatImageFromTemplate(thetaImage, myDataHandler.GetAtlasImage() );
 
   itk::ImageRegionIterator<WorkingImageType> it(
     myDataHandler.GetAtlasImage(), myDataHandler.GetAtlasImage()->GetLargestPossibleRegion() );
@@ -219,10 +220,10 @@ BRAINSCutGenerateProbability
 
 }
 
-void 
+void
 BRAINSCutGenerateProbability
 ::CreateNewFloatImageFromTemplate(WorkingImageType::Pointer & PointerToOutputImage,
-                                     const WorkingImageType::Pointer & PreInitializedImage)
+                                  const WorkingImageType::Pointer & PreInitializedImage)
 {
   WorkingImageType::RegionType region;
 
@@ -239,7 +240,7 @@ BRAINSCutGenerateProbability
   PointerToOutputImage->SetDirection( PreInitializedImage->GetDirection() );
   PointerToOutputImage->SetMetaDataDictionary( PreInitializedImage->GetMetaDataDictionary() );
   itk::ImageRegionIterator<WorkingImageType> bbri( PointerToOutputImage,
-                                                    PointerToOutputImage->GetLargestPossibleRegion() );
+                                                   PointerToOutputImage->GetLargestPossibleRegion() );
   bbri.GoToBegin();
   while( !bbri.IsAtEnd() )
     {
@@ -248,7 +249,8 @@ BRAINSCutGenerateProbability
     ++bbri;
     }
 }
-void 
+
+void
 BRAINSCutGenerateProbability
 ::XYZToSpherical(const itk::Point<float, 3> & LocationWithOriginAtCenterOfImage,
                  float & rhoValue, float & phiValue, float & thetaValue)
@@ -284,7 +286,7 @@ BRAINSCutGenerateProbability
   //  thetaValue = vcl_acos(LocationWithOriginAtCenterOfImage[2]/rhoValue);
 
   rhoValue = rhoValue / 128.0F;  // The largest brain ever will always fit in a sphere
-                       // with radius of 128MM centered at the AC point
+  // with radius of 128MM centered at the AC point
   phiValue = phiValue / (vnl_math::pi);
   thetaValue = thetaValue / (vnl_math::pi);
 }

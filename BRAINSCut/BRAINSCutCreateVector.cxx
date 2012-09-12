@@ -19,7 +19,7 @@ BRAINSCutCreateVector
 ::CreateVectors()
 {
   typedef BRAINSCutConfiguration::TrainDataSetListType::iterator
-          TrainSubjectIteratorType;
+  TrainSubjectIteratorType;
 
   int numberOfInputVector = 0;
 
@@ -29,8 +29,8 @@ BRAINSCutCreateVector
   std::ofstream outputVectorStream;
 
   const std::string vectorFilename = myDataHandler.GetTrainVectorFilename();
-  const std::string vectorFileDirectory 
-          = itksys::SystemTools::GetFilenamePath( vectorFilename.c_str() );
+  const std::string vectorFileDirectory
+    = itksys::SystemTools::GetFilenamePath( vectorFilename.c_str() );
 
   if( !itksys::SystemTools::FileExists( vectorFileDirectory.c_str(), false ) )
     {
@@ -104,12 +104,12 @@ BRAINSCutCreateVector
   unsigned int roiIDsOrderNumber = 0;
 
   int numberOfVectors = 0;
-  //for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
+  // for( DataSet::StringVectorType::iterator roiTyIt = myDataHandler.GetROIIDsInOrder().begin();
   //     roiTyIt != myDataHandler.GetROIIDsInOrder().end();
   //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
   while( roiIDsOrderNumber <  myDataHandler.GetROIIDsInOrder().size() )
     {
-    std::string currentROI( myDataHandler.GetROIIDsInOrder()[ roiIDsOrderNumber ] );
+    std::string currentROI( myDataHandler.GetROIIDsInOrder()[roiIDsOrderNumber] );
 
     ProbabilityMapParser* roiDataSet =
       myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROI.c_str() );
@@ -199,6 +199,7 @@ BRAINSCutCreateVector
                        std::ofstream& outputStream )
 {
   int bufferSize       = (inputVectorSize + outputVectorSize + 1);
+
   for( InputVectorMapType::iterator it = pairedInput.begin();
        it != pairedInput.end();
        it++ )
@@ -229,7 +230,7 @@ BRAINSCutCreateVector
 
 void
 BRAINSCutCreateVector
-::WriteHeaderFile( std::string vectorFilename, 
+::WriteHeaderFile( std::string vectorFilename,
                    int LocalinputVectorSize, int LocaloutputVectorSize, int numberOfInputVector)
 {
   const std::string headerFilename = vectorFilename + ".hdr";
