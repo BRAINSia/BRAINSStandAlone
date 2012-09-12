@@ -5,6 +5,45 @@
 const scalarType FeatureInputVector::MIN = -1.0F;
 const scalarType FeatureInputVector::MAX = 1.0F;
 
+bool
+FeatureInputVector
+::DoUnitTests(void)
+{
+  std::cout << "INTERNAL TEST OF INDEX_KEY INPUTVECTOR" << std::endl;
+  bool allOK = true;
+  for( unsigned unsigned int i = 0; i < 256; i++ )
+    {
+    for( unsigned unsigned int j = 0; j < 256; j++ )
+      {
+      for( unsigned unsigned int k = 0; k < 256; k++ )
+        {
+        // QuickTest
+        WorkingImageType::IndexType index;
+        index[0] = i;
+        index[1] = j;
+        index[2] = k;
+        const int                   currKey = HashKeyFromIndex( index );
+        WorkingImageType::IndexType outIndex = HashIndexFromKey(currKey);
+        if( index != outIndex )
+          {
+          std::cout << "HACK: UNIT TEST " << index << " = " << outIndex << " with key " << currKey << std::endl;
+          allOK = false;
+          }
+        }
+      }
+    }
+  if( !allOK )
+    {
+    std::cout << "ERROR: Hash lookups are not invertable." << std::endl;
+    //exit(-1);
+    }
+  else
+    {
+    std::cout << "All hash lookups for images < 256^3 are validated." << std::endl;
+    }
+  return allOK;
+}
+
 FeatureInputVector
 ::FeatureInputVector() :
   gradientSize(-1),
@@ -15,6 +54,9 @@ FeatureInputVector
   gradientOfROI.clear();
   featureInputOfROI.clear();
   imageInterpolator = ImageLinearInterpolatorType::New();
+#if 1 // HACK: TODO: REGINA This needs to be in the test suite.
+  this->DoUnitTests();
+#endif
 }
 
 void
@@ -145,12 +187,11 @@ FeatureInputVector
       AddSpatialLocation( eachVoxelInROI.GetIndex(), featureElementIterator);
       AddFeaturesImagesOfInterest(ROIName, eachVoxelInROI.GetIndex(), featureElementIterator);
 
-      int oneRowKey = FeatureInputVector::HashKeyFromIndex( eachVoxelInROI.GetIndex() );
+      const int oneRowKey = FeatureInputVector::HashKeyFromIndex( eachVoxelInROI.GetIndex() );
 
       currentFeatureVector.insert( std::pair<int, InputVectorType>( oneRowKey, oneRowInputFeature) );
       }
     ++eachVoxelInROI;
-
     }
 
   /* normalization */
@@ -322,10 +363,9 @@ FeatureInputVector
    * calculating offset
    * hashValue = i[2] + i[1]*s[1] + i[0]*s[0]*s[1]
    */
-  int hashValue = 0;
+  int hashValue = 0; // TODO HACK REGINA: HashKeys should be unsigned!
 
-  unsigned int lastDimensionIndex = DIMENSION - 1;
-
+  const unsigned int lastDimensionIndex = DIMENSION - 1;
   for( unsigned int i = 0; i < (lastDimensionIndex); i++ )
     {
     hashValue += index[i];
@@ -337,18 +377,17 @@ FeatureInputVector
 
 WorkingImageType::IndexType
 FeatureInputVector
-::HashIndexFromKey(const int offSet)
+::HashIndexFromKey(const int offSet) // TODO HACK REGINA: HashKeys should be unsigned!
 {
   WorkingImageType::IndexType key;
 
-  int remainedOffSet = offSet;
-
+  int remainedOffSet = offSet; // TODO HACK REGINA: HashKeys should be unsigned!
   for( int d = DIMENSION - 1; d >= 0; d-- )
     {
     key[d] = remainedOffSet % ConstantHashIndexSize[d];
     remainedOffSet = remainedOffSet / ConstantHashIndexSize[d];
     }
-  return WorkingImageType::IndexType( key );
+  return key;
 }
 
 inline std::pair<scalarType, scalarType>

@@ -136,7 +136,7 @@ BRAINSCutApplyModel
   //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
   while( roiIDsOrderNumber < myDataHandler.GetROIIDsInOrder().size() )
     {
-    std::string currentROIName = std::string( myDataHandler.GetROIIDsInOrder()[roiIDsOrderNumber] );
+    const std::string currentROIName = std::string( myDataHandler.GetROIIDsInOrder()[roiIDsOrderNumber] );
 
     ProbabilityMapParser* roiDataSet =
       myDataHandler.GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROIName.c_str() );
@@ -149,7 +149,7 @@ BRAINSCutApplyModel
         {
         PredictROI( roiInputVector, predictedOutputVector,
                     roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
-        std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, currentROIName );
+        const std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, currentROIName );
 
         /* post processing
          * may include hole-filling(closing), thresholding, and more adjustment
@@ -187,8 +187,8 @@ BRAINSCutApplyModel
           myDataHandler.SetANNModelFilenameAtIteration( currentIteration );
           PredictROI( roiInputVector, predictedOutputVector,
                       roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
-          std::string roiReferenceFilename = GetROIVolumeName( subject, currentROIName );
-          float       SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
+          const std::string roiReferenceFilename = GetROIVolumeName( subject, currentROIName );
+          const float       SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
 
           ANNTestingSSEFileStream << currentROIName
                                   << ", subjectID, " << subjectID
@@ -197,9 +197,7 @@ BRAINSCutApplyModel
                                   << std::endl;
           }
         }
-
       }
-
     roiIDsOrderNumber++;
     }
 }
@@ -424,6 +422,7 @@ BRAINSCutApplyModel
                                                                                            scalarType,
                                                                                            0,
                                                                                            roiNumber) ) );
+      // HACK :  cvReleaseMat(&openCVOutput);
       }
     else if( method == "RandomForest" )
       {
@@ -437,6 +436,9 @@ BRAINSCutApplyModel
                                                               response ) );
       // std::cout<<"--> "<<response<<std::endl;
       }
+    // HACK: YOU MUST RELEASE THE DYNAMICALLY ALLOCATED MEMORY!
+    // TODO: REGINA look at this as a possible memory freeing mechanism
+    // cvReleaseMat(&openCVInputFeature);
     }
 }
 
@@ -492,7 +494,7 @@ void
 BRAINSCutApplyModel
 ::ReadRandomForestModelFile()
 {
-  std::string randomForestFilename = myDataHandler.GetRandomForestModelFilename();
+  const std::string randomForestFilename = myDataHandler.GetRandomForestModelFilename();
 
   if( !itksys::SystemTools::FileExists( randomForestFilename.c_str() ) )
     {
@@ -500,7 +502,6 @@ BRAINSCutApplyModel
     errorMsg += randomForestFilename;
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
-
   openCVRandomForest.load( randomForestFilename.c_str() );
 }
 
