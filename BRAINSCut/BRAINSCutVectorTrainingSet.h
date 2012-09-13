@@ -68,6 +68,7 @@ public:
 
   void                    SetNumberOfSubSet( const unsigned int count = 1 );
 
+  //TODO: REGINA  All "Get" functions should be const
   unsigned int            GetNumberOfSubSet();
 
   // TODO
@@ -75,6 +76,7 @@ public:
   void                    SaveCurrentSubSet( std::string filename );
 
 private:
+  //TODO: REGINA these all need to have "m_" prefix
   /** file names */
   std::string trainingVectorFilename;
   std::string trainingHeaderFilename;
@@ -93,6 +95,5 @@ private:
   pairedTrainingSetType * currentTrainingSubSet;
 
   unsigned int currentSubSetID;   // goes from 0,1,..
-
 };
 #endif
