@@ -135,16 +135,16 @@ def main(argv=None):
     SGEFlavor='SGE'
     if input_arguments.wfrun == 'helium_all.q':
         btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
+            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l h_vmem=4G,mem_free=4G -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
     if input_arguments.wfrun == 'helium_all.q_graph':
         SGEFlavor='SGEGraph' #Use the SGEGraph processing
         btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
+            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l h_vmem=4G=mem_free=4G -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
     elif input_arguments.wfrun == 'ipl_OSX':
         btp.write_graph()
         print "Running On ipl_OSX"
         btp.run(plugin=SGEFlavor,
-            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l mem_free=4000M -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
+            plugin_args=dict(template=JOB_SCRIPT,qsub_args="-S /bin/bash -pe smp1 1-4 -l h_vmem=4G,mem_free=4G -o /dev/null -e /dev/null "+CLUSTER_QUEUE))
     elif input_arguments.wfrun == 'local_4':
         btp.write_graph()
         print "Running with 4 parallel processes on local machine"

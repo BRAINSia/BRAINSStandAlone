@@ -90,7 +90,7 @@ def ANTSTemplateBuildSingleIterationWF(iterationPhasePrefix,CLUSTER_QUEUE,mode='
 
     ### NOTE MAP NODE! warp each of the original images to the provided fixed_image as the template
     BeginANTS=pe.MapNode(interface=ANTS(), name = 'BeginANTS', iterfield=['moving_image'])
-    many_cpu_BeginANTS_options_dictionary={'qsub_args': '-S /bin/bash -pe smp1 8-12 -l mem_free=6000M -o /dev/null -e /dev/null '+CLUSTER_QUEUE, 'overwrite': True}
+    many_cpu_BeginANTS_options_dictionary={'qsub_args': '-S /bin/bash -pe smp1 8-12 -l h_vmem=6G,mem_free=6G -o /dev/null -e /dev/null '+CLUSTER_QUEUE, 'overwrite': True}
     BeginANTS.plugin_args=many_cpu_BeginANTS_options_dictionary
     BeginANTS.inputs.dimension = 3
     BeginANTS.inputs.output_transform_prefix = iterationPhasePrefix+'_tfm'
