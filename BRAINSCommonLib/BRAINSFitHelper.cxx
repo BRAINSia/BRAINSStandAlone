@@ -214,6 +214,7 @@ BRAINSFitHelper::Update(void)
     localCostMetric->SetNumberOfHistogramBins(this->m_NumberOfHistogramBins);
     const bool UseCachingOfBSplineWeights = ( m_UseCachingOfBSplineWeightsMode == "ON" ) ? true : false;
     localCostMetric->SetUseCachingOfBSplineWeights(UseCachingOfBSplineWeights);
+        
     this->RunRegistration<MetricType>();
     }
   else if( this->m_CostMetric == "MSE" )
