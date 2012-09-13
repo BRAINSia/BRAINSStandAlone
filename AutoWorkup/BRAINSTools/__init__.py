@@ -16,6 +16,7 @@ from BRAINSLmkTransform import BRAINSLmkTransform
 from BRAINSMultiModeSegment import BRAINSMultiModeSegment
 from BRAINSROIAuto import BRAINSROIAuto
 from BRAINSResample import BRAINSResample
+from BRAINSSnapShotWriter import BRAINSSnapShotWriter
 from BRAINSTrimForegroundInDirection import BRAINSTrimForegroundInDirection
 from ESLR import ESLR
 from VBRAINSDemonWarp import VBRAINSDemonWarp
