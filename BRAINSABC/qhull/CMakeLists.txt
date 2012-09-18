@@ -3,9 +3,9 @@ project(qhull_lib)
 find_package(VTK)
 if(VTK_FOUND)
   include(${USE_VTK_FILE})
-else(VTK_FOUND)
+else()
   message(FATAL_ERROR "VTK not found. Please set VTK_DIR.")
-endif(VTK_FOUND)
+endif()
 
 include_directories(
   ${VTK_INCLUDE_DIRS}
