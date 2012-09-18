@@ -444,7 +444,7 @@ int main(int argc, char* argv[])
   // % cd  /hjohnson/HDNI/TanmayLandmarkModel/test-data
   // % ~/src/BRAINS3-Darwin-SuperBuildTest/src/bin/brains3_setup.sh -x
   // ~/src/BRAINS3-Darwin-SuperBuildTest/src/bin/fcsv_to_matlab
-  // --landmarkTypesFile lmks.list -o test.hdf5 --landmarkGlobPattern
+  // --landmarkTypesFile lmks.list -o test.h5 --landmarkGlobPattern
   // "\*_est\.fcsv"
 
   /*
