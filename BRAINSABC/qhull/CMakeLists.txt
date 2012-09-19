@@ -1,4 +1,4 @@
-project(qhull_lib)
+##- project(qhull_lib)
 
 find_package(VTK)
 if(VTK_FOUND)
