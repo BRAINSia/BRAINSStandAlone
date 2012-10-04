@@ -29,9 +29,9 @@ PURPOSE.  See the above copyright notices for more information.
 #include "itkAnalyzeImageIO.h"
 #include "itkMetaDataObject.h"
 #include "itkLabelStatisticsImageFilter.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
 #include <vcl_cmath.h>
 #include "ImageCalculatorUtils.h"
@@ -54,7 +54,7 @@ PURPOSE.  See the above copyright notices for more information.
     { return !(*this == other); }                       \
   protected:                                            \
   private:                                              \
-    name(name & cpd) {};                                \
+    name(const name & ) {};                                \
     PixelType m_Val;                                    \
   };
 
@@ -75,7 +75,7 @@ PURPOSE.  See the above copyright notices for more information.
     { return !(*this == other); }                       \
   protected:                                            \
   private:                                              \
-    name(name & cpd) {};                                \
+    name(const name & ) {};                                \
     PixelType m_Val;                                    \
   };
 
