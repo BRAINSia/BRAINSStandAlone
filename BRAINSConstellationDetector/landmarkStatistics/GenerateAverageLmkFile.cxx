@@ -18,7 +18,7 @@
 
 
 #include "itkImage.h"
-#include "math.h"
+#include <cmath>
 #include "Slicer3LandmarkIO.h"
 
 int main( int argc, char * argv[] )

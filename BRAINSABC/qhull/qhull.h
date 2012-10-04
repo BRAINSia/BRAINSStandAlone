@@ -29,9 +29,9 @@
 
 /*=========================== -included files ==============*/
 
-#include <setjmp.h>
-#include <float.h>
-#include <time.h>
+#include <csetjmp>
+#include <cfloat>
+#include <ctime>
 
 #if __MWERKS__ && __POWERPC__
 #include  <SIOUX.h>

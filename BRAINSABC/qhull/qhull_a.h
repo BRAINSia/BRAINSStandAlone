@@ -22,15 +22,15 @@
 #ifndef qhDEFqhulla
 #define qhDEFqhulla
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
-#include <string.h>
-#include <math.h>
-#include <float.h>    /* some compilers will not need float.h */
-#include <limits.h>
-#include <time.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdlib>
+#include <csetjmp>
+#include <cstring>
+#include <cmath>
+#include <cfloat>    /* some compilers will not need float.h */
+#include <climits>
+#include <ctime>
+#include <cctype>
 /*** uncomment here and qset.c
      if string.h does not define memcpy()
 #include <memory.h>

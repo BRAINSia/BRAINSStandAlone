@@ -27,8 +27,8 @@
 extern "C"
 {
 #endif
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <qhull/qhull.h>
 #include <qhull/mem.h>
 #include <qhull/qset.h>
