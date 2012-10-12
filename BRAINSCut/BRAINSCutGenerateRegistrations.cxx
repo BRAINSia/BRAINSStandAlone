@@ -7,9 +7,9 @@
 BRAINSCutGenerateRegistrations
 ::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler )
 {
-  myDataHandler =  dataHandler;
-  myDataHandler.SetRegistrationParameters();
-  myDataHandler.SetAtlasDataSet();
+  myDataHandler =  &dataHandler;
+  myDataHandler->SetRegistrationParameters();
+  myDataHandler->SetAtlasDataSet();
 }
 
 // ----------------------------------------------------- //
@@ -28,11 +28,11 @@ BRAINSCutGenerateRegistrations
   // if applyDataSEt==false, then use training dataset
   if( applyDataSet )
     {
-    subjectDataSets = myDataHandler.GetApplyDataSet();
+    subjectDataSets = myDataHandler->GetApplyDataSet();
     }
   else
     {
-    subjectDataSets = myDataHandler.GetTrainDataSet();
+    subjectDataSets = myDataHandler->GetTrainDataSet();
     }
 }
 
@@ -46,9 +46,9 @@ BRAINSCutGenerateRegistrations
        ++subjectIt )
     {
     const std::string subjectFilename( (*subjectIt)->GetImageFilenameByType(
-                                         myDataHandler.GetRegistrationImageTypeToUse() ) );
+                                         myDataHandler->GetRegistrationImageTypeToUse() ) );
 
-    const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler.GetRegistrationID() );
+    const RegistrationType *subjectRegistration = (*subjectIt)->GetRegistrationWithID( myDataHandler->GetRegistrationID() );
     const std::string       SubjectToAtlasRegistrationFilename
       ( subjectRegistration->GetAttribute<StringValue>("SubjToAtlasRegistrationFilename") );
     const std::string AtlasToSubjRegistrationFilename
@@ -67,9 +67,9 @@ BRAINSCutGenerateRegistrations
         {
         itksys::SystemTools::MakeDirectory( directory.c_str() );
         }
-      CreateTransformFile(  myDataHandler.GetAtlasFilename(),         // moving image
+      CreateTransformFile(  myDataHandler->GetAtlasFilename(),         // moving image
                             subjectFilename,                          // fixed image
-                            myDataHandler.GetAtlasBinaryFilename(),   // moving ROI
+                            myDataHandler->GetAtlasBinaryFilename(),   // moving ROI
                             SubjectBinaryFilename,                    // fixed ROI
                             AtlasToSubjRegistrationFilename,
                             false );
@@ -86,9 +86,9 @@ BRAINSCutGenerateRegistrations
         itksys::SystemTools::MakeDirectory( directory.c_str() );
         }
       CreateTransformFile(  subjectFilename,                        // moving image
-                            myDataHandler.GetAtlasFilename(),       // fixed image
+                            myDataHandler->GetAtlasFilename(),       // fixed image
                             SubjectBinaryFilename,                  // moving ROI
-                            myDataHandler.GetAtlasBinaryFilename(), // fixed ROI
+                            myDataHandler->GetAtlasBinaryFilename(), // fixed ROI
                             SubjectToAtlasRegistrationFilename,
                             false );
       }
@@ -213,7 +213,7 @@ BRAINSCutGenerateRegistrations
     ROIAutoFilterType::Pointer fixedVolumeROIFilter = ROIAutoFilterType::New();
 
     fixedVolumeROIFilter->SetInput( fixedVolume );
-    fixedVolumeROIFilter->SetDilateSize(myDataHandler.GetROIAutoDilateSize() );
+    fixedVolumeROIFilter->SetDilateSize(myDataHandler->GetROIAutoDilateSize() );
     fixedVolumeROIFilter->Update();
 
     BSplineRegistrationHelper->SetFixedBinaryVolume(
@@ -252,7 +252,7 @@ BRAINSCutGenerateRegistrations
     ROIAutoFilterType::Pointer movingVolumeROIFilter = ROIAutoFilterType::New();
 
     movingVolumeROIFilter->SetInput( movingVolume );
-    movingVolumeROIFilter->SetDilateSize(myDataHandler.GetROIAutoDilateSize() );
+    movingVolumeROIFilter->SetDilateSize(myDataHandler->GetROIAutoDilateSize() );
     movingVolumeROIFilter->Update();
 
     BSplineRegistrationHelper->SetMovingBinaryVolume(
