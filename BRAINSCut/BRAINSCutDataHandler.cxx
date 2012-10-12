@@ -295,9 +295,7 @@ void
 BRAINSCutDataHandler
 ::SetTrainingVectorConfiguration()
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   trainingVectorConfiguration = myConfiguration->Get<TrainingVectorConfigurationType>("TrainingVectorConfiguration");
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 }
 
 void
@@ -399,21 +397,16 @@ BRAINSCutDataHandler
 ::GetRFModelFilename( int depth,
                       int NTrees)
 {
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   std::string basename = GetModelBaseName();
 
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   char tempDepth[5];
   sprintf( tempDepth, "%04u", depth );
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 
   char tempNTrees[5];
   sprintf( tempNTrees, "%04u", NTrees );
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
 
   std::string filename = basename + "D" + tempDepth + "NT" + tempNTrees + ".gz";
 
-  std::cout << __LINE__ << "::" << __FILE__ << std::endl;
   return filename;
 }
 
