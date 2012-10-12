@@ -47,7 +47,7 @@ public:
   BinaryImagePointer FillHole( BinaryImagePointer mask);
 
 private:
-  BRAINSCutDataHandler                         m_myDataHandler;
+  BRAINSCutDataHandler*                        m_myDataHandler;
   BRAINSCutConfiguration::ApplyDataSetListType applyDataSetList;
 
   std::string method;
