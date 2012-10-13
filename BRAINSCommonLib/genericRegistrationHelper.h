@@ -556,7 +556,9 @@ private:
   double       m_FinalMetricValue;
   bool         m_ObserveIterations;
   //DEBUG OPTION:
-  int                                        m_ForceMINumberOfThreads;
+  int          m_ForceMINumberOfThreads;
+
+  ModifiedTimeType  m_InternalTransformTime;
 };
 } // end namespace itk
 
