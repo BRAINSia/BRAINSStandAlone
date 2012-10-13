@@ -45,6 +45,8 @@ BRAINSCutApplyModel
 {
   this->m_openCVANN->clear();
   delete this->m_openCVANN;
+
+  this->openCVRandomForest.clear();
 }
 
 void
