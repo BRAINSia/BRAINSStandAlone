@@ -29,6 +29,11 @@ SmoothImage( const WorkingImagePointer image, const float GaussianValue)
 
 WorkingImagePointer ReadImageByFilename( const std::string  filename )
 {
+
+  std::cout<<"********************************************************"<<std::endl;
+  std::cout<<"ReadImageByFilename::: "<<filename<<std::endl;
+  std::cout<<"********************************************************"<<std::endl;
+
   WorkingImagePointer readInImage;
 
   ReadInImagePointer inputImage = itkUtil::ReadImage<ReadInImageType>(filename.c_str() );

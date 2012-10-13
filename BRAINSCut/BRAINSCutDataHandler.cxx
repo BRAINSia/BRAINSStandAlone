@@ -239,7 +239,7 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::GetImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
+::ReadImagesOfSubjectInOrder( WorkingImageVectorType& subjectImageList, DataSet& subject)
 {
   DataSet::StringVectorType imageListFromAtlas = atlasDataSet->GetImageTypes(); // T1, T2, SG, ...
 

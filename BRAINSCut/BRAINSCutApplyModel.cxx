@@ -107,7 +107,7 @@ BRAINSCutApplyModel
   this->m_myDataHandler->GetDeformedSpatialLocationImages( deformedSpatialLocationImageList, subject );
 
   WorkingImageVectorType imagesOfInterest;
-  this->m_myDataHandler->GetImagesOfSubjectInOrder(imagesOfInterest, subject);
+  this->m_myDataHandler->ReadImagesOfSubjectInOrder(imagesOfInterest, subject);
 
   /** Warp probability map(ROI) onto the subject*/
   typedef std::map<std::string, WorkingImagePointer> DeformedROIMapType;
@@ -207,8 +207,11 @@ BRAINSCutApplyModel
                                   << std::endl;
           }
         }
+      roiInputVector.clear();
+      predictedOutputVector.clear();
       }
     roiIDsOrderNumber++;
+
     }
 }
 

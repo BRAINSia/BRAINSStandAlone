@@ -175,6 +175,9 @@ void
 FeatureInputVector
 ::ComputeFeatureInputOfROI( std::string ROIName)
 {
+  std::cout<<"****************************************************"<<std::endl;
+  std::cout<<"***********ComputeFEatureInputOfROI*****************"<<std::endl;
+  std::cout<<"****************************************************"<<std::endl;
   SetGradientImage( ROIName );
 
   typedef itk::ImageRegionIterator<WorkingImageType> ImageRegionIteratorType;

@@ -82,7 +82,7 @@ BRAINSCutCreateVector
   myDataHandler.GetDeformedSpatialLocationImages( deformedSpatialLocationImageList, subject );
 
   WorkingImageVectorType imagesOfInterest;
-  myDataHandler.GetImagesOfSubjectInOrder(imagesOfInterest, subject);
+  myDataHandler.ReadImagesOfSubjectInOrder(imagesOfInterest, subject);
 
   std::map<std::string, WorkingImagePointer> deformedROIs;
   myDataHandler.GetDeformedROIs(deformedROIs, subject);
