@@ -43,6 +43,7 @@ BRAINSCutApplyModel
 BRAINSCutApplyModel
 ::~BRAINSCutApplyModel( )
 {
+  this->m_openCVANN->clear();
   delete this->m_openCVANN;
 }
 
@@ -492,6 +493,7 @@ BRAINSCutApplyModel
     errorMsg += randomForestFilename;
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
+  std::cout<<"******* LOAD random forest file ********"<<std::endl;
   openCVRandomForest.load( randomForestFilename.c_str() );
 }
 
