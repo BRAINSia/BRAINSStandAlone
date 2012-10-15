@@ -213,6 +213,7 @@ BRAINSCutApplyModel
     roiIDsOrderNumber++;
 
     }
+  imagesOfInterest.clear();
 }
 
 float

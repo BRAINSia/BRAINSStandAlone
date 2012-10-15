@@ -20,6 +20,7 @@ class FeatureInputVector
 public:
 
   FeatureInputVector();
+  ~FeatureInputVector();
   int DoUnitTests() const; // A series of unit tests to verify results.
 
   /** constants definition */

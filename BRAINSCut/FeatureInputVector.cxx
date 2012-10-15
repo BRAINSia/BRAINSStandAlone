@@ -59,6 +59,17 @@ FeatureInputVector
   imageInterpolator = ImageLinearInterpolatorType::New();
 }
 
+FeatureInputVector
+::~FeatureInputVector() 
+{
+  this->imagesOfInterestInOrder.clear();
+  this->spatialLocations.clear();
+  this->gradientOfROI.clear();
+  this->featureInputOfROI.clear();
+  this->minmax.clear();
+  this->candidateROIs.clear();
+
+}
 void
 FeatureInputVector
 ::SetGradientSize(unsigned int length)
