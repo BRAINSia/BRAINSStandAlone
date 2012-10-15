@@ -36,6 +36,7 @@
 #include "itkBRAINSROIAutoImageFilter.h"
 #include "BRAINSFitBSpline.h"
 #include "BRAINSFitUtils.h"
+#include "BRAINSFitSyN.h"
 
 // #include "QHullMSTClusteringProcess.h"
 #include "AtlasDefinition.h"
@@ -102,7 +103,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
 
   m_NonAirRegion = 0;
 
-  m_AtlasTransformType = "BSpline";
+  m_AtlasTransformType = "invalid_TransformationTypeNotSet";
 
   m_UpdateTransformation = false;
 
@@ -1428,7 +1429,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
           atlasToSubjectRegistrationHelper->SetFixedBinaryVolume(ROIFilter->GetSpatialObjectROI() );
           }
         // KENT TODO:  Need to expose the transform type to the command line
-        // --AtlasTransformType [Rigid|Affine|BSpline], defaults to BSpline.
+        // --AtlasTransformType [Rigid|Affine|BSpline|SyN], defaults to SyN.
         if( m_AtlasTransformType == "Rigid" )
           {
           muLogMacro(
@@ -1474,6 +1475,12 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
           // Setting max displace
           atlasToSubjectRegistrationHelper->SetMaxBSplineDisplacement(6.0);
           }
+        //else if( m_AtlastTransformType == "SyN" )
+        //  {
+        //   muLogMacro(
+        //    << "Registering (SyN) " << preprocessMovingString << "atlas(" << vIndex << ") to template(" << vIndex
+        //    << ") image." << std::endl);
+        //  }
         atlasToSubjectRegistrationHelper->SetCurrentGenericTransform(m_TemplateGenericTransform);
         if( this->m_DebugLevel > 9 )
           {
@@ -1562,6 +1569,10 @@ void
 EMSegmentationFilter<TInputImage, TProbabilityImage>
 ::Update()
 {
+  if( m_AtlasTransformType == "invalid_TransformationTypeNotSet" )
+    {
+    raise itk::Exception("The AtlasTransformType has NOT been set!")
+    }
   if( m_UpdateRequired )
     {
 

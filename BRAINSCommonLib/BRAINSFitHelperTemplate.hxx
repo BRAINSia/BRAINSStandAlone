@@ -1247,10 +1247,8 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
               std::cerr << "ERROR INITILIZATION FIXED PARAMETERS DO NOT MATCH: " << initialFixedParameters.GetSize()
                         << " != " << tempFixedInitialParameters.GetSize() << std::endl;
               }
-            if( checkMatch )             //  This ramus covers the hypothesis
-                                         // that
-            // the
-            // FixedParameters represent the grid locations of the spline nodes.
+            if( checkMatch ) //  This ramus covers the hypothesis that the FixedParameters
+                             //  represent the grid locations of the spline nodes.
               {
               for( unsigned int i = 0; i < initialFixedParameters.GetSize(); ++i )
                 {
@@ -1261,9 +1259,6 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
                             << " != " << tempFixedInitialParameters.GetElement(i) << std::endl;
                   }
                 }
-              }
-            if( checkMatch )
-              {
               BSplineTransformType::ParametersType tempInitialParameters =
                 tempInitializerITKTransform->GetParameters();
               if( initialBSplineTransform->GetNumberOfParameters() ==
@@ -1294,6 +1289,11 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
                 << "parameter dimensions as the one currently specified.");
               }
             }
+          else if( transformFileType == "CompositeTransform" )
+            {
+            itkGenericExceptionMacro( << "Composite transform initializer type found:  "
+                                      << transformFileType )
+            }
           else
             {
             itkGenericExceptionMacro( << "ERROR:  Invalid transform initializer type found:  "
@@ -1307,7 +1307,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-          return;
+          throw excp;
           }
         }
 
@@ -1685,10 +1685,10 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
       //
       AffineTransformType::Pointer bulkAffineTransform = AffineTransformType::New();
       bulkAffineTransform->SetIdentity();
-          
+
       CompositeTransformType::Pointer initialSyNTransform = CompositeTransformType::New();
       CompositeTransformType::Pointer outputSyNTransform = CompositeTransformType::New();
-      
+
       if( m_CurrentGenericTransform.IsNotNull() )
         {
           try
@@ -1764,7 +1764,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
               return;
           }
       }
-      
+
       if( initialSyNTransform.IsNull() )
         {
         std::cout << "\n**********" << std::endl;
@@ -1779,7 +1779,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
                                                            m_MovingVolume,
                                                            initialSyNTransform );
         }
-      
+
       if( outputSyNTransform.IsNull() )
         {
           std::cout << "\n*******Error: the SyN registration has failed.********\n" << std::endl;
@@ -1793,7 +1793,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           localInitializeTransformMode = "Off";
         }
 #else
-          std::cout << "******* Error: BRAINSFit cannot do the SyN registration ***" 
+          std::cout << "******* Error: BRAINSFit cannot do the SyN registration ***"
                     << "\n******* To use SyN option, you should also build ANTS ***" << std::endl;
           itkGenericExceptionMacro( << "******* Error: To use SyN registration, build ANTS too." << std::endl );
 #endif
