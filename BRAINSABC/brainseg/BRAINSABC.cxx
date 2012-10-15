@@ -345,7 +345,7 @@ static std::vector<bool> FindDuplicateImages(const std::vector<FloatImagePointer
       const double correlationValue = vcl_abs(myNormalizer->GetValue(myID->GetParameters() ) );
       muLogMacro(<< "Correlation value between image " << start << " and image " << q << ": " << correlationValue << std::endl);
       if( ( (inputVolumeTypes[start] == inputVolumeTypes[q]) && ( correlationValue > IMAGES_SAME_CORRELATION_CUTOFF ) )
-          || 
+          ||
           ( (inputVolumeTypes[start] != inputVolumeTypes[q]) && ( correlationValue > IMAGES_DIFFERENT_CORRELATION_CUTOFF ) )
         )
         {
@@ -1072,7 +1072,7 @@ int main(int argc, char * *argv)
           {
           itkGenericExceptionMacro( << "ERROR:  Invalid transform initializer type found:  "
             << initialTransformFileType );
-          } 
+          }
         }
       catch( itk::ExceptionObject & excp )
         {
@@ -1377,6 +1377,8 @@ int main(int argc, char * *argv)
     segfilter->SetPriorIsForegroundPriorVector(priorIsForegroundPriorVector);
 
     segfilter->SetMaxBiasDegree(maxBiasDegree);
+    // TODO: Expose the transform type to the BRAINSABC command line
+    // segFilter->SetAtlasTransformType("SyN"); // atlasTransformType);
 
 #if 0
     // THIS ACTAULLY NEEDS TO BE USED FOR ONLY DOING THE FINAL ITERATION OF THE
