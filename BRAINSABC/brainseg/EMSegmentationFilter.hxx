@@ -36,6 +36,7 @@
 #include "itkBRAINSROIAutoImageFilter.h"
 #include "BRAINSFitBSpline.h"
 #include "BRAINSFitUtils.h"
+#include "BRAINSFitSyN.h"
 
 // #include "QHullMSTClusteringProcess.h"
 #include "AtlasDefinition.h"
@@ -102,7 +103,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
 
   m_NonAirRegion = 0;
 
-  m_AtlasTransformType = "BSpline";
+  m_AtlasTransformType = "SyN"; //"invalid_TransformationTypeNotSet";
 
   m_UpdateTransformation = false;
 
@@ -1338,6 +1339,11 @@ void
 EMSegmentationFilter<TInputImage, TProbabilityImage>
 ::UpdateTransformation(const unsigned int /*CurrentEMIteration*/)
 {
+  if( m_AtlasTransformType == "SyN" )
+    {
+    muLogMacro(<< "HACK: " << m_AtlasTransformType <<  " not instumented for transformation update."  << std::endl );
+    return;
+    }
   muLogMacro(<< "Updating Warping with transform type: " << m_AtlasTransformType  << std::endl );
   if( m_UpdateTransformation == false )
     {
@@ -1358,19 +1364,10 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
     atlasToSubjectRegistrationHelper->SetTranslationScale(1000);
     atlasToSubjectRegistrationHelper->SetReproportionScale(1.0);
     atlasToSubjectRegistrationHelper->SetSkewScale(1.0);
-    //
-    //
-    //
-    // atlasToSubjectRegistrationHelper->SetBackgroundFillValue(backgroundFillValue);
-    // NOT VALID When using initializeTransformMode
-    //
-    //
-    // atlasToSubjectRegistrationHelper->SetCurrentGenericTransform(currentGenericTransform);
-    //
-    //
-    //
+
     // atlasToSubjectRegistrationHelper->SetMaskInferiorCutOffFromCenter(maskInferiorCutOffFromCenter);
     //  atlasToSubjectRegistrationHelper->SetUseWindowedSinc(useWindowedSinc);
+
     // Register each intrasubject image mode to first image
     atlasToSubjectRegistrationHelper->SetFixedVolume(m_CorrectedImages[vIndex]);
     // Register all atlas images to first image
@@ -1428,7 +1425,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
           atlasToSubjectRegistrationHelper->SetFixedBinaryVolume(ROIFilter->GetSpatialObjectROI() );
           }
         // KENT TODO:  Need to expose the transform type to the command line
-        // --AtlasTransformType [Rigid|Affine|BSpline], defaults to BSpline.
+        // --AtlasTransformType [Rigid|Affine|BSpline|SyN], defaults to SyN.
         if( m_AtlasTransformType == "Rigid" )
           {
           muLogMacro(
@@ -1474,6 +1471,10 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
           // Setting max displace
           atlasToSubjectRegistrationHelper->SetMaxBSplineDisplacement(6.0);
           }
+        else if( m_AtlasTransformType == "SyN" )
+          {
+          std::cerr << "ERROR:  NOT PROPERLY IMPLEMENTED YET HACK:" << std::endl;
+         }
         atlasToSubjectRegistrationHelper->SetCurrentGenericTransform(m_TemplateGenericTransform);
         if( this->m_DebugLevel > 9 )
           {
@@ -1562,6 +1563,10 @@ void
 EMSegmentationFilter<TInputImage, TProbabilityImage>
 ::Update()
 {
+  if( m_AtlasTransformType == "invalid_TransformationTypeNotSet" )
+    {
+    itkGenericExceptionMacro( << "The AtlasTransformType has NOT been set!" << std::endl );
+    }
   if( m_UpdateRequired )
     {
 
