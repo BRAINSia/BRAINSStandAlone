@@ -394,7 +394,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
         muLogMacro( << "m_IntraSubjectTransforms.size() = " << m_IntraSubjectTransforms.size() <<   std::endl );
         muLogMacro(
           << "m_IntraSubjectOriginalImageList.size() = " << m_IntraSubjectOriginalImageList.size() <<   std::endl );
-        itkExceptionMacro(<< "ERROR:  atlas and template image list sizes do not match. " 
+        itkExceptionMacro(<< "ERROR:  atlas and template image list sizes do not match. "
                           << "m_AtlasOriginalImageList.size() = " << m_AtlasOriginalImageList.size() <<   std::endl
                           << "m_IntraSubjectTransforms.size() = " << m_IntraSubjectTransforms.size() <<   std::endl
                           << "m_IntraSubjectOriginalImageList.size() = " << m_IntraSubjectOriginalImageList.size());
@@ -674,28 +674,27 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
             std::vector<double>      minimumStepSize;
             std::vector<std::string> transformType;
             if( atlasIter == 0 )
-	      {
-	      std::string atlasToSubjectInitialTransformName = "";
-	      if(this->m_AtlasToSubjectInitialTransform.IsNotNull())
-		{
-		atlasToSubjectInitialTransformName = this->m_AtlasToSubjectInitialTransform->GetNameOfClass();
-		}
+              {
+              std::string atlasToSubjectInitialTransformName = "";
+              if(this->m_AtlasToSubjectInitialTransform.IsNotNull())
+                {
+                atlasToSubjectInitialTransformName = this->m_AtlasToSubjectInitialTransform->GetNameOfClass();
+                }
 
-	      if(!( (atlasToSubjectInitialTransformName.compare("AffineTransform") == 0 ) ||
-		  (atlasToSubjectInitialTransformName.compare("SyN") == 0 )))
-		{
-		minimumStepSize.push_back(0.0025);
-		minimumStepSize.push_back(0.0025);
-		minimumStepSize.push_back(0.0025);
-		transformType.push_back("Rigid");
-		transformType.push_back("ScaleVersor3D");
-		transformType.push_back("ScaleSkewVersor3D");
-		minimumStepSize.push_back(0.0025);
-		transformType.push_back("Affine");
-		}
-	      minimumStepSize.push_back(0.0025);
-	      transformType.push_back("SyN");
-	      }
+              if( !( atlasToSubjectInitialTransformName.compare("SyN") == 0 ) )
+                {
+                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0025);
+                transformType.push_back("Rigid");
+                transformType.push_back("ScaleVersor3D");
+                transformType.push_back("ScaleSkewVersor3D");
+                transformType.push_back("Affine");
+                }
+              minimumStepSize.push_back(0.0025);
+              transformType.push_back("SyN");
+              }
             else
               {
               minimumStepSize.push_back(0.0025);
@@ -741,7 +740,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
           atlasToSubjectRegistrationHelper->SetCurrentGenericTransform(m_AtlasToSubjectTransform);
           if( this->m_DebugLevel > 9 && m_AtlasToSubjectTransform.IsNotNull() )
             {
-            muLogMacro( << "PRE_ASSIGNMENT" <<  atlasIter << "  " ); 
+            muLogMacro( << "PRE_ASSIGNMENT" <<  atlasIter << "  " );
 	    //<< transformType[0] << " first of " << transformType.size() << std::endl );
             muLogMacro(
               << __FILE__ << " " << __LINE__ << " " << m_AtlasToSubjectTransform->GetFixedParameters() <<   std::endl );
