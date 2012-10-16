@@ -56,4 +56,4 @@ description: Atlas-based tissue segmentation method.  This is an algorithmic ext
     input_spec = BRAINSABCInputSpec
     output_spec = BRAINSABCOutputSpec
     _cmd = " BRAINSABC "
-    _outputs_filenames = {'outputLabels':'outputLabels.nii.gz','atlasToSubjectTransform':'atlasToSubjectTransform.mat','atlasToSubjectInitialTransform':'atlasToSubjectInitialTransform.mat','outputDirtyLabels':'outputDirtyLabels.nii.gz','outputVolumes':'outputVolumes.nii.gz','outputDir':'outputDir','implicitOutputs':'implicitOutputs.nii.gz'}
+    _outputs_filenames = {'outputLabels':'outputLabels.nii.gz','atlasToSubjectTransform':'atlasToSubjectTransform.h5','atlasToSubjectInitialTransform':'atlasToSubjectInitialTransform.h5','outputDirtyLabels':'outputDirtyLabels.nii.gz','outputVolumes':'outputVolumes.nii.gz','outputDir':'outputDir','implicitOutputs':'implicitOutputs.nii.gz'}

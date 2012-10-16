@@ -565,12 +565,12 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
             std::vector<std::string> transformType(regLevels);
             if( atlasIter == 0 )
               {
-              minimumStepSize[1] = 0.0025;
+              minimumStepSize[1] = 0.0005;
               transformType[0] = "Rigid";
               }
             else
               {
-              minimumStepSize[0] = 0.0025;
+              minimumStepSize[0] = 0.0005;
               transformType[0] = "Rigid";
               }
             atlasToSubjectRegistrationHelper->SetMinimumStepLength(minimumStepSize);
@@ -594,19 +594,19 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
               if(!( (atlasToSubjectInitialTransformName.compare("AffineTransform") == 0 ) ||
                 (atlasToSubjectInitialTransformName.compare("BSpline") == 0 )))
                 {
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
                 transformType.push_back("Rigid");
                 transformType.push_back("ScaleVersor3D");
                 transformType.push_back("ScaleSkewVersor3D");
                 }
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("Affine");
               }
             else
               {
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("Affine");
               }
             atlasToSubjectRegistrationHelper->SetMinimumStepLength(minimumStepSize);
@@ -631,24 +631,24 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
               if(! (( atlasToSubjectInitialTransformName.compare("Affine") == 0 ) ||
                 (atlasToSubjectInitialTransformName.compare("BSpline") == 0 )))
                 {
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
                 transformType.push_back("Rigid");
                 transformType.push_back("ScaleVersor3D");
                 transformType.push_back("ScaleSkewVersor3D");
                 }
               else if( atlasToSubjectInitialTransformName.compare("Affine") == 0 )
                 {
-                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0005);
                 transformType.push_back("Affine");
                 }
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("BSpline");
               }
             else
               {
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("BSpline");
               }
             atlasToSubjectRegistrationHelper->SetMinimumStepLength(minimumStepSize);
@@ -683,21 +683,21 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
 
               if( !( atlasToSubjectInitialTransformName.compare("SyN") == 0 ) )
                 {
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
-                minimumStepSize.push_back(0.0025);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
+                minimumStepSize.push_back(0.0005);
                 transformType.push_back("Rigid");
                 transformType.push_back("ScaleVersor3D");
                 transformType.push_back("ScaleSkewVersor3D");
                 transformType.push_back("Affine");
                 }
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("SyN");
               }
             else
               {
-              minimumStepSize.push_back(0.0025);
+              minimumStepSize.push_back(0.0005);
               transformType.push_back("Affine");
               }
             atlasToSubjectRegistrationHelper->SetMinimumStepLength(minimumStepSize);
