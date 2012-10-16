@@ -147,6 +147,11 @@ int main( int argc, char** argv )
         rtree->train(training_data, CV_ROW_SAMPLE, training_classifications,
                      Mat(), Mat(), var_type, Mat(), params);
 
+        // save the model file
+        rtree->save( argv[3] );
+        rtree->clear();
+        delete rtree;
+
         // perform classifier testing and report results
 
         Mat test_sample;
@@ -155,6 +160,9 @@ int main( int argc, char** argv )
         int false_positives [NUMBER_OF_CLASSES] = {0,0,0,0,0,0,0,0,0,0};
 
         printf( "\nUsing testing database: %s\n\n", argv[2]);
+
+        CvRTrees* rtree_Predictor = new CvRTrees;
+        rtree_Predictor->load( argv[3] );
 
         for (int tsample = 0; tsample < NUMBER_OF_TESTING_SAMPLES; tsample++)
         {
@@ -165,7 +173,7 @@ int main( int argc, char** argv )
 
             // run random forest prediction
 
-            result = rtree->predict(test_sample, Mat());
+            result = rtree_Predictor->predict(test_sample, Mat());
 
             printf("Testing Sample %i -> class result (digit %d)\n", tsample, (int) result);
 
