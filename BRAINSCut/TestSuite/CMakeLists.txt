@@ -1,6 +1,8 @@
 # --------------------------------------------------------- #
 # BRAINSCut Testing
 # --------------------------------------------------------- #
+add_subdirectory(src)
+
 ##
 ## BRAINSCut NetConfiguration(XML) file for testing
 ##
