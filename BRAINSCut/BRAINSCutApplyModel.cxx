@@ -420,14 +420,15 @@ BRAINSCutApplyModel
        ++it )
     {
     /* get open cv type matrix from array for prediction */
-    CvMat openCVInputFeature = cvMat( 1, inputVectorSize, CV_32FC1,
+    CvMat * openCVInputFeature = cvCreateMat( 1, inputVectorSize, CV_32FC1);
+    cvInitMatHeader( openCVInputFeature, 1, inputVectorSize, CV_32FC1,
       &(it->second[0])); // http://stackoverflow.com/questions/6701816/how-to-use-a-stdvector-in-a-c-function
     // std::cout<<FeatureInputVector::HashIndexFromKey( it->first );
 
     /* predict */
     if( method == "ANN" )
       {
-      this->m_openCVANN->predict( &openCVInputFeature, openCVOutput );
+      this->m_openCVANN->predict( openCVInputFeature, openCVOutput );
 
       /* insert result to the result output vector */
       resultOutputVector.insert( std::pair<hashKeyType, scalarType>(
@@ -436,7 +437,7 @@ BRAINSCutApplyModel
       }
     else if( method == "RandomForest" )
       {
-      const scalarType response = openCVRandomForest.predict( &openCVInputFeature );
+      const scalarType response = openCVRandomForest.predict( openCVInputFeature );
       // make binary input
       /*if( response > 0.5F )
       {
@@ -446,6 +447,7 @@ BRAINSCutApplyModel
                                                               response ) );
       // std::cout<<"--> "<<response<<std::endl;
       }
+    cvReleaseMat( &openCVInputFeature );
     }
   cvReleaseMat(&openCVOutput);
 }
