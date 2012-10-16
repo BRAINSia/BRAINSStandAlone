@@ -1,7 +1,7 @@
 # --------------------------------------------------------- #
 # BRAINSCut Testing
 # --------------------------------------------------------- #
-add_subdirectory(src)
+
 
 ##
 ## BRAINSCut NetConfiguration(XML) file for testing
@@ -74,6 +74,7 @@ ExternalData_add_test( ${PROJECT_NAME}FetchData NAME RandomForestApplyModelTestF
   --netConfiguration ${OutputNetConfigurationForTesting})
 
 
+
 ##
 ## ordering of tests
 
@@ -96,3 +97,4 @@ set_property( TEST RandomForestApplyModelTestFromCLP  APPEND PROPERTY DEPENDS Ra
 
 ## - ExternalData_Add_Target( ${PROJECT_NAME}FetchData )  # Name of data management target
 
+add_subdirectory(src)
