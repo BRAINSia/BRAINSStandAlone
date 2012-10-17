@@ -152,8 +152,10 @@ int main( int argc, char** argv )
         rtree->clear();
         delete rtree;
 
+        printf("TEST cv::Mat file\n)");
         // perform classifier testing and report results
-
+        
+        {
         Mat test_sample;
         int correct_class = 0;
         int wrong_class = 0;
@@ -199,6 +201,7 @@ int main( int argc, char** argv )
             }
         }
 
+
         printf( "\nResults on the testing database: %s\n"
                 "\tCorrect classification: %d (%g%%)\n"
                 "\tWrong classifications: %d (%g%%)\n",
@@ -212,7 +215,73 @@ int main( int argc, char** argv )
                     false_positives[i],
                     (double) false_positives[i]*100/NUMBER_OF_TESTING_SAMPLES);
         }
+        }
 
+        {
+        printf("TEST CvMat file\n)");
+
+        int correct_class = 0;
+        int wrong_class = 0;
+        int false_positives [NUMBER_OF_CLASSES] = {0,0,0,0,0,0,0,0,0,0};
+
+        printf( "\nUsing testing database: %s\n\n", argv[2]);
+
+        CvRTrees* rtree_Predictor = new CvRTrees;
+        rtree_Predictor->load( argv[3] );
+
+        for (int tsample = 0; tsample < NUMBER_OF_TESTING_SAMPLES; tsample++)
+        {
+
+            // extract a row from the testing matrix
+
+            CvMat * test_sample = cvCreateMat(1, ATTRIBUTES_PER_SAMPLE, CV_32FC1);
+            Mat temp=testing_data.row(tsample);
+            cvInitMatHeader(  test_sample, 1, ATTRIBUTES_PER_SAMPLE, CV_32FC1,&temp );
+
+            // run random forest prediction
+
+            result = rtree_Predictor->predict(test_sample, Mat());
+
+            printf("Testing Sample %i -> class result (digit %d)\n", tsample, (int) result);
+
+            // if the prediction and the (true) testing classification are the same
+            // (N.B. openCV uses a floating point decision tree implementation!)
+
+            if (fabs(result - testing_classifications.at<float>(tsample, 0))
+                    >= FLT_EPSILON)
+            {
+                // if they differ more than floating point error => wrong class
+
+                wrong_class++;
+
+                false_positives[(int) result]++;
+
+            }
+            else
+            {
+
+                // otherwise correct
+
+                correct_class++;
+            }
+            cvReleaseMat( &test_sample );
+        }
+
+
+        printf( "\nResults on the testing database: %s\n"
+                "\tCorrect classification: %d (%g%%)\n"
+                "\tWrong classifications: %d (%g%%)\n",
+                argv[2],
+                correct_class, (double) correct_class*100/NUMBER_OF_TESTING_SAMPLES,
+                wrong_class, (double) wrong_class*100/NUMBER_OF_TESTING_SAMPLES);
+
+        for (int i = 0; i < NUMBER_OF_CLASSES; i++)
+        {
+            printf( "\tClass (digit %d) false postives  %d (%g%%)\n", i,
+                    false_positives[i],
+                    (double) false_positives[i]*100/NUMBER_OF_TESTING_SAMPLES);
+        }
+        }
 
         // all matrix memory free by destructors
 
