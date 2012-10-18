@@ -47,7 +47,7 @@ static const float        FLOAT_TOLERANCE = 0.01;
 */
 const unsigned char DIMENSION = 3;
 
-typedef double                                 ReadInPixelType;
+typedef float                                  ReadInPixelType;
 typedef itk::Image<ReadInPixelType, DIMENSION> ReadInImageType;
 typedef ReadInImageType::Pointer               ReadInImagePointer;
 

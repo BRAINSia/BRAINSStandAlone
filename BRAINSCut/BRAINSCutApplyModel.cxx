@@ -176,6 +176,7 @@ BRAINSCutApplyModel
                                                            deformedROIs.find( currentROIName )->second,
                                                            ANNContinuousOutputFilename,
                                                            1.0F );
+          predictedOutputVector.clear();
           mask = PostProcessingANN( ANNContinuousOutputFilename,
                                     annOutputThreshold);
           }
@@ -186,6 +187,7 @@ BRAINSCutApplyModel
                                                            deformedROIs.find( currentROIName )->second,
                                                            ANNContinuousOutputFilename,
                                                            roiIDsOrderNumber + 1 );
+          predictedOutputVector.clear();
           mask = PostProcessingRF( ANNContinuousOutputFilename );
           }
 
@@ -211,11 +213,12 @@ BRAINSCutApplyModel
                                   << ", SSE, " << SSE
                                   << std::endl;
           }
+        predictedOutputVector.clear();
         }
 
-      predictedOutputVector.clear();
       }
     roiIDsOrderNumber++;
+    delete roiDataSet;
 
     }
   deformedSpatialLocationImageList.clear();
