@@ -102,8 +102,8 @@ def DontuseThis():
     ResampleAtlasNACLabels.inputs.interpolationMode = "NearestNeighbor"
     ResampleAtlasNACLabels.inputs.outputVolume = "atlasToSubjectNACLabels.nii.gz"
 
-    cutWF.connect(cutWF,'OutputSpec.atlasToSubjectTransform',ResampleAtlasNACLabels,'warpTransform')
-    cutWF.connect(cutWF,'OutputSpec.t1_corrected',ResampleAtlasNACLabels,'referenceVolume')
+    cutWF.connect(cutWF,'outputspec.atlasToSubjectTransform',ResampleAtlasNACLabels,'warpTransform')
+    cutWF.connect(cutWF,'outputspec.t1_corrected',ResampleAtlasNACLabels,'referenceVolume')
     cutWF.connect(BAtlas,'template_nac_lables',ResampleAtlasNACLabels,'inputVolume')
 
     """
@@ -115,9 +115,9 @@ def DontuseThis():
     BMUSH.inputs.lowerThresholdFactor = 1.2
     BMUSH.inputs.upperThresholdFactor = 0.55
 
-    cutWF.connect(myLocalTCWF,'OutputSpec.t1_corrected',BMUSH,'inputFirstVolume')
-    cutWF.connect(myLocalTCWF,'OutputSpec.t2_corrected',BMUSH,'inputSecondVolume')
-    cutWF.connect(myLocalTCWF,'OutputSpec.outputLabels',BMUSH,'inputMaskVolume')
+    cutWF.connect(myLocalTCWF,'outputspec.t1_corrected',BMUSH,'inputFirstVolume')
+    cutWF.connect(myLocalTCWF,'outputspec.t2_corrected',BMUSH,'inputSecondVolume')
+    cutWF.connect(myLocalTCWF,'outputspec.outputLabels',BMUSH,'inputMaskVolume')
 
     """
     BRAINSROIAuto
@@ -127,7 +127,7 @@ def DontuseThis():
     BROI.inputs.otsuPercentileThreshold=0.01
     BROI.inputs.thresholdCorrectionFactor=1.0
     BROI.inputs.outputROIMaskVolume = "temproiAuto_t1_ACPC_corrected_BRAINSABC.nii.gz"
-    cutWF.connect(myLocalTCWF,'OutputSpec.t1_corrected',BROI,'inputVolume')
+    cutWF.connect(myLocalTCWF,'outputspec.t1_corrected',BROI,'inputVolume')
 
     """
     Split the implicit outputs of BABCext
@@ -136,7 +136,7 @@ def DontuseThis():
                              function = get_first_T1_and_T2), run_without_submitting=True, name="99_SplitAvgBABC")
     SplitAvgBABC.inputs.T1_count = 1 ## There is only 1 average T1 image.
 
-    cutWF.connect(myLocalTCWF,'OutputSpec.outputAverageImages',SplitAvgBABC,'in_files')
+    cutWF.connect(myLocalTCWF,'outputspec.outputAverageImages',SplitAvgBABC,'in_files')
 
 
 
