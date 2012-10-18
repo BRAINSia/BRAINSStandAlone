@@ -55,7 +55,6 @@ FeatureInputVector
   spatialLocations.clear();
   candidateROIs.clear();
   gradientOfROI.clear();
-  featureInputOfROI.clear();
   imageInterpolator = ImageLinearInterpolatorType::New();
 }
 
@@ -65,7 +64,6 @@ FeatureInputVector
   this->imagesOfInterestInOrder.clear();
   this->spatialLocations.clear();
   this->gradientOfROI.clear();
-  this->featureInputOfROI.clear();
   this->minmax.clear();
   this->candidateROIs.clear();
 
@@ -170,22 +168,25 @@ FeatureInputVector
 {
   normalization = doNormalize;
 };
-
+/*
 InputVectorMapType
 FeatureInputVector
-::GetFeatureInputOfROI( std::string ROIName )
+::ComputeAndGetFeatureInputOfROI( std::string ROIName )
 {
+  std::map<std::string, InputVectorMapType> featureInputOfROI;
   if( featureInputOfROI.find( ROIName ) == featureInputOfROI.end() )
     {
     ComputeFeatureInputOfROI( ROIName);
     }
   return InputVectorMapType(featureInputOfROI.find( ROIName )->second);
 }
-
-void
+*/
+InputVectorMapType
 FeatureInputVector
-::ComputeFeatureInputOfROI( std::string ROIName)
+::ComputeAndGetFeatureInputOfROI( std::string ROIName)
 {
+  std::map<std::string, InputVectorMapType> featureInputOfROI;
+
   std::cout<<"****************************************************"<<std::endl;
   std::cout<<"***********ComputeFEatureInputOfROI*****************"<<std::endl;
   std::cout<<"****************************************************"<<std::endl;
@@ -229,6 +230,8 @@ FeatureInputVector
 
   /* insert computed vector */
   featureInputOfROI.insert(std::pair<std::string, InputVectorMapType>( ROIName, currentFeatureVector) );
+
+  return InputVectorMapType(featureInputOfROI.find( ROIName )->second);
 }
 
 /* set normalization parameters */
@@ -331,7 +334,7 @@ FeatureInputVector
 inline void
 FeatureInputVector
 ::AddFeaturesAlongGradient( std::string ROIName,
-                            WorkingImagePointer featureImage,
+                            const WorkingImagePointer& featureImage,
                             WorkingImageType::IndexType currentPixelIndex,
                             std::vector<scalarType>::iterator & elementIterator )
 {

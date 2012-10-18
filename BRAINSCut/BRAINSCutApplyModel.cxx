@@ -46,7 +46,9 @@ BRAINSCutApplyModel
   this->m_openCVANN->clear();
   delete this->m_openCVANN;
 
-  this->openCVRandomForest.clear();
+  this->openCVRandomForest->clear();
+  delete this->openCVRandomForest;
+
 }
 
 void
@@ -60,6 +62,7 @@ BRAINSCutApplyModel
     }
   else
     {
+    openCVRandomForest = new CvRTrees;
     this->m_myDataHandler->SetTrainConfiguration( "RandomForestParameters");
     }
 }
@@ -152,13 +155,14 @@ BRAINSCutApplyModel
       this->m_myDataHandler->GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROIName.c_str() );
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
-      InputVectorMapType  roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( currentROIName );
+      InputVectorMapType  roiInputVector = inputVectorGenerator.ComputeAndGetFeatureInputOfROI( currentROIName );
       PredictValueMapType predictedOutputVector;
 
       if( !computeSSE )
         {
         PredictROI( roiInputVector, predictedOutputVector,
                     roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
+        roiInputVector.clear();
         const std::string ANNContinuousOutputFilename = GetContinuousPredictionFilename( subject, currentROIName );
 
         /* post processing
@@ -197,6 +201,7 @@ BRAINSCutApplyModel
           this->m_myDataHandler->SetANNModelFilenameAtIteration( currentIteration );
           PredictROI( roiInputVector, predictedOutputVector,
                       roiIDsOrderNumber, inputVectorGenerator.GetInputVectorSize() );
+          roiInputVector.clear();
           const std::string roiReferenceFilename = GetROIVolumeName( subject, currentROIName );
           const float       SSE = ComputeSSE( predictedOutputVector, roiReferenceFilename );
 
@@ -207,13 +212,16 @@ BRAINSCutApplyModel
                                   << std::endl;
           }
         }
-      roiInputVector.clear();
+
       predictedOutputVector.clear();
       }
     roiIDsOrderNumber++;
 
     }
+  deformedSpatialLocationImageList.clear();
   imagesOfInterest.clear();
+  deformedROIs.clear();
+
 }
 
 float
@@ -271,11 +279,11 @@ BRAINSCutApplyModel
                                                                           255);
 
   /* Get One label */
-  maskVolume = GetOneConnectedRegion( maskVolume );
+  BinaryImagePointer connected_maskVolume = GetOneConnectedRegion( maskVolume );
 
   /* opening and closing to get rid of island and holes */
-  maskVolume = FillHole( maskVolume );
-  return maskVolume;
+  BinaryImagePointer filled_maskVolume = FillHole( connected_maskVolume );
+  return filled_maskVolume;
 }
 
 BinaryImagePointer
@@ -333,7 +341,7 @@ BRAINSCutApplyModel
 
 BinaryImagePointer
 BRAINSCutApplyModel
-::ExtractLabel( BinaryImagePointer image, unsigned char thresholdValue  )
+::ExtractLabel( BinaryImagePointer& image, unsigned char thresholdValue  )
 {
   typedef itk::BinaryThresholdImageFilter<BinaryImageType, BinaryImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
@@ -351,7 +359,7 @@ BRAINSCutApplyModel
 
 BinaryImagePointer
 BRAINSCutApplyModel
-::GetOneConnectedRegion( BinaryImagePointer image )
+::GetOneConnectedRegion( BinaryImagePointer& image )
 {
   /* relabel images if they are disconnected */
   typedef itk::ConnectedComponentImageFilter<BinaryImageType, BinaryImageType>
@@ -376,7 +384,7 @@ BRAINSCutApplyModel
 
 BinaryImagePointer
 BRAINSCutApplyModel
-::FillHole( BinaryImagePointer mask)
+::FillHole( BinaryImagePointer& mask)
 {
   typedef itk::BinaryBallStructuringElement<BinaryImageType::PixelType, DIMENSION> KernelType;
   KernelType           ball;
@@ -411,7 +419,7 @@ BRAINSCutApplyModel
   const unsigned int NumberOfROIS=this->m_myDataHandler->GetROIIDsInOrder().size();
   //The openCVOutput is unnecessary of RandomForest, but it is really cheap to do once.
   //even if it is wasted effort.
-  CvMat * openCVOutput = cvCreateMat( 1, NumberOfROIS, CV_32FC1);
+  //CvMat * openCVOutput = cvCreateMat( 1, NumberOfROIS, CV_32FC1);
 
   /* initialize container of output vector*/
   resultOutputVector.clear();
@@ -420,24 +428,26 @@ BRAINSCutApplyModel
        ++it )
     {
     /* get open cv type matrix from array for prediction */
-    CvMat * openCVInputFeature = cvCreateMat( 1, inputVectorSize, CV_32FC1);
-    cvInitMatHeader( openCVInputFeature, 1, inputVectorSize, CV_32FC1,
+
+    CvMat openCVInputFeature;
+    cvInitMatHeader( &openCVInputFeature, 1, inputVectorSize, CV_32FC1,
       &(it->second[0])); // http://stackoverflow.com/questions/6701816/how-to-use-a-stdvector-in-a-c-function
     // std::cout<<FeatureInputVector::HashIndexFromKey( it->first );
 
     /* predict */
     if( method == "ANN" )
       {
-      this->m_openCVANN->predict( openCVInputFeature, openCVOutput );
+      CvMat openCVOutput;
+      this->m_openCVANN->predict( &openCVInputFeature, & openCVOutput );
 
       /* insert result to the result output vector */
       resultOutputVector.insert( std::pair<hashKeyType, scalarType>(
           ( it->first ),
-          CV_MAT_ELEM( *openCVOutput, scalarType, 0, roiNumber) ) );
+          CV_MAT_ELEM( openCVOutput, scalarType, 0, roiNumber) ) );
       }
     else if( method == "RandomForest" )
       {
-      const scalarType response = openCVRandomForest.predict( openCVInputFeature );
+      const scalarType response = openCVRandomForest->predict( &openCVInputFeature );
       // make binary input
       /*if( response > 0.5F )
       {
@@ -447,9 +457,7 @@ BRAINSCutApplyModel
                                                               response ) );
       // std::cout<<"--> "<<response<<std::endl;
       }
-    cvReleaseMat( &openCVInputFeature );
     }
-  cvReleaseMat(&openCVOutput);
 }
 
 void
@@ -502,7 +510,7 @@ BRAINSCutApplyModel
     throw BRAINSCutExceptionStringHandler( errorMsg );
     }
   std::cout<<"******* LOAD random forest file ********"<<std::endl;
-  openCVRandomForest.load( randomForestFilename.c_str() );
+  openCVRandomForest->load( randomForestFilename.c_str() );
 }
 
 inline void

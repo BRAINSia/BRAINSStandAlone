@@ -117,7 +117,7 @@ BRAINSCutCreateVector
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
       /* get input vector */
-      InputVectorMapType roiInputVector = inputVectorGenerator.GetFeatureInputOfROI( currentROI );
+      InputVectorMapType roiInputVector = inputVectorGenerator.ComputeAndGetFeatureInputOfROI( currentROI );
 
       /*
        * get paired output vector

@@ -4,7 +4,7 @@
 // read/warp image
 //
 WorkingImagePointer
-SmoothImage( const WorkingImagePointer image, const float GaussianValue)
+SmoothImage( const WorkingImagePointer& image, const float GaussianValue)
 {
   if( GaussianValue < 0 + FLOAT_TOLERANCE )
     {
