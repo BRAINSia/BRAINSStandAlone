@@ -347,9 +347,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
   // Need to normalize priors before getting started.
   this->m_OriginalSpacePriors = priors;
   ZeroNegativeValuesInPlace<TProbabilityImage>(this->m_OriginalSpacePriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
   NormalizeProbListInPlace<TProbabilityImage>(this->m_OriginalSpacePriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
   this->m_OriginalSpacePriors = priors;
   this->Modified();
   m_UpdateRequired = true;
@@ -1634,9 +1632,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
       0, this->m_InputImages, this->m_WarpedPriors, currForgroundBrainMask);
     {
     BlendPosteriorsAndPriors<TProbabilityImage>(0.0, this->m_WarpedPriors, this->m_WarpedPriors, this->m_WarpedPriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
     NormalizeProbListInPlace<TProbabilityImage>(this->m_WarpedPriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
     if( this->m_DebugLevel > 9 )
       {
       this->WriteDebugBlendClippedPriors(0);
@@ -1714,9 +1710,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
       ComputePosteriors<TInputImage, TProbabilityImage>(this->m_WarpedPriors, this->m_PriorWeights,
                                                         this->m_CorrectedImages,
                                                         this->m_ListOfClassStatistics);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
     NormalizeProbListInPlace<TProbabilityImage>(this->m_Posteriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
     this->WriteDebugPosteriors(CurrentEMIteration);
     ComputeLabels<TProbabilityImage>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
                                      this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyLabels,
@@ -1764,9 +1758,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
         BlendPosteriorsAndPriors<TProbabilityImage>(1.0 - priorWeighting, this->m_Posteriors, this->m_WarpedPriors,
                                                     this->m_WarpedPriors);
         priorWeighting *= priorWeighting;
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
         NormalizeProbListInPlace<TProbabilityImage>(this->m_WarpedPriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
         this->WriteDebugBlendClippedPriors(CurrentEMIteration);
         }
       }
@@ -1817,9 +1809,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
     ComputePosteriors<TInputImage, TProbabilityImage>(this->m_WarpedPriors, this->m_PriorWeights,
                                                       this->m_CorrectedImages,
                                                       this->m_ListOfClassStatistics);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
   NormalizeProbListInPlace<TProbabilityImage>(this->m_Posteriors);
-    std::cout << "HACK HERE: " << __FILE__ << " " << __LINE__ << std::endl;
   this->WriteDebugPosteriors(CurrentEMIteration + 100);
   ComputeLabels<TProbabilityImage>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
                                    this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyLabels,
