@@ -7,11 +7,11 @@ class BRAINSLandmarkInitializerInputSpec(CommandLineInputSpec):
     inputFixedLandmarkFilename = File(desc="input fixed landmark. *.fcsv", exists=True, argstr="--inputFixedLandmarkFilename %s")
     inputMovingLandmarkFilename = File(desc="input moving landmark. *.fcsv", exists=True, argstr="--inputMovingLandmarkFilename %s")
     inputWeightFilename = File(desc="Input weight file name for landmarks. Higher weighted landmark will be considered more heavily. Weights are propotional, that is the magnitude of weights will be normalized by its minimum and maximum value. ", exists=True, argstr="--inputWeightFilename %s")
-    outputTransformFilename = traits.Either(traits.Bool, File(), hash_files=False, desc="output transform file name (ex: ./outputTransform.mat) ", argstr="--outputTransformFilename %s")
+    outputTransformFilename = traits.Either(traits.Bool, File(), hash_files=False, desc="output transform file name (ex: ./outputTransform.h5) ", argstr="--outputTransformFilename %s")
 
 
 class BRAINSLandmarkInitializerOutputSpec(TraitedSpec):
-    outputTransformFilename = File(desc="output transform file name (ex: ./outputTransform.mat) ", exists=True)
+    outputTransformFilename = File(desc="output transform file name (ex: ./outputTransform.h5) ", exists=True)
 
 
 class BRAINSLandmarkInitializer(SlicerCommandLine):
