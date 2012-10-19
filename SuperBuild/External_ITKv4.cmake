@@ -79,7 +79,7 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 4518ee648301fa2909c91be56e8912686dc8b88f) #2012-10-13
+  set(${proj}_GIT_TAG af8d6ee5f9fa46a916b8b46e03a0b10b38b23e80) #2012-10-18 Fix Inverse composit displacement field.
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
