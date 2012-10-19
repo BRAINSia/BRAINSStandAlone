@@ -48,4 +48,4 @@ acknowledgements: Funding for this version of the GTRACT program was provided by
     input_spec = gtractCoregBvaluesInputSpec
     output_spec = gtractCoregBvaluesOutputSpec
     _cmd = " gtractCoregBvalues "
-    _outputs_filenames = {'outputVolume':'outputVolume.nrrd','outputTransform':'outputTransform.mat'}
+    _outputs_filenames = {'outputVolume':'outputVolume.nrrd','outputTransform':'outputTransform.h5'}

@@ -35,4 +35,4 @@ acknowledgements: Funding for this version of the GTRACT program was provided by
     input_spec = gtractInvertRigidTransformInputSpec
     output_spec = gtractInvertRigidTransformOutputSpec
     _cmd = " gtractInvertRigidTransform "
-    _outputs_filenames = {'outputTransform':'outputTransform.mat'}
+    _outputs_filenames = {'outputTransform':'outputTransform.h5'}
