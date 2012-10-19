@@ -450,7 +450,7 @@ BRAINSCutApplyModel
       }
     else if( method == "RandomForest" )
       {
-      const scalarType response = openCVRandomForest->predict( &openCVInputFeature );
+      const scalarType response = openCVRandomForest->predict( &openCVInputFeature, cv::Mat() );
       // make binary input
       /*if( response > 0.5F )
       {

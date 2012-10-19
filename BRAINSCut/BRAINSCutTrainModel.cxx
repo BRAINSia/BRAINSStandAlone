@@ -290,18 +290,18 @@ BRAINSCutTrainModel
 {
   CvRTrees   forest;
   CvRTParams randomTreeTrainParamters =
-    CvRTParams( depth,
-                trainMinSampleCount,
-                0.0F,                  // float  _regression_accuracy=0,
-                trainUseSurrogates,
-                10,                     // int    _max_categories=10,
-                0,                      // float* _priors,
-                trainCalcVarImportance, // bool   _calc_var_importance=false,
-                0,                      // int    _nactive_vars=0,
-                numberOfTree,
-                0,                     // float  forest_accuracy=0,
-                0
-                );
+    CvRTParams( depth,                                                         
+                trainMinSampleCount,                                           
+                0.0F,                  // float  _regression_accuracy=0,       
+                trainUseSurrogates,                                            
+                10,                     // int    _max_categories=10,          
+                0,                      // float* _priors,                     
+                trainCalcVarImportance, // bool   _calc_var_importance=false,  
+                0,                      // int    _nactive_vars=0,             
+                numberOfTree,                                                  
+                0,                     // float  forest_accuracy=0,            
+                CV_TERMCRIT_ITER |CV_TERMCRIT_EPS 
+                );                                                             
 
   forest.train( this->m_trainingDataSet->GetTrainingSubSet(0)->pairedInput,
                 CV_ROW_SAMPLE,   // or CV_COL_SAMPLE
