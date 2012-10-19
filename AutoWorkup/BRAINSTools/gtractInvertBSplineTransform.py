@@ -37,4 +37,4 @@ acknowledgements: Funding for this version of the GTRACT program was provided by
     input_spec = gtractInvertBSplineTransformInputSpec
     output_spec = gtractInvertBSplineTransformOutputSpec
     _cmd = " gtractInvertBSplineTransform "
-    _outputs_filenames = {'outputTransform':'outputTransform.mat'}
+    _outputs_filenames = {'outputTransform':'outputTransform.h5'}

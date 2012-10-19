@@ -55,4 +55,4 @@ acknowledgements: Funding for this version of the GTRACT program was provided by
     input_spec = gtractCoRegAnatomyInputSpec
     output_spec = gtractCoRegAnatomyOutputSpec
     _cmd = " gtractCoRegAnatomy "
-    _outputs_filenames = {'outputTransformName':'outputTransformName.mat'}
+    _outputs_filenames = {'outputTransformName':'outputTransformName.h5'}

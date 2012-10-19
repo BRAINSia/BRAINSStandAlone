@@ -36,4 +36,4 @@ documentation-url: http://www.nitrc.org/projects/brainscdetector/
     input_spec = BRAINSLmkTransformInputSpec
     output_spec = BRAINSLmkTransformOutputSpec
     _cmd = " BRAINSLmkTransform "
-    _outputs_filenames = {'outputResampledVolume':'outputResampledVolume.nii','outputAffineTransform':'outputAffineTransform.mat'}
+    _outputs_filenames = {'outputResampledVolume':'outputResampledVolume.nii','outputAffineTransform':'outputAffineTransform.h5'}

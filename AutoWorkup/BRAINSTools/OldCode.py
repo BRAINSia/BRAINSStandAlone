@@ -54,7 +54,7 @@ def DontuseThis():
     BFitAtlasToSubject.inputs.maskInferiorCutOffFromCenter=65
     BFitAtlasToSubject.inputs.splineGridSize=[28,20,24]
     BFitAtlasToSubject.inputs.outputVolume="Trial_Initializer_Output.nii.gz"
-    BFitAtlasToSubject.inputs.outputTransform="Trial_Initializer_Output.mat"
+    BFitAtlasToSubject.inputs.outputTransform="Trial_Initializer_Output.h5"
     cutWF.connect(SplitAvgBABC,'avgBABCT1',BFitAtlasToSubject,'fixedVolume')
     cutWF.connect(BABC,'outputLabels',BFitAtlasToSubject,'fixedBinaryVolume')
     cutWF.connect(BAtlas,'template_t1',BFitAtlasToSubject,'movingVolume')
@@ -92,7 +92,7 @@ def DontuseThis():
     cutWF.connect(SGI,'outputFileName',CreateBRAINSCutXML,'subjSGGAD')
     cutWF.connect(BABC,'outputLabels',CreateBRAINSCutXML,'subjBrain')
     cutWF.connect(BFitAtlasToSubject,'outputTransform',CreateBRAINSCutXML,'atlasToSubj')
-    #CreateBRAINSCutXML.inputs.atlasToSubj = "INTERNAL_REGISTER.mat"
+    #CreateBRAINSCutXML.inputs.atlasToSubj = "INTERNAL_REGISTER.h5"
     #cutWF.connect(BABC,'atlasToSubjectTransform',CreateBRAINSCutXML,'atlasToSubj')
 
     """
