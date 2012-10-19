@@ -416,6 +416,7 @@ std::string atlasToSubjectInitialTransformName = "";
         }
       muLogMacro(<< "Registering all atlas images to first subject." << std::endl);
 
+      static bool SyN_done=false; //SyN Registration can only be done 1 time!
       for( unsigned int atlasIter = 0; atlasIter < m_AtlasOriginalImageList.size(); atlasIter++ )
         {
         typedef itk::BRAINSFitHelper HelperType;
@@ -647,6 +648,12 @@ std::string atlasToSubjectInitialTransformName = "";
             }
           else if( m_AtlasLinearTransformChoice == "SyN" )
             {
+              if (SyN_done == true )
+               {
+               //HACK:  Ali needs to make SyN updatable.
+               std::cout << "WARNING: SyN can only be run 1 time at the moment!" << std::endl;
+               }
+              SyN_done=true;
             muLogMacro(
               << "Registering (SyN) " << preprocessMovingString << "atlas(" << atlasIter << ") to template("
               << atlasIter << ") image." << std::endl);
