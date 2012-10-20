@@ -117,10 +117,10 @@ ListOfImagesDictionaries=[
   .gz')}
 ]
 
-outputLabels_averageList = ['/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_34285_PHD_024_PHASE_1/TissueClassify/BABC/brain_label_seg.nii.gz', '/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_90863_PHD_024_PHASE_1/TissueClassify/BABC/brain_label_seg.nii.gz']
+outputLabels_averageList = ['brain_label_seg.nii.gz', 'brain_label_seg.nii.gz']
 pd_averageList = [None, None]
-t1_averageList = ['/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_34285_PHD_024_PHASE_1/TissueClassify/BABC/t1_average_BRAINSABC.nii.gz', '/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_90863_PHD_024_PHASE_1/TissueClassify/BABC/t1_average_BRAINSABC.nii.gz']
-t2_averageList = ['/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_34285_PHD_024_PHASE_1/TissueClassify/BABC/t2_average_BRAINSABC.nii.gz', '/IPLlinux/hjohnson/HDNI/20121009_TEST_NEW_BAW/RESULTS/20120801.SubjectOrganized_CACHE/0131/BAW_20120813/WF_0131_90863_PHD_024_PHASE_1/TissueClassify/BABC/t2_average_BRAINSABC.nii.gz']
+t1_averageList = ['t1_average_BRAINSABC.nii.gz', 't1_average_BRAINSABC.nii.gz']
+t2_averageList = ['t2_average_BRAINSABC.nii.gz', 't2_average_BRAINSABC.nii.gz']
 
 """
     print "t1_averageList",t1_averageList
@@ -612,7 +612,8 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                 baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.BCD_ACPC_T1_CROPPED',BASIC_DataSink[sessionid],'ACPCAlign.@BCD_ACPC_T1_CROPPED')
                 baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.outputLandmarksInInputSpace',BASIC_DataSink[sessionid],'ACPCAlign.@outputLandmarksInInputSpace')
                 baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.outputTransform',BASIC_DataSink[sessionid],'ACPCAlign.@outputTransform')
-                baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.atlasToSubjectTransform',BASIC_DataSink[sessionid],'ACPCAlign.@atlasToSubjectTransform')
+                baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.LMIatlasToSubjectTransform',BASIC_DataSink[sessionid],'ACPCAlign.@LMIatlasToSubjectTransform')
+                #baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.TissueClassifyatlasToSubjectTransform',BASIC_DataSink[sessionid],'ACPCAlign.@TissueClassifyatlasToSubjectTransform')
 
                 ### Now define where the final organized outputs should go.
                 TC_DataSink[sessionid]=pe.Node(nio.DataSink(),name="TISSUE_CLASSIFY_DS_"+str(subjectid)+"_"+str(sessionid))
@@ -644,9 +645,9 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                 FSPREP_DataSink=dict()
                 FS_DS=dict()
 
-                if True and ( 'SEGMENTATION' in WORKFLOW_COMPONENTS ): ## Run the ANTS Registration from Atlas to Subject for BCut spatial priors propagation.
+                if 'SEGMENTATION' in WORKFLOW_COMPONENTS: ## Run the ANTS Registration from Atlas to Subject for BCut spatial priors propagation.
                     import PipeLineFunctionHelpers
-                    import BRAINSTools.BTants.antsRegistration
+
                     ## Second clip to brain tissue region
                     ### Now clean up by adding together many of the items PHASE_2_oneSubjWorkflow
                     currentClipT1ImageWithBrainMaskName='ClipT1ImageWithBrainMask_'+str(subjectid)+"_"+str(sessionid)
@@ -654,11 +655,11 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                           input_names=['t1_image','brain_labels','clipped_file_name'],
                           output_names=['clipped_file']),
                           name=currentClipT1ImageWithBrainMaskName)
-                    ClipT1ImageWithBrainMaskNode[sessionid].inputs.clipped_file_name = 'clipped_t1.nii.gz'
+                    ClipT1ImageWithBrainMaskNode[sessionid].inputs.clipped_file_name = 'clipped_from_BABC_labels_t1.nii.gz'
                     baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.t1_average',ClipT1ImageWithBrainMaskNode[sessionid],'t1_image')
-                    baw200.connect(BAtlas[subjectid],'template_t1_clipped',ClipT1ImageWithBrainMaskNode[sessionid],'brain_labels')
+                    baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.outputLabels',ClipT1ImageWithBrainMaskNode[sessionid],'brain_labels')
 
-
+                    from nipype.interfaces.ants import ( Registration, ApplyTransforms)
                     currentAtlasToSubjectantsRegistration='AtlasToSubjectantsRegistration_'+str(subjectid)+"_"+str(sessionid)
                     AtlasToSubjectantsRegistration[subjectid]=pe.Node(interface=Registration(), name = currentAtlasToSubjectantsRegistration)
                     AtlasToSubjectantsRegistration[subjectid].inputs.dimension = 3
@@ -669,8 +670,8 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                     AtlasToSubjectantsRegistration[subjectid].inputs.sampling_percentage =      [0.1,              0.1,                1.0]
                     AtlasToSubjectantsRegistration[subjectid].inputs.metric_weight =            [1.0,              1.0,                1.0]
                     AtlasToSubjectantsRegistration[subjectid].inputs.radius_or_number_of_bins = [32,               32,                 4]
-                    AtlasToSubjectantsRegistration[subjectid].inputs.number_of_iterations =     [[2000,2000,2000], [1000, 1000, 1000], [10000,500,500,50]]
-                    AtlasToSubjectantsRegistration[subjectid].inputs.convergence_threshold =    [quickStepSize,quickStepSize,quickStepSize]
+                    AtlasToSubjectantsRegistration[subjectid].inputs.number_of_iterations =     [[2000,2000,2000], [1000, 1000, 1000], [10000,500,500,200]]
+                    AtlasToSubjectantsRegistration[subjectid].inputs.convergence_threshold =    [1e-9,             1e-9,               1e-9]
                     AtlasToSubjectantsRegistration[subjectid].inputs.convergence_window_size =  [15,               15,                 15]
                     AtlasToSubjectantsRegistration[subjectid].inputs.use_histogram_matching =   [True,             True,               True]
                     AtlasToSubjectantsRegistration[subjectid].inputs.shrink_factors =           [[4,2,1],          [4,2,1],            [6,4,2,1]]
@@ -681,7 +682,7 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
 
                     baw200.connect(BAtlas[subjectid],'template_t1_clipped',AtlasToSubjectantsRegistration[subjectid], 'moving_image')
                     baw200.connect(ClipT1ImageWithBrainMaskNode[sessionid], 'clipped_file', AtlasToSubjectantsRegistration[subjectid], 'fixed_image')
-                    baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.atlasToSubjectTransform',AtlasToSubjectantsRegistration[subjectid],'initial_moving_transform')
+                    ## To be tested baw200.connect(PHASE_2_oneSubjWorkflow[sessionid],'outputspec.LMIatlasToSubjectTransform',AtlasToSubjectantsRegistration[subjectid],'initial_moving_transform')
 
                 global_AllT1s=ExperimentDatabase.getFilenamesByScantype(sessionid,['T1-30','T1-15'])
                 global_AllT2s=ExperimentDatabase.getFilenamesByScantype(sessionid,['T2-30','T2-15'])
@@ -694,9 +695,9 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                 print("HACK2:  all FLs: {0} {1}".format(global_AllFLs, len(global_AllFLs) ))
                 print("HACK2:  all Others: {0} {1}".format(global_AllOthers, len(global_AllOthers) ))
                 if ( 'SEGMENTATION' in WORKFLOW_COMPONENTS ) : # Currently only works with multi-modal_data
-                    print("HACK SEGMENTATION IN  WORKFLOW_COMPONENTS")
+                    print("HACK SEGMENTATION IN  WORKFLOW_COMPONENTS {0}".format(WORKFLOW_COMPONENTS))
                 if ( len(global_AllT2s) > 0 ): # Currently only works with multi-modal_data
-                    print("HACK len(global_AllT2s) > 0 ")
+                    print("HACK len(global_AllT2s) > 0 : {0}".format(len(global_AllT2s) ))
                 print("HACK")
                 if ( 'SEGMENTATION' in WORKFLOW_COMPONENTS ) and ( len(global_AllT2s) > 0 ): # Currently only works with multi-modal_data
                     from WorkupT1T2BRAINSCut import CreateBRAINSCutWorkflow
@@ -705,11 +706,9 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                     baw200.connect( PHASE_2_oneSubjWorkflow[sessionid], 'outputspec.t2_average', myLocalSegWF[sessionid], "inputspec.T2Volume")
                     baw200.connect( PHASE_2_oneSubjWorkflow[sessionid], 'outputspec.outputLabels', myLocalSegWF[sessionid],"inputspec.RegistrationROI")
                     ## NOTE: Element 0 of AccumulatePriorsList is the accumulated GM tissue
-                    baw200.connect( [ ( AccumulateLikeTissuePosteriorsNode[sessionid], myLocalSegWF[sessionid],
-                                      [ (( 'AccumulatePriorsList', getListIndex, 0 ), "inputspec.TotalGM")] ),
-] )
-
-                    baw200.connect( PHASE_2_oneSubjWorkflow[sessionid],'outputspec.atlasToSubjectTransform',myLocalSegWF[sessionid],'inputspec.atlasToSubjectTransform')
+                    baw200.connect( [ ( AccumulateLikeTissuePosteriorsNode[sessionid], myLocalSegWF[sessionid], [ (( 'AccumulatePriorsList', getListIndex, 0 ), "inputspec.TotalGM")] ),
+                                    ] )
+                    baw200.connect( AtlasToSubjectantsRegistration[subjectid],'composite_transform',myLocalSegWF[sessionid],'inputspec.atlasToSubjectTransform')
 
                     ### Now define where the final organized outputs should go.
                     SEGMENTATION_DataSink[sessionid]=pe.Node(nio.DataSink(),name="SEGMENTATION_DS_"+str(subjectid)+"_"+str(sessionid))
@@ -739,7 +738,7 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                 global_All3T_T2s=ExperimentDatabase.getFilenamesByScantype(sessionid,['T2-30'])
                 RunAllFSComponents=False ## A hack to avoid 26 hour run of freesurfer
                 #RunAllFSComponents=True ## A hack to avoid 26 hour run of freesurfer
-                if ( 'FREESURFER' in WORKFLOW_COMPONENTS ) and ( ( len(global_All3T_T2s) > 0 ) or RunAllFSComponents == True ):
+                if False: #( 'FREESURFER' in WORKFLOW_COMPONENTS ) and ( ( len(global_All3T_T2s) > 0 ) or RunAllFSComponents == True ):
                     from WorkupT1T2FreeSurfer import CreateFreeSurferWorkflow
                     if ( len(global_All3T_T2s) > 0 ): # If multi-modal, then create synthesized image before running
                         print("HACK  FREESURFER len(global_All3T_T2s) > 0 ")

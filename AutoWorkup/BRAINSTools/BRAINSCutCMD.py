@@ -224,5 +224,5 @@ print("HACK:  BRAINCUT COMMAND: {0}".format(BRAINSCutCommand))
 subprocess.call(BRAINSCutCommand, shell=True)
 """
 script to be run
-  /ipldev/scratch/eunyokim/src/BRAINS20111028/build-Darwin-Debug/lib/BRAINSCut  --applyModel --netConfiguration /ipldev/scratch/eunyokim/src/BRAINS20111028/build-Darwin/BRAINSTools-build/BRAINSCut/TestSuite/TestSuite/NetConfigurations/output.xml --modelFilename /hjohnson/HDNI/PREDICT_TRAINING/regina_ann/TrainingModels/BRAINSAutoWorkUpTest/GadSG/Test9/TrainedModels/20110919ANNModel_allSubcorticals.txtD0050NT0050   --method RandomForest
+  BRAINSCut  --applyModel --netConfiguration BRAINSTools-build/BRAINSCut/TestSuite/TestSuite/NetConfigurations/output.xml --modelFilename TrainedModels/20110919ANNModel_allSubcorticals.txtD0050NT0050   --method RandomForest
 """
