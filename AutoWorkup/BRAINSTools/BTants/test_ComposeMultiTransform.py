@@ -6,8 +6,7 @@ imagedir = "/hjohnson/HDNI/ANTS_TEMPLATE_BUILD/run_dir/"
 test = antsComposeMultiTransform.ComposeMultiTransform()
 
 test.inputs.dimension = 3
-#test.inputs.output_affine_txt = 'outwarp.nii'
-test.inputs.reference_affine_txt = '{0}MY03_T1_halfdeformed.nii.gz'.format(imagedir)
+test.inputs.reference_image = '{0}MY03_T1_halfdeformed.nii.gz'.format(imagedir)
 test.inputs.transformation_series = ['{0}MY01_T1_halfAffine.txt'.format(imagedir), '{0}MY02_T1_halfAffine.txt'.format(imagedir), '{0}MY03_T1_halfWarp.nii.gz'.format(imagedir)]
 test.inputs.invert_affine = [2]
 
