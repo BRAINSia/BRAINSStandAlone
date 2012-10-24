@@ -689,6 +689,13 @@ void ImageCalculatorReadWrite( MetaCommand &command )
       throw excp;
       }
     typename ImageType::Pointer SubSequentImage = reader2->GetOutput();
+        
+    //Check whether the image dimensions and the spacing are the same.
+    if( (AccImage->GetLargestPossibleRegion().GetSize() != SubSequentImage->GetLargestPossibleRegion().GetSize()) )
+      {
+      std::cerr << "Error:: The size of the images don't match." << std::endl;
+      itkGenericExceptionMacro(<< "Error:: The size of the images don't match.");
+      }
     
     /*If the accumulator buffer is not empty, then every subsequent image is histogram equalized to the current accumulator buffer.*/
     if(command.GetValueAsString("IHisteq","constant") != "" )
@@ -703,12 +710,6 @@ void ImageCalculatorReadWrite( MetaCommand &command )
         
     typename ImageType::Pointer image = Ifilters<ImageType>(SubSequentImage ,command);
 
-   //Check whether the image dimensions and the spacing are the same.
-    if( (AccImage->GetLargestPossibleRegion().GetSize() != image->GetLargestPossibleRegion().GetSize()) )
-      {
-      itkGenericExceptionMacro(<< "Error:: The size of the images don't match.")
-      }
-
     vnl_vector_fixed<double,3> spacingDifference;
     spacingDifference[0]=AccImage->GetSpacing()[0]-image->GetSpacing()[0];
     spacingDifference[1]=AccImage->GetSpacing()[1]-image->GetSpacing()[1];
@@ -716,7 +717,8 @@ void ImageCalculatorReadWrite( MetaCommand &command )
 
     if(spacingDifference.two_norm() > 0.0001) //HACK:  Should be a percentage of the actual spacing size.
       {
-      itkGenericExceptionMacro(<<"ERROR: ::The pixel spacing of the images are not close enough.");
+      std::cerr << "ERROR:: The pixel spacing of the images are not close enough." << std::endl;
+      itkGenericExceptionMacro(<<"ERROR:: The pixel spacing of the images are not close enough.");
       }
     else if( AccImage->GetSpacing() != image->GetSpacing() )
       {
@@ -724,7 +726,8 @@ void ImageCalculatorReadWrite( MetaCommand &command )
       }
     if(AccImage->GetDirection() != image->GetDirection())
       {
-      itkGenericExceptionMacro(<<"Error::The orientation of the images are different.");
+      std::cerr << "Error:: The orientation of the images are different." << std::endl;
+      itkGenericExceptionMacro(<<"Error:: The orientation of the images are different.");
       }
 
     //Do the math for the Accumulator image and the image read in for each iteration.
