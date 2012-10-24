@@ -28,8 +28,8 @@ def xmlGenerator( args ):
     outputStream.write( "      <Image Type=\"T1\" Filename=\"{fn}\" />\n".format(fn=args.inputTemplateT1))
     outputStream.write( "      <Image Type=\"T2\" Filename=\"{fn}\" />\n".format(fn="na"))
     outputStream.write( "      <Image Type=\"GadSG\" Filename=\"{fn}\" />\n".format(fn="na"))
-    outputStream.write( "      <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn="na"))
-    outputStream.write( "      <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputTemplateRegistrationROIFilename))
+    #outputStream.write( "      <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn="na"))
+    #outputStream.write( "      <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputTemplateRegistrationROIFilename))
 
     outputStream.write( "      <SpatialLocation Type=\"rho\" Filename=\""+args.inputTemplateRhoFilename+"\" />\n")
     outputStream.write( "      <SpatialLocation Type=\"phi\" Filename=\""+args.inputTemplatePhiFilename+"\" />\n")
@@ -52,8 +52,9 @@ def xmlGenerator( args ):
     outputStream.write( "   <NeuralNetParams MaskSmoothingValue     = \"0.0\"\n")
     outputStream.write( "          GradientProfileSize    = \"1\"\n")
     outputStream.write( "          TrainingVectorFilename = \""+args.trainingVectorFilename+"\"\n")
-    # outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\"\n")
-    outputStream.write( "          TrainingModelFilename  = \"/nfsscratch/PREDICT/TEST_BRAINSCut/20120828ANNModel_Model_RF100.txt\"\n")
+    #outputStream.write( "          TrainingModelFilename  = \""+args.modelFileBasename+"\"\n")
+    outputStream.write( "          TrainingModelFilename  = \"na\"\n")
+    #outputStream.write( "          TrainingModelFilename  = \"/nfsscratch/PREDICT/TEST_BRAINSCut/20120828ANNModel_Model_RF100.txt\"\n")
     outputStream.write( "          TestVectorFilename     = \"na\"\n")
     outputStream.write( "          Normalization          = \""+args.vectorNormalization+"\"\n")
     outputStream.write( "   />\n")
@@ -62,8 +63,8 @@ def xmlGenerator( args ):
     # random forest parameters
     #
     outputStream.write( "   <RandomForestParameters \n")
-    outputStream.write( "      MaxDepth= \"100\"\n")     #dummy
-    outputStream.write( "      MaxTreeCount= \"100\"\n") # dummy
+    outputStream.write( "      MaxDepth= \"1\"\n")     #dummy
+    outputStream.write( "      MaxTreeCount= \"1\"\n") # dummy
     outputStream.write( "      MinSampleCount= \"5\"\n")
     outputStream.write( "      UseSurrogates= \"false\"\n")
     outputStream.write( "      CalcVarImportance= \"false\"\n")
@@ -97,11 +98,15 @@ def xmlGenerator( args ):
     addProbabilityMapElement( args.probabilityMapsLeftPutamen,     "l_putamen", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftThalamus,    "l_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsLeftHippocampus, "l_hippocampus", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftAccumben,    "l_accumben", outputStream);
+    addProbabilityMapElement( args.probabilityMapsLeftGlobus,      "l_globus", outputStream);
 
     addProbabilityMapElement( args.probabilityMapsRightCaudate,    "r_caudate", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightPutamen,    "r_putamen", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightThalamus,   "r_thalamus", outputStream);
     addProbabilityMapElement( args.probabilityMapsRightHippocampus,"r_hippocampus", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightAccumben,   "r_accumben", outputStream);
+    addProbabilityMapElement( args.probabilityMapsRightGlobus,     "r_globus", outputStream);
 
     #
     # subject
@@ -111,8 +116,8 @@ def xmlGenerator( args ):
     outputStream.write( "    <Image Type=\"T1\" Filename=\""+args.inputSubjectT1Filename+"\" />\n")
     outputStream.write( "    <Image Type=\"T2\" Filename=\""+args.inputSubjectT2Filename+"\" />\n")
     outputStream.write( "    <Image Type=\"GadSG\" Filename=\""+args.inputSubjectGadSGFilename+"\" />\n")
-    outputStream.write( "    <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectTotalGMFilename))
-    outputStream.write( "    <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectRegistrationROIFilename))
+    #outputStream.write( "    <Image Type=\"TotalGM\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectTotalGMFilename))
+    #outputStream.write( "    <Mask  Type=\"RegistrationROI\" Filename=\"{fn}\" />\n".format(fn=args.inputSubjectRegistrationROIFilename))
 
     #outputStream.write( "    <Mask Type=\"l_caudate\" Filename=\""+args.outputBinaryLeftCaudate+"\" />\n")
     #outputStream.write( "    <Mask Type=\"r_caudate\" Filename=\""+args.outputBinaryRightCaudate+"\" />\n")
@@ -122,6 +127,10 @@ def xmlGenerator( args ):
     #outputStream.write( "    <Mask Type=\"r_thalamus\" Filename=\""+args.outputBinaryRightThalamus+"\" />\n")
     #outputStream.write( "    <Mask Type=\"l_hippocampus\" Filename=\""+args.outputBinaryLeftHippocampus+"\" />\n")
     #outputStream.write( "    <Mask Type=\"r_hippocampus\" Filename=\""+args.outputBinaryRightHippocampus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_accumben\" Filename=\""+args.outputBinaryLeftAccumben+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_accumben\" Filename=\""+args.outputBinaryRightAccumben+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"l_globus\" Filename=\""+args.outputBinaryLeftGlobus+"\" />\n")
+    #outputStream.write( "    <Mask Type=\"r_globus\" Filename=\""+args.outputBinaryRightGlobus+"\" />\n")
 
     #if args.inputSubjectBrainMaskFilename != "NA":
     #    outputStream.write( "    <Mask Type=\"RegistrationROIi\"  Filename=\""+args.inputSubjectBrainMaskFilename+"\" />\n")
@@ -149,24 +158,21 @@ brainscutParser = argparse.ArgumentParser( description ='BRAINSCut command line 
 #
 brainscutParser.add_argument('--inputSubjectT1Filename', help='T1 subject filename', required=True )
 brainscutParser.add_argument('--inputSubjectT2Filename', help='T2 subject filename', required=True )
-brainscutParser.add_argument('--inputSubjectTotalGMFilename', help='TotalGM filename', required=True )
+#brainscutParser.add_argument('--inputSubjectTotalGMFilename', help='TotalGM filename', required=True )
 brainscutParser.add_argument('--inputSubjectGadSGFilename', help='GadSG subject filename', required=True )
-brainscutParser.add_argument('--inputSubjectBrainMaskFilename', help='BrainMask subject filename' )
-brainscutParser.add_argument('--inputSubjectRegistrationROIFilename', help='template brain mask filename' )
+#brainscutParser.add_argument('--inputSubjectBrainMaskFilename', help='BrainMask subject filename' )
+#brainscutParser.add_argument('--inputSubjectRegistrationROIFilename', help='template brain mask filename' )
 
 brainscutParser.add_argument('--inputTemplateT1', help='template T1-weighted filename', required=True )
-brainscutParser.add_argument('--inputTemplateRegistrationROIFilename', help='template brain region filename', required=True )
+#brainscutParser.add_argument('--inputTemplateRegistrationROIFilename', help='template brain region filename', required=True )
 
 brainscutParser.add_argument('--inputTemplateRhoFilename', help='template rho filename', required=True )
 brainscutParser.add_argument('--inputTemplatePhiFilename', help='template phi filename', required=True )
 brainscutParser.add_argument('--inputTemplateThetaFilename', help='template theta filename', required=True )
 
-brainscutParser.add_argument('--trainingVectorFilename', help='training vector filename',
-                             default="NA" )
-brainscutParser.add_argument('--modelFileBasename', help='model filei base name for net configuration file (xml).',
-                             default="NA" )
-brainscutParser.add_argument('--modelFilename', help='model filename',
-                             default="NA" )
+brainscutParser.add_argument('--trainingVectorFilename', help='training vector filename', default="NA" )
+#brainscutParser.add_argument('--modelFileBasename', help='model filei base name for net configuration file (xml).', default="NA" )
+brainscutParser.add_argument('--modelFilename', help='model filename', default="NA", required=True )
 brainscutParser.add_argument('--vectorNormalization', help='feature vector normalization (liner)',
                              default="true" )
 
@@ -179,10 +185,10 @@ brainscutParser.add_argument('--probabilityMapsLeftThalamus', help='model probab
 brainscutParser.add_argument('--probabilityMapsRightThalamus', help='model probability maps for right thalamus' , required=True)
 brainscutParser.add_argument('--probabilityMapsLeftHippocampus', help='model probability maps for left hippocampus' , required=True)
 brainscutParser.add_argument('--probabilityMapsRightHippocampus', help='model probability maps for right hippocampus' , required=True)
-#brainscutParser.add_argument('--probabilityMapsLeftAccumben', help='model probability maps for left accumben' , required=True)
-#brainscutParser.add_argument('--probabilityMapsRightAccumben', help='model probability maps for right accumben' , required=True)
-#brainscutParser.add_argument('--probabilityMapsLeftGlobus', help='model probability maps for left globus' , required=True)
-#brainscutParser.add_argument('--probabilityMapsRightGlobus', help='model probability maps for right globus' , required=True)
+brainscutParser.add_argument('--probabilityMapsLeftAccumben', help='model probability maps for left accumben' , required=True)
+brainscutParser.add_argument('--probabilityMapsRightAccumben', help='model probability maps for right accumben' , required=True)
+brainscutParser.add_argument('--probabilityMapsLeftGlobus', help='model probability maps for left globus' , required=True)
+brainscutParser.add_argument('--probabilityMapsRightGlobus', help='model probability maps for right globus' , required=True)
 
 brainscutParser.add_argument('--deformationFromTemplateToSubject', help="deformationFromTemplateToSubject")
 brainscutParser.add_argument('--deformationFromSubjectToTemplate', help="deformationFromSubjectToTemplate")
@@ -198,10 +204,10 @@ brainscutParser.add_argument('--outputBinaryLeftThalamus', help='output binary f
 brainscutParser.add_argument('--outputBinaryRightThalamus', help='output binary file name for right thalamus' )
 brainscutParser.add_argument('--outputBinaryLeftHippocampus', help='output binary file name for left hippocampus' )
 brainscutParser.add_argument('--outputBinaryRightHippocampus', help='output binary file name for right hippocampus' )
-#brainscutParser.add_argument('--outputBinaryLeftAccumben', help='output binary file name for left accumben' )
-#brainscutParser.add_argument('--outputBinaryRightAccumben', help='output binary file name for right accumben' )
-#brainscutParser.add_argument('--outputBinaryLeftGlobus', help='output binary file name for left globus' )
-#brainscutParser.add_argument('--outputBinaryRightGlobus', help='output binary file name for right globus' )
+brainscutParser.add_argument('--outputBinaryLeftAccumben', help='output binary file name for left accumben' )
+brainscutParser.add_argument('--outputBinaryRightAccumben', help='output binary file name for right accumben' )
+brainscutParser.add_argument('--outputBinaryLeftGlobus', help='output binary file name for left globus' )
+brainscutParser.add_argument('--outputBinaryRightGlobus', help='output binary file name for right globus' )
 
 brainscutParser.add_argument('--xmlFilename',help='BRAINSCut xml configuration filename', default="output.xml")
 
@@ -213,12 +219,11 @@ if args.xmlFilename != "":
 else:
     print("no xml filename is given to process")
 
-#                 " --modelFilename " + args.modelFilename +
-
 BRAINSCutCommand=["BRAINSCut" + " --applyModel " +
                  " --netConfiguration " + args.xmlFilename +
+                 " --modelFilename " + args.modelFilename +
                  " --method RandomForest" +
-                 " --numberOfTrees 100  --randomTreeDepth 100"
+                 " --numberOfTrees 60  --randomTreeDepth 60"
                  ]
 print("HACK:  BRAINCUT COMMAND: {0}".format(BRAINSCutCommand))
 subprocess.call(BRAINSCutCommand, shell=True)

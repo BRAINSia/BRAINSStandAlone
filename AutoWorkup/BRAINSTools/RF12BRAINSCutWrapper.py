@@ -2,12 +2,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Date:          2012-05-30
+Date:          2012-09-05
 Author:        hans-johnson@uiowa.edu
 Purpose:       Wrap a convenience function for the BRAINSCut program in Nipype
 
 Requirements:  <<< Interface specifications >>>
-
 
 """
 from nipype.interfaces.base import ( File, TraitedSpec, Interface, CommandLineInputSpec, CommandLine, traits , isdefined)
@@ -20,7 +19,7 @@ class RF12BRAINSCutWrapperCLInputSpec(CommandLineInputSpec):
     ### subject specific
     inputSubjectT1Filename = File( desc="Subject T1 Volume", exists=True, mandatory=True, argstr="--inputSubjectT1Filename %s")
     inputSubjectT2Filename = File( desc="Subject T2 Volume", exists=True, mandatory=True, argstr="--inputSubjectT2Filename %s")
-    inputSubjectSGFilename = File( desc="Subject SG Volume", exists=True, mandatory=True, argstr="--inputSubjectSGFilename %s")
+    inputSubjectGadSGFilename = File( desc="Subject SG Volume", exists=True, mandatory=True, argstr="--inputSubjectGadSGFilename %s")
 
     ### model specific
     modelFilename = File( desc="modelFilename", exists=True, mandatory=True, argstr="--modelFilename %s")
@@ -89,7 +88,7 @@ class RF12BRAINSCutWrapperCLOutputSpec(TraitedSpec):
     outputBinaryRightPutamen = File( desc = "Output binary file of right putamen", exists = True, mandatory = True)
 
     outputBinaryLeftThalamus = File( desc = "Output binary file of left thalamus", exists = True, mandatory = True)
-    outputBinaryRightThalamus = File( desc = "Output binary file:0 of right thalamus", exists = True, mandatory = True)
+    outputBinaryRightThalamus = File( desc = "Output binary file of right thalamus", exists = True, mandatory = True)
 
 class RF12BRAINSCutWrapper(CommandLine):
     """
