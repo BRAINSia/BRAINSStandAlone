@@ -757,6 +757,36 @@ def WorkupT1T2(subjectid,mountPrefix,ExperimentBaseDirectoryCache, ExperimentBas
                     baw200.connect(myLocalSegWF[sessionid], 'outputspec.outputBinaryRightGlobus',SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightGlobus')
                     baw200.connect(myLocalSegWF[sessionid], 'outputspec.outputLabelImageName', SEGMENTATION_DataSink[sessionid],'BRAINSCut.@outputLabelImageName')
                     baw200.connect(myLocalSegWF[sessionid], 'outputspec.outputCSVFileName', SEGMENTATION_DataSink[sessionid],'BRAINSCut.@outputCSVFileName')
+
+                    ## SnapShotWriter for Segmented result checking:
+                    SnapShotWriter=pe.Node( interface=BRAINSSnapShotWriter(), name="SnapShotWriter")
+
+                    ## output specification
+                    SnapShotWriter.inputs.outputFilename = 'snapShot.png'
+
+                    ## neccessary parameters (FIXED)
+                    SnapShotWriter.inputs.inputPlaneDirection = "2,1,1,1,1,0,0"
+                    SnapShotWriter.inputs.inputSliceToExtractInPhysicalPoint = "-3,-7,-3,5,7,22,-22"
+                    
+                    ## connect SnapShotWriter to the baw200 
+                    baw200.connect( PHASE_2_oneSubjWorkflow[sessionid], 'outputspec.t1_average', SnapShotWriter, 'inputVolumes')
+                    baw200.connect( PHASE_2_oneSubjWorkflow[sessionid], 'outputspec.t2_average', SnapShotWriter, 'inputVolumes')
+
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftAccumben', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftCaudate', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftPutamen', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftGlobus', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftThalamus', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryLeftHippocampus', SnapShotWriter, 'inputBinaryVolumes')
+
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightAccumben', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightCaudate', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightPutamen', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightGlobus', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightThalamus', SnapShotWriter, 'inputBinaryVolumes')
+                    baw200.connect(SEGMENTATION_DataSink[sessionid], 'BRAINSCut.@outputBinaryRightHippocampus', SnapShotWriter, 'inputBinaryVolumes')
+
+
                 else:
                     print("SKIPPING SEGMENTATION PHASE FOR {0} {1} {2}, lenT2s {3}".format(projectid, subjectid, sessionid, len(global_AllT2s) ))
 
