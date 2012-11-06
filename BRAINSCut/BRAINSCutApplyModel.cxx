@@ -7,7 +7,11 @@
 #include <itkRelabelComponentImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
 #include <itkBinaryMorphologicalClosingImageFilter.h>
+#include <itkBinaryMorphologicalOpeningImageFilter.h>
 #include <itkSigmoidImageFilter.h>
+#include <itkImageDuplicator.h>
+#include <itkLabelStatisticsImageFilter.h>
+#include <itkBinaryFillholeImageFilter.h>
 
 
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
@@ -147,15 +151,16 @@ BRAINSCutApplyModel
   /* now iterate through the roi */
 
   unsigned int roiIDsOrderNumber = 0;
-  // for( DataSet::StringVectorType::iterator roiTyIt = this->m_myDataHandler->GetROIIDsInOrder().begin();
-  //     roiTyIt != this->m_myDataHandler->GetROIIDsInOrder().end();
-  //     ++roiTyIt ) // roiTyIt = Region of Interest Type Iterator
+  LabelImagePointerType resultLabelFromRF;
+  LabelImagePointerType ambiguousLabelFromRF;
+
   while( roiIDsOrderNumber < this->m_myDataHandler->GetROIIDsInOrder().size() )
     {
     const std::string currentROIName = std::string( this->m_myDataHandler->GetROIIDsInOrder()[roiIDsOrderNumber] );
 
     ProbabilityMapParser* roiDataSet =
-      this->m_myDataHandler->GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", currentROIName.c_str() );
+      this->m_myDataHandler->GetROIDataList()->GetMatching<ProbabilityMapParser>( "StructureID", 
+                                                                                  currentROIName.c_str() );
     if( roiDataSet->GetAttribute<StringValue>("GenerateVector") == "true" )
       {
       InputVectorMapType  roiInputVector = inputVectorGenerator.ComputeAndGetFeatureInputOfROI( currentROIName );
@@ -171,7 +176,9 @@ BRAINSCutApplyModel
         /* post processing
          * may include hole-filling(closing), thresholding, and more adjustment
          */
-        BinaryImagePointer mask;
+
+        LabelImagePointerType mask;
+        std::string roiOutputFilename = GetROIVolumeName( subject, currentROIName );
         if( m_method == "ANN" )
           {
           WritePredictROIProbabilityBasedOnReferenceImage( predictedOutputVector,
@@ -179,8 +186,15 @@ BRAINSCutApplyModel
                                                            deformedROIs.find( currentROIName )->second,
                                                            ANNContinuousOutputFilename,
                                                            1.0F );
-          mask = PostProcessingANN( ANNContinuousOutputFilename,
-                                    m_annOutputThreshold);
+          mask = PostProcessingANN( ANNContinuousOutputFilename, this->m_annOutputThreshold);
+
+          try{
+              itkUtil::WriteImage<LabelImageType>( mask, roiOutputFilename );
+          }catch(itk::ExceptionObject& ex){
+              std::cout<<"ERROR at "<<__LINE__<<"::"<<__FILE__<<std::endl;
+              std::cout<<ex.what() <<std::endl;
+              }
+
           }
         else if( m_method == "RandomForest" )
           {
@@ -189,11 +203,34 @@ BRAINSCutApplyModel
                                                            deformedROIs.find( currentROIName )->second,
                                                            ANNContinuousOutputFilename,
                                                            roiIDsOrderNumber + 1 );
-          mask = PostProcessingRF( ANNContinuousOutputFilename );
+
+          mask = itkUtil::ReadImage< LabelImageType > ( ANNContinuousOutputFilename );
+
+          if ( roiIDsOrderNumber == 0 )
+            {
+            typedef itk::ImageDuplicator< LabelImageType > DuplicatorType;
+            DuplicatorType::Pointer labelDuplicator = DuplicatorType::New();
+            labelDuplicator->SetInputImage( mask );
+            labelDuplicator->Update();
+            resultLabelFromRF = labelDuplicator->GetOutput();
+
+            ambiguousLabelFromRF = LabelImageType::New();
+            ambiguousLabelFromRF->CopyInformation( mask );
+            ambiguousLabelFromRF->SetRegions( mask->GetLargestPossibleRegion() );
+            ambiguousLabelFromRF->Allocate();
+            ambiguousLabelFromRF->FillBuffer( 0 );
+
+            }
+          else
+            {
+            resultLabelFromRF = CombineLabel( resultLabelFromRF, mask );
+            }
+          ambiguousLabelFromRF = AmbiguousCountLabel( ambiguousLabelFromRF, 
+                                                      resultLabelFromRF, 
+                                                      mask);
           }
 
-        std::string roiOutputFilename = GetROIVolumeName( subject, currentROIName );
-        itkUtil::WriteImage<BinaryImageType>( mask, roiOutputFilename );
+
         itkUtil::WriteImage<WorkingImageType>( deformedROIs.find( currentROIName )->second,
                                                roiOutputFilename + "def.nii.gz");
         }
@@ -215,12 +252,19 @@ BRAINSCutApplyModel
                                   << std::endl;
           }
         }
-
       predictedOutputVector.clear();
       }
     roiIDsOrderNumber++;
-
     }
+  if( m_method =="RandomForest" )
+      {
+      std::string labelFilename = GetLabelMapFilename( subject );
+      LabelImagePointerType cleanedLabelFromRF = PostProcessingRF( resultLabelFromRF );
+      WriteLabelMapToBinaryImages( subject, cleanedLabelFromRF );
+      itkUtil::WriteImage<LabelImageType>( cleanedLabelFromRF, labelFilename ); 
+      itkUtil::WriteImage<LabelImageType>( ambiguousLabelFromRF, labelFilename + "_AmbiguousMap.nii.gz"); 
+      }
+
   deformedSpatialLocationImageList.clear();
   imagesOfInterest.clear();
   deformedROIs.clear();
@@ -250,46 +294,188 @@ BRAINSCutApplyModel
   return SSE;
 }
 
-BinaryImagePointer
+void 
+BRAINSCutApplyModel
+::WriteLabelMapToBinaryImages( const DataSet& subject, 
+                               const LabelImagePointerType& labelMapImage )
+{
+  try{
+    for( unsigned char roiID = 0;
+         roiID < this->m_myDataHandler->GetROIIDsInOrder().size();
+         roiID++)
+        {
+        LabelImagePointerType currentBinaryImage = ExtractLabel( labelMapImage, 
+                                                                 roiID+1  );// label starts from 1
+        std::string currentROIName = std::string( this->m_myDataHandler->GetROIIDsInOrder()[roiID] );
+        std::string roiOutputFilename = GetROIVolumeName( subject, currentROIName );
+        itkUtil::WriteImage< LabelImageType >( currentBinaryImage, 
+                                               roiOutputFilename );
+        }
+  }catch( std::exception& ex )
+  {
+    std::cout<<"ERROR at"<<__LINE__<<"::"<<__FILE__<<std::endl;
+    std::cout<<ex.what() <<std::endl;
+    std::exit( EXIT_FAILURE );
+  }
+    return;
+}
+
+LabelImagePointerType
+BRAINSCutApplyModel
+::AmbiguousCountLabel( LabelImagePointerType& ambiguousMap,
+                       LabelImagePointerType& combinedLabel,
+                       LabelImagePointerType& currentLabel )
+{
+  try{
+    typedef itk::ImageRegionIterator< LabelImageType > RegionIteratorType;
+
+    RegionIteratorType itOut( ambiguousMap, ambiguousMap->GetLargestPossibleRegion() );
+    RegionIteratorType itIn( currentLabel, currentLabel->GetLargestPossibleRegion() );
+    RegionIteratorType itCompare( combinedLabel, combinedLabel->GetLargestPossibleRegion() );
+
+    itIn.GoToBegin();
+    itOut.GoToBegin();
+    itCompare.GoToBegin();
+    for( ; !itIn.IsAtEnd(); ++itCompare, ++itIn, ++itOut )
+      {
+      if( itIn.Get() !=0  && itIn.Get() != itCompare.Get() )
+        {
+        itOut.Set( itOut.Get()+1 );
+        std::cout<< " Value at " <<itOut.GetIndex() 
+                 << " set to " << itOut.Get() 
+                 << std::endl;
+        }
+      }
+  }catch( itk::ExceptionObject& ex)
+  {
+  std::cout<<"Exception:: "<<__LINE__<<__FILE__<<std::endl;
+  std::cout<<ex.GetFile()<<std::endl;
+  std::cout<<ex.GetLine()<<std::endl;
+  std::cout<<ex.GetDescription()<<std::endl;
+  exit( EXIT_FAILURE );
+  }
+  return ambiguousMap;
+}
+
+LabelImagePointerType
+BRAINSCutApplyModel
+::CombineLabel( LabelImagePointerType& resultLabel, 
+                LabelImagePointerType& currentLabel,
+                const unsigned char binaryToLabelValue )
+{
+  try{
+  typedef itk::ImageRegionIterator< LabelImageType > RegionIteratorType;
+
+  RegionIteratorType itOut( resultLabel, resultLabel->GetLargestPossibleRegion() );
+  RegionIteratorType itIn( currentLabel, currentLabel->GetLargestPossibleRegion() );
+
+  itIn.GoToBegin();
+  itOut.GoToBegin();
+  for( ; !itIn.IsAtEnd(); ++itIn, ++itOut )
+    {
+    if( !itIn.Get() )
+      {
+      continue;
+      }
+    if( binaryToLabelValue == 0 )
+      {
+      itOut.Set(itIn.Get() );
+      }
+    else{
+      itOut.Set( binaryToLabelValue );
+      }
+
+    }
+
+  }catch( itk::ExceptionObject& ex)
+  {
+  std::cout<<"Exception:: "<<__LINE__<<__FILE__<<std::endl;
+  std::cout<<ex.GetFile()<<std::endl;
+  std::cout<<ex.GetLine()<<std::endl;
+  std::cout<<ex.GetDescription()<<std::endl;
+  exit( EXIT_FAILURE );
+  }
+  return resultLabel;
+}
+
+LabelImagePointerType
 BRAINSCutApplyModel
 ::PostProcessingANN( std::string continuousFilename,
                      scalarType threshold )
 {
   WorkingImagePointer continuousImage = ReadImageByFilename( continuousFilename );
 
-  BinaryImagePointer maskVolume;
+  LabelImagePointerType maskVolume;
 
-  /* threshold */
-  maskVolume = ThresholdImageAtLower( continuousImage, threshold);
+  try{
+      /* threshold */
+      maskVolume = ThresholdImageAtLower( continuousImage, threshold);
 
-  /* Get One label */
-  maskVolume = GetOneConnectedRegion( maskVolume );
+      /* Get One label */
+      maskVolume = GetOneConnectedRegion( maskVolume );
 
-  /* opening and closing to get rid of island and holes */
-  maskVolume = FillHole( maskVolume );
+      /* opening and closing to get rid of island and holes */
+      maskVolume = Closing( maskVolume );
+  }catch(itk::ExceptionObject & ex)
+      {
+      std::cout<<"ERROR at "<<__LINE__<<"::"<<__FILE__<<std::endl;
+      std::cout<<ex.what() <<std::endl;
+      }
   return maskVolume;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
-::PostProcessingRF( std::string labelImageFilename )
+::PostProcessingRF( LabelImagePointerType& labelImage  )
 {
-  WorkingImagePointer labelImage = ReadImageByFilename( labelImageFilename );
+  typedef itk::LabelStatisticsImageFilter< LabelImageType, LabelImageType > LabelStatType;
+  LabelStatType::Pointer labelStat = LabelStatType::New();
 
-  BinaryImagePointer maskVolume = itkUtil::ScaleAndCast<WorkingImageType,
-                                                        BinaryImageType>( labelImage,
-                                                                          0,
-                                                                          255);
+  labelStat->SetInput( labelImage );
+  labelStat->SetLabelInput( labelImage );
+  labelStat->Update();
 
-  /* Get One label */
-  BinaryImagePointer connected_maskVolume = GetOneConnectedRegion( maskVolume );
+  typedef LabelStatType::ValidLabelValuesContainerType ValidLableValuesType;
+  typedef LabelStatType::LabelPixelType                LabelPixelType;
 
-  /* opening and closing to get rid of island and holes */
-  BinaryImagePointer filled_maskVolume = FillHole( connected_maskVolume );
-  return filled_maskVolume;
+  LabelImagePointerType resultLabel;
+  typedef itk::ImageDuplicator< LabelImageType > DuplicatorType;
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  duplicator->SetInputImage( labelImage );
+  duplicator->Update();
+  resultLabel =  duplicator->GetOutput();
+  resultLabel -> FillBuffer( 0 );
+ 
+  int labelNumber=1;
+
+
+  for( ValidLableValuesType::const_iterator vIt = labelStat->GetValidLabelValues().begin();
+       vIt != labelStat->GetValidLabelValues().end();
+       ++vIt )
+    {
+    if( vIt  == labelStat->GetValidLabelValues().begin() )
+      {
+
+      }
+    if( labelStat->HasLabel( *vIt) && *vIt )  // ignore label zero
+      {
+      LabelImagePointerType tempExtractedBinaryImage = ExtractLabel( labelImage, *vIt );
+      itkUtil::WriteImage< LabelImageType > ( tempExtractedBinaryImage, "TempBinaryImage_Extracted.nii.gz");
+
+      LabelImagePointerType tempBinaryImage;
+
+      tempBinaryImage = FillHole( tempExtractedBinaryImage );
+      tempBinaryImage = GetOneConnectedRegion( tempBinaryImage );
+      tempBinaryImage = Closing( tempBinaryImage );
+
+      resultLabel = CombineLabel( resultLabel, tempBinaryImage, *vIt );
+      }
+      labelNumber++;
+    }
+  return resultLabel;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
 ::ThresholdImageAtUpper( WorkingImagePointer& image, scalarType thresholdValue  )
 {
@@ -308,14 +494,14 @@ BRAINSCutApplyModel
   thresholder->SetLowerThreshold( -1e+10F);
   thresholder->Update();
 
-  BinaryImagePointer mask = itkUtil::ScaleAndCast<WorkingImageType,
-                                                  BinaryImageType>(thresholder->GetOutput(),
+  LabelImagePointerType mask = itkUtil::ScaleAndCast<WorkingImageType,
+                                                  LabelImageType>(thresholder->GetOutput(),
                                                                    0,
                                                                    255);
   return mask;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
 ::ThresholdImageAtLower( WorkingImagePointer& image, scalarType thresholdValue  )
 {
@@ -335,18 +521,18 @@ BRAINSCutApplyModel
   thresholder->SetUpperThreshold( 255 );
   thresholder->Update();
 
-  BinaryImagePointer mask = itkUtil::ScaleAndCast<WorkingImageType,
-                                                  BinaryImageType>(thresholder->GetOutput(),
+  LabelImagePointerType mask = itkUtil::ScaleAndCast<WorkingImageType,
+                                                  LabelImageType>(thresholder->GetOutput(),
                                                                    0,
                                                                    255);
   return mask;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
-::ExtractLabel( BinaryImagePointer& image, unsigned char thresholdValue  )
+::ExtractLabel( const LabelImagePointerType& image, unsigned char thresholdValue  )
 {
-  typedef itk::BinaryThresholdImageFilter<BinaryImageType, BinaryImageType> ThresholdFilterType;
+  typedef itk::BinaryThresholdImageFilter<LabelImageType, LabelImageType> ThresholdFilterType;
   ThresholdFilterType::Pointer thresholder = ThresholdFilterType::New();
 
   thresholder->SetInput( image );
@@ -356,40 +542,87 @@ BRAINSCutApplyModel
   thresholder->SetLowerThreshold( thresholdValue );
   thresholder->Update();
 
-  BinaryImagePointer mask = itkUtil::TypeCast<BinaryImageType, BinaryImageType>( thresholder->GetOutput() );
+  LabelImagePointerType mask = itkUtil::TypeCast<LabelImageType, LabelImageType>( thresholder->GetOutput() );
   return mask;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
-::GetOneConnectedRegion( BinaryImagePointer& image )
+::GetOneConnectedRegion( LabelImagePointerType& image )
 {
-  /* relabel images if they are disconnected */
-  typedef itk::ConnectedComponentImageFilter<BinaryImageType, BinaryImageType>
-  ConnectedBinaryImageFilterType;
-  ConnectedBinaryImageFilterType::Pointer relabler = ConnectedBinaryImageFilterType::New();
+  LabelImagePointerType resultMask;
+  try
+    {
+    /*  Opening */
+    //#include <itkBinaryOpeningByReconstructionImageFilter.h> consider this
+    typedef itk::BinaryBallStructuringElement<LabelImageType::PixelType, DIMENSION> KernelType;
+    KernelType           ball;
+    KernelType::SizeType ballSize;
 
-  relabler->SetInput( image );
+    /* Create the structuring element- a disk of radius 2 */
+    ballSize.Fill(0.2);
+    ball.SetRadius( ballSize );
+    ball.CreateStructuringElement();
+    typedef itk::BinaryMorphologicalOpeningImageFilter<LabelImageType,
+                                                       LabelImageType,
+                                                       KernelType> OpeningFilterType;
+    OpeningFilterType::Pointer openingFilter = OpeningFilterType::New();
+    openingFilter->SetInput( image );
+    openingFilter->SetKernel( ball );
+    openingFilter->SetForegroundValue(1);
+    openingFilter->Update();
 
-  /* relable images from the largest to smallset one */
-  typedef itk::RelabelComponentImageFilter<BinaryImageType, BinaryImageType> RelabelInOrderFilterType;
-  RelabelInOrderFilterType::Pointer relabelInOrder = RelabelInOrderFilterType::New();
+    /* relabel images if they are disconnected */
+    typedef itk::ConnectedComponentImageFilter<LabelImageType, LabelImageType>
+    ConnectedBinaryImageFilterType;
+    ConnectedBinaryImageFilterType::Pointer relabler = ConnectedBinaryImageFilterType::New();
 
-  relabelInOrder->SetInput( relabler->GetOutput() );
-  relabelInOrder->Update();
+    relabler->SetInput( openingFilter->GetOutput() );
 
-  BinaryImagePointer multipleLabelVolume = relabelInOrder->GetOutput();
-  /* get the label one */
-  BinaryImagePointer resultMask = ExtractLabel( multipleLabelVolume, 1 );
+    /* relable images from the largest to smallset one */
+    typedef itk::RelabelComponentImageFilter<LabelImageType, LabelImageType> RelabelInOrderFilterType;
+    RelabelInOrderFilterType::Pointer relabelInOrder = RelabelInOrderFilterType::New();
+
+    relabelInOrder->SetInput( relabler->GetOutput() );
+    relabelInOrder->Update();
+
+    LabelImagePointerType multipleLabelVolume = relabelInOrder->GetOutput();
+    /* get the label one */
+    resultMask = ExtractLabel( multipleLabelVolume, 1 );
+    }
+  catch( itk::ExceptionObject& ex)
+    {
+    std::cout<<"Exception:: "<<__LINE__<<__FILE__<<std::endl;
+    std::cout<<ex.GetFile()<<std::endl;
+    std::cout<<ex.GetLine()<<std::endl;
+    std::cout<<ex.GetDescription()<<std::endl;
+    exit( EXIT_FAILURE );
+    }
 
   return resultMask;
 }
 
-BinaryImagePointer
+LabelImagePointerType
 BRAINSCutApplyModel
-::FillHole( BinaryImagePointer& mask)
+::FillHole( LabelImagePointerType& mask)
 {
-  typedef itk::BinaryBallStructuringElement<BinaryImageType::PixelType, DIMENSION> KernelType;
+  typedef itk::BinaryFillholeImageFilter< LabelImageType > FillHoleFilterType;
+
+  FillHoleFilterType::Pointer filler = FillHoleFilterType::New();
+  filler->SetInput( mask );
+  filler->SetFullyConnected( false );
+  filler->SetForegroundValue ( 1 );
+  filler->Update();
+  return filler->GetOutput();
+}
+
+LabelImagePointerType
+BRAINSCutApplyModel
+::Closing( LabelImagePointerType& mask)
+{
+
+  //NOTE: Consider this filter :#include <itkBinaryFillholeImageFilter.h>
+  typedef itk::BinaryBallStructuringElement<LabelImageType::PixelType, DIMENSION> KernelType;
   KernelType           ball;
   KernelType::SizeType ballSize;
 
@@ -399,8 +632,8 @@ BRAINSCutApplyModel
   ball.CreateStructuringElement();
 
   /* Closing */
-  typedef itk::BinaryMorphologicalClosingImageFilter<BinaryImageType,
-                                                     BinaryImageType,
+  typedef itk::BinaryMorphologicalClosingImageFilter<LabelImageType,
+                                                     LabelImageType,
                                                      KernelType> ClosingFilterType;
   ClosingFilterType::Pointer closingFilter = ClosingFilterType::New();
   closingFilter->SetInput( mask );
@@ -410,6 +643,7 @@ BRAINSCutApplyModel
   closingFilter->Update();
 
   return closingFilter->GetOutput();
+  
 }
 
 inline void
@@ -446,7 +680,8 @@ BRAINSCutApplyModel
       /* insert result to the result output vector */
       resultOutputVector.insert( std::pair<hashKeyType, scalarType>(
           ( it->first ),
-          CV_MAT_ELEM( *openCVOutput, scalarType, 0, roiNumber) ) );
+          cvmGet( openCVOutput,  0, roiNumber) ));
+          //CV_MAT_ELEM( *openCVOutput, scalarType, 0, roiNumber) ) );
       }
     else if( m_method == "RandomForest" )
       {
@@ -457,7 +692,7 @@ BRAINSCutApplyModel
         response = 1.0F;
       }*/
       resultOutputVector.insert( std::pair<hashKeyType, scalarType>(  ( it->first ),
-                                                              response ) );
+                                 response ) );
       // std::cout<<"--> "<<response<<std::endl;
       }
     }
@@ -558,7 +793,7 @@ BRAINSCutApplyModel
 /* get output file dir */
 inline std::string
 BRAINSCutApplyModel
-::GetSubjectOutputDirectory( DataSet& subject)
+::GetSubjectOutputDirectory( const DataSet& subject)
 {
   std::string outputDir = subject.GetAttribute<StringValue>("OutputDir");
 
@@ -575,7 +810,7 @@ BRAINSCutApplyModel
 /* get continuous file name */
 inline std::string
 BRAINSCutApplyModel
-::GetContinuousPredictionFilename( DataSet& subject, std::string currentROIName)
+::GetContinuousPredictionFilename( const DataSet& subject, const std::string currentROIName)
 {
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
 
@@ -592,7 +827,7 @@ BRAINSCutApplyModel
 /* get output mask file name of subject */
 inline std::string
 BRAINSCutApplyModel
-::GetROIVolumeName( DataSet& subject, std::string currentROIName)
+::GetROIVolumeName( const DataSet& subject, const std::string currentROIName)
 {
   std::string       givenROIName = subject.GetMaskFilenameByType( currentROIName );
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
@@ -603,6 +838,18 @@ BRAINSCutApplyModel
     givenROIName = outputDir + "/" + subjectID + "ANNLabel_" + currentROIName + ".nii.gz";
     }
   return givenROIName;
+}
+
+inline std::string
+BRAINSCutApplyModel
+::GetLabelMapFilename( const DataSet& subject )
+{
+  const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
+
+  std::string outputDir =  GetSubjectOutputDirectory( subject );
+  std::string returnFilename = outputDir + "/" + subjectID + "_ANNLabel_seg.nii.gz";
+
+  return returnFilename ;
 }
 
 void
