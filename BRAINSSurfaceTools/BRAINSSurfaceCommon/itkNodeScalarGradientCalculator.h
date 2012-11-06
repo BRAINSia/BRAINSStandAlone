@@ -41,7 +41,7 @@ class ITK_EXPORT NodeScalarGradientCalculator :
   public FunctionBase< typename TInputMesh::PointIdentifier,
     CovariantVector< 
       typename NumericTraits< typename TPointDataContainer::Element >::RealType,
-      ::itk::GetMeshDimension<TInputMesh>::PointDimension > >
+      TInputMesh::PointDimension > >
 {
 public:
   /** Standard class typedefs. */
@@ -49,7 +49,7 @@ public:
   typedef FunctionBase< typename TInputMesh::PointIdentifier,
     CovariantVector< 
       typename NumericTraits< typename TPointDataContainer::Element >::RealType,
-      ::itk::GetMeshDimension<TInputMesh>::PointDimension > >  Superclass;
+      TInputMesh::PointDimension > >  Superclass;
   typedef SmartPointer<Self>                                   Pointer;
   typedef SmartPointer<const Self>                             ConstPointer;
   
@@ -61,7 +61,7 @@ public:
 
   /** Dimension underlying input mesh. */
   itkStaticConstMacro(MeshDimension, unsigned int, 
-    ::itk::GetMeshDimension<TInputMesh>::PointDimension );
+    TInputMesh::PointDimension );
 
   /** Point typedef support. */
   typedef TInputMesh                                                        InputMeshType;
