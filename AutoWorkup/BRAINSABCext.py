@@ -1,6 +1,7 @@
 from nipype.interfaces.base import CommandLine, CommandLineInputSpec, TraitedSpec, File, Directory, traits, isdefined, InputMultiPath, OutputMultiPath
 import os
-from BRAINSABC import BRAINSABCInputSpec,BRAINSABCOutputSpec,BRAINSABC
+from SEMTools.segmentation.specialized import  BRAINSABCOutputSpec, BRAINSABCInputSpec, BRAINSABC
+#from SEMTools import BRAINSABCInputSpec,BRAINSABCOutputSpec,BRAINSABC
 
 from xml.etree import ElementTree as et
 class GetPosteriorsFromAtlasXML():
