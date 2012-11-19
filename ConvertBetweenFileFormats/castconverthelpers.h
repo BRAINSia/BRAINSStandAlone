@@ -161,15 +161,15 @@ void ReadDicomSeriesCastWriteImage( std::string inputDirectoryName, std::string 
     caster->Update();
     itktovtk->SetInput( caster->GetOutput() );
     itktovtk->Update();
-    
-    vtkSmartPointer< vtkXMLImageDataWriter > writer_vti 
+
+    vtkSmartPointer< vtkXMLImageDataWriter > writer_vti
       = vtkSmartPointer< vtkXMLImageDataWriter >::New();
     writer_vti->SetFileName(outputFileName.c_str());
     writer_vti->SetInput( itktovtk->GetOutput() );
 
     // necessary to give the data array a name others reading it fails !!
     itktovtk->GetOutput()->GetPointData()->GetScalars()->SetName("Scalars_");
-    
+
     writer_vti->Write();
     std::cout << "Wrote: " << outputFileName << std::endl;
     return;
@@ -217,7 +217,7 @@ void ReadCastWriteImage( std::string inputFileName, std::string outputFileName )
   if (inputFileName.rfind(".vti") == (inputFileName.size()-4))
     {
     // Handle .vti files as well.
-    vtkSmartPointer< vtkXMLImageDataReader > reader_vti 
+    vtkSmartPointer< vtkXMLImageDataReader > reader_vti
       = vtkSmartPointer< vtkXMLImageDataReader >::New();
     reader_vti->SetFileName(inputFileName.c_str());
     reader_vti->Update();
@@ -231,7 +231,7 @@ void ReadCastWriteImage( std::string inputFileName, std::string outputFileName )
   else
     {
 #endif
-  
+
   //typename RescaleFilterType::Pointer caster = RescaleFilterType::New();
   caster->SetInput( reader->GetOutput() );
 
@@ -246,8 +246,8 @@ void ReadCastWriteImage( std::string inputFileName, std::string outputFileName )
     caster->Update();
     itktovtk->SetInput( caster->GetOutput() );
     itktovtk->Update();
-    
-    vtkSmartPointer< vtkXMLImageDataWriter > writer_vti 
+
+    vtkSmartPointer< vtkXMLImageDataWriter > writer_vti
       = vtkSmartPointer< vtkXMLImageDataWriter >::New();
     writer_vti->SetFileName(outputFileName.c_str());
     writer_vti->SetInput( itktovtk->GetOutput() );
@@ -296,20 +296,20 @@ void ReadCastWriteImage( std::string inputFileName, std::string outputFileName )
   vtkTemplateMacroCase(VTK_UNSIGNED_CHAR, unsigned char, call)
 
 template< class TInputPixelType, class TOutputPixelType > int
-ReadVTICastWriteImage( std::string inputFileName, 
-                       std::string outputFileName, 
+ReadVTICastWriteImage( std::string inputFileName,
+                       std::string outputFileName,
                        TInputPixelType, TOutputPixelType )
 {
   typedef itk::Image< TInputPixelType,  3 > InputImageType;
   typedef itk::Image< TOutputPixelType, 3 > OutputImageType;
-  ReadCastWriteImage< InputImageType, OutputImageType >( 
+  ReadCastWriteImage< InputImageType, OutputImageType >(
                          inputFileName, outputFileName );
   return 1;
 }
 
 template< class TOutputPixelType > int
-ReadVTICastWriteImage( std::string inputFileName, 
-                       std::string outputFileName, 
+ReadVTICastWriteImage( std::string inputFileName,
+                       std::string outputFileName,
                        int dimension )
 {
   int retval = 0;
@@ -323,9 +323,9 @@ ReadVTICastWriteImage( std::string inputFileName,
     TOutputPixelType op = static_cast< TOutputPixelType >(0);
     switch (image->GetScalarType())
       {
-      vtkitkTemplateMacro( retval =  
-          ReadVTICastWriteImage( inputFileName, outputFileName, static_cast< VTK_TT >(0), op ));      
-      
+      vtkitkTemplateMacro( retval =
+          ReadVTICastWriteImage( inputFileName, outputFileName, static_cast< VTK_TT >(0), op ));
+
       default:
         {
         std::cout << "VTI conversion.. Unknown scalar type" << std::endl;
@@ -338,9 +338,9 @@ ReadVTICastWriteImage( std::string inputFileName,
 }
 #else
 template< class TOuptutPixelType > int
-ReadVTICastWriteImage( std::string inputFileName, 
-                       std::string outputFileName, 
-                       int dimension )
+ReadVTICastWriteImage( std::string,
+                       std::string,
+                       int )
 {
   return 0;
 }
