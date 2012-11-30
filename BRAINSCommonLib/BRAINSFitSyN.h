@@ -10,10 +10,11 @@ typedef  SyNRegistrationHelperType::CompositeTransformType CompositeTransformTyp
 
 template <class FixedImageType, class MovingimageType>
 typename CompositeTransformType::Pointer
-simpleSynReg( typename FixedImageType::Pointer & fixedImage,
-              typename MovingimageType::Pointer & movingImage,
+simpleSynReg( typename FixedImageType::Pointer & infixedImage,
+              typename MovingimageType::Pointer & inmovingImage,
               typename CompositeTransformType::Pointer compositeInitialTransform )
 {
+
   typename SyNRegistrationHelperType::Pointer regHelper = SyNRegistrationHelperType::New();
     {
     const float lowerQuantile = 0.0;
@@ -85,13 +86,22 @@ simpleSynReg( typename FixedImageType::Pointer & fixedImage,
     const std::string whichMetric = "cc";
     typename SyNRegistrationHelperType::MetricEnumeration curMetric = regHelper->StringToMetricType(whichMetric);
     const double weighting = 1.0;
-    typename SyNRegistrationHelperType::SamplingStrategy samplingStrategy = SyNRegistrationHelperType::none; // none
-    const unsigned int bins = 32;                                                                            // bins
+    typename SyNRegistrationHelperType::SamplingStrategy samplingStrategy = SyNRegistrationHelperType::none;
+    const int bins = 32;
     const unsigned int radius = 4;
     const double       samplingPercentage = 1.0;
 
-    regHelper->AddMetric(curMetric, fixedImage, movingImage, weighting, samplingStrategy, bins, radius,
-                         samplingPercentage);
+    const unsigned int stageID=0;
+    typename itk::CastImageFilter<FixedImageType,ImageType>::Pointer fixedCaster=itk::CastImageFilter<FixedImageType,ImageType>::New();
+    fixedCaster->SetInput( infixedImage );
+    fixedCaster->Update();
+    typename ImageType::Pointer dblFixedImage=fixedCaster->GetOutput();
+    typename itk::CastImageFilter<MovingimageType,ImageType>::Pointer movingCaster=itk::CastImageFilter<FixedImageType,ImageType>::New();
+    movingCaster->SetInput( inmovingImage );
+    movingCaster->Update();
+    typename ImageType::Pointer dblMovingImage=movingCaster->GetOutput();
+    regHelper->AddMetric(curMetric, dblFixedImage, dblMovingImage, stageID, weighting, samplingStrategy, bins, radius,
+      samplingPercentage);
     }
     {
     // --transform "SyN[0.33,3.0,0.0]"
