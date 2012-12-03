@@ -98,7 +98,7 @@ public:
 
   typedef VersorTransformOptimizer     RigidOptimizerType;
 
-  itkGetObjectMacro( RigidOptimizer, RigidOptimizerType );
+  itkGetConstObjectMacro( RigidOptimizer, RigidOptimizerType );
 
   typedef QuadEdgeMeshSphericalDiffeomorphicDemonsFilter< 
     MeshType, MeshType, MeshType >  DemonsRegistrationFilterType;
@@ -107,7 +107,7 @@ public:
 
   typedef typename DemonsRegistrationFilterType::DestinationPointSetType    DestinationPointSetType;
 
-  itkGetObjectMacro( DemonsRegistrationFilter, DemonsRegistrationFilterType );
+  itkGetConstObjectMacro( DemonsRegistrationFilter, DemonsRegistrationFilterType );
 
   itkGetConstObjectMacro( FinalDestinationPoints, DestinationPointSetType );
 
