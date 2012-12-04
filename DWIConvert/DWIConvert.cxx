@@ -1406,7 +1406,6 @@ int main(int argc, char *argv[])
         }
 
       // JTM - Determine bvalues from all gradients
-      vnl_vector_fixed<double, 3> vect3d;
 
       for (unsigned int k = 0; k < nSlice; k += nStride )
         {
@@ -1423,6 +1422,7 @@ int main(int argc, char *argv[])
         int nItems = ExtractSiemensDiffusionInformation(diffusionInfoString, "B_value", valueArray);
         if (nItems != 1)
           {
+          vnl_vector_fixed<double, 3> vect3d;
           //
           // B_Value is missing -- the punt position is to count this
           // volume as having a B_value & Gradient Direction of zero
@@ -1491,6 +1491,7 @@ int main(int argc, char *argv[])
             vnl_svd<double> svd(bMatrix);
 
             // UNC comments: Extracting the principal eigenvector i.e. the gradient direction
+            vnl_vector_fixed<double, 3> vect3d;
             vect3d[0] = svd.U(0,0);
             vect3d[1] = svd.U(1,0);
             vect3d[2] = svd.U(2,0);
@@ -1525,7 +1526,7 @@ int main(int argc, char *argv[])
             {
             valueArray.resize(0);
             ExtractSiemensDiffusionInformation(diffusionInfoString, "B_value", valueArray);
-
+            vnl_vector_fixed<double, 3> vect3d;
             bValues.push_back( valueArray[0] );
             vect3d[0] = 0;
             vect3d[1] = 0;
