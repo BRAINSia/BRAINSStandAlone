@@ -1,0 +1,2 @@
+StandardBRAINSBuildMacro( NAME BRAINSCreateLabelMapFromProbabilityMaps
+  TARGET_LIBRARIES BRAINSCOMMONLIB ${ITK_LIBRARIES})
