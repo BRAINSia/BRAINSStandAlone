@@ -82,21 +82,24 @@ def MakePosteriorDictionaryFunc(posteriorImages):
 def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
     tissueClassifyWF= pe.Workflow(name=WFname)
 
-    inputsSpec = pe.Node(interface=IdentityInterface(fields=['T1List','T2List','PDList','FLList','OtherList',
-                                                             'T1_count',
-                                                             'PrimaryT1',
-        'atlasDefinition','atlasToSubjectInitialTransform']),
+    inputsSpec = pe.Node(interface=IdentityInterface(fields=['T1List', 'T2List', 'PDList', 'FLList',
+                                                             'OtherList', 'T1_count', 'PrimaryT1',
+                                                             'atlasDefinition',
+                                                             'atlasToSubjectInitialTransform']),
         run_without_submitting=True,
         name='inputspec' )
-    outputsSpec = pe.Node(interface=IdentityInterface(fields=['atlasToSubjectTransform','outputLabels','outputHeadLabels',
-            #'t1_corrected','t2_corrected',
-            't1_average','t2_average','pd_average','fl_average',
-            'TissueClassifyOutputDir',
-            'posteriorImages'
-            ]),
-        run_without_submitting=True,
-        name='outputspec' )
-
+    outputsSpec = pe.Node(interface=IdentityInterface(fields=['atlasToSubjectTransform',
+                                                              'outputLabels',
+                                                              'outputHeadLabels', # ???
+                                                              #'t1_corrected', 't2_corrected',
+                                                              't1_average',
+                                                              't2_average',
+                                                              'pd_average',
+                                                              'fl_average',
+                                                              # 'TissueClassifyOutputDir',
+                                                              'posteriorImages']),
+                          run_without_submitting=True,
+                          name='outputspec' )
 
     ########################################################
     # Run BABCext on Multi-modal images
@@ -195,7 +198,7 @@ def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
     ##  remove tissueClassifyWF.connect( [ ( BABCext, outputsSpec, [ (( 'outputAverageImages', getListIndexOrNoneIfOutOfRange, 1 ), "t2_average")] ), ] )
     ##  remove tissueClassifyWF.connect( [ ( BABCext, outputsSpec, [ (( 'outputAverageImages', getListIndexOrNoneIfOutOfRange, 2 ), "pd_average")] ), ] )
 
-    tissueClassifyWF.connect(BABCext,'outputDir',outputsSpec,'TissueClassifyOutputDir')
+    ##  remove tissueClassifyWF.connect(BABCext,'outputDir',outputsSpec,'TissueClassifyOutputDir')
 
     MakePosteriorDictionaryNode = pe.Node( Function(function=MakePosteriorDictionaryFunc,
                                       input_names = ['posteriorImages'],
@@ -203,5 +206,24 @@ def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
     tissueClassifyWF.connect(BABCext,'posteriorImages',MakePosteriorDictionaryNode,'posteriorImages')
 
     tissueClassifyWF.connect(MakePosteriorDictionaryNode,'posteriorDictionary',outputsSpec,'posteriorImages')
+
+    tissueClassifyList = pe.Node(IdentityInterface(fields=['atlasToSubjectTransform',
+                                                           'atlasToSubjectTransformInverse',  # function
+                                                           'outputDirtyLabels',  # list
+                                                           'outputT1AverageImage',
+                                                           'outputT2AverageImage',
+                                                           'outputPDAverageImage',
+                                                           'outputFLAverageImage',
+                                                           'outputVolumes',
+                                                           'posteriorImages',  # list
+                                                           'outputLabels',  # list
+                                                           'ReshapedAverageImage',
+                                                           'ReshapedAverageTransform'
+                                                           'ReshapedAverageTransformInverse',  # function
+                                                           'T2Transform'
+                                                           'T2TransformInverse',  # function
+                                                           'AVG_T2_to_Cropped']))
+
+    tissueClassifyWF.connect(???)
 
     return tissueClassifyWF
