@@ -177,7 +177,7 @@ def MakeOneSubWorkFlow(projectid, subjectid, sessionid, BAtlas, WORKFLOW_COMPONE
         TC_DataSink.inputs.regexp_substitutions = GenerateOutputPattern(projectid, subjectid,
                                                                         sessionid, 'TissueClassify',
                                                                         False)
-        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.TissueClassifyOutputDir', TC_DataSink, 'TissueClassify.@TissueClassifyOutputDir')
+        ### T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.TissueClassifyOutputDir', TC_DataSink, 'TissueClassify.@TissueClassifyOutputDir')
         ### Now connect outputspec
         T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t1_average', outputsSpec,'t1_average')
         T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t2_average', outputsSpec,'t2_average')

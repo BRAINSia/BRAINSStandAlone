@@ -96,7 +96,6 @@ def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
                                                               't2_average',
                                                               'pd_average',
                                                               'fl_average',
-                                                              # 'TissueClassifyOutputDir',
                                                               'posteriorImages']),
                           run_without_submitting=True,
                           name='outputspec' )
@@ -206,24 +205,5 @@ def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
     tissueClassifyWF.connect(BABCext,'posteriorImages',MakePosteriorDictionaryNode,'posteriorImages')
 
     tissueClassifyWF.connect(MakePosteriorDictionaryNode,'posteriorDictionary',outputsSpec,'posteriorImages')
-
-    tissueClassifyList = pe.Node(IdentityInterface(fields=['atlasToSubjectTransform',
-                                                           'atlasToSubjectTransformInverse',  # function
-                                                           'outputDirtyLabels',  # list
-                                                           'outputT1AverageImage',
-                                                           'outputT2AverageImage',
-                                                           'outputPDAverageImage',
-                                                           'outputFLAverageImage',
-                                                           'outputVolumes',
-                                                           'posteriorImages',  # list
-                                                           'outputLabels',  # list
-                                                           'ReshapedAverageImage',
-                                                           'ReshapedAverageTransform'
-                                                           'ReshapedAverageTransformInverse',  # function
-                                                           'T2Transform'
-                                                           'T2TransformInverse',  # function
-                                                           'AVG_T2_to_Cropped']))
-
-    tissueClassifyWF.connect(???)
 
     return tissueClassifyWF
