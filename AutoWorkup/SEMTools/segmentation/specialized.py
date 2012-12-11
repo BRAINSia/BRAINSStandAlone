@@ -39,9 +39,9 @@ description: Automatic Segmentation using neural networks
 
 version:  1.0
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
-contributor: Vince Magnotta, Hans Johnson, Greg Harris, Kent Williams, Eunyoung Regina Kim 
+contributor: Vince Magnotta, Hans Johnson, Greg Harris, Kent Williams, Eunyoung Regina Kim
 
 """
 
@@ -76,15 +76,15 @@ class BRAINSROIAuto(SlicerCommandLine):
 category: Segmentation.Specialized
 
 description: This program is used to create a mask over the most prominant forground region in an image.  This is accomplished via a combination of otsu thresholding and a closing operation.  More documentation is available here: http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.1/Modules/ForegroundMasking.
-  
+
 
 version: 2.4.1
 
-license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt 
+license: https://www.nitrc.org/svn/brains/BuildScripts/trunk/License.txt
 
 contributor: Hans J. Johnson, hans-johnson -at- uiowa.edu, http://www.psychiatry.uiowa.edu
 
-acknowledgements: Hans Johnson(1,3,4); Kent Williams(1); Gregory Harris(1), Vincent Magnotta(1,2,3);  Andriy Fedorov(5), fedorov -at- bwh.harvard.edu (Slicer integration); (1=University of Iowa Department of Psychiatry, 2=University of Iowa Department of Radiology, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering, 5=Surgical Planning Lab, Harvard)  
+acknowledgements: Hans Johnson(1,3,4); Kent Williams(1); Gregory Harris(1), Vincent Magnotta(1,2,3);  Andriy Fedorov(5), fedorov -at- bwh.harvard.edu (Slicer integration); (1=University of Iowa Department of Psychiatry, 2=University of Iowa Department of Radiology, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering, 5=Surgical Planning Lab, Harvard)
 
 """
 
@@ -157,9 +157,9 @@ class BRAINSConstellationDetector(SlicerCommandLine):
 
 category: Segmentation.Specialized
 
-description: 
+description:
     This program will find the mid-sagittal plane, a constellation of landmarks in a volume, and create an AC/PC aligned data set with the AC point at the center of the voxel lattice (labeled at the origin of the image physical space.)  Part of this work is an extention of the algorithms originally described by Dr. Babak A. Ardekani, Alvin H. Bachman, Model-based automatic detection of the anterior and posterior commissures on MRI scans, NeuroImage, Volume 46, Issue 3, 1 July 2009, Pages 677-682, ISSN 1053-8119, DOI: 10.1016/j.neuroimage.2009.02.030.  (http://www.sciencedirect.com/science/article/B6WNP-4VRP25C-4/2/8207b962a38aa83c822c6379bc43fe4c)
-  
+
 
 version: 1.0
 
@@ -192,8 +192,8 @@ class BinaryMaskEditorBasedOnLandmarks(SlicerCommandLine):
 
 category: Segmentation.Specialized
 
-description: 
-  
+description:
+
 
 version: 1.0
 
@@ -238,7 +238,7 @@ class BRAINSABCInputSpec(CommandLineInputSpec):
 
 
 class BRAINSABCOutputSpec(TraitedSpec):
-    outputDir = Directory(desc="Ouput directory", exists=True)
+    outputDir = Directory(desc="Output directory", exists=True)
     atlasToSubjectTransform = File(desc="The trasform from atlas to the subject", exists=True)
     atlasToSubjectInitialTransform = File(desc="The initial trasform from atlas to the subject", exists=True)
     outputVolumes = OutputMultiPath(File(exists=True), desc="Corrected Output Images: should specify the same number of images as inputVolume, if only one element is given, then it is used as a file pattern where %s is replaced by the imageVolumeType, and %d by the index list location.", exists=True)
@@ -253,7 +253,7 @@ class BRAINSABC(SlicerCommandLine):
 category: Segmentation.Specialized
 
 description: Atlas-based tissue segmentation method.  This is an algorithmic extension of work done by XXXX at UNC and Utah XXXX need more description here.
-  
+
 
 """
 
