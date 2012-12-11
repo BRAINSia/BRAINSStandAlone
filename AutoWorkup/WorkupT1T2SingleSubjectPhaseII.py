@@ -78,17 +78,17 @@ def MakeList(firstElement,secondElement):
 def GenerateWFName(projectid, subjectid, sessionid):
     return 'WF_'+str(subjectid)+"_"+str(sessionid)+"_"+str(projectid)
 
-def GenerateOutputPattern(projectid, subjectid, sessionid,DefaultNodeName,uidIsFirst):
+def GenerateOutputPattern(projectid, subjectid, sessionid, DefaultNodeName, uidIsFirst):
     """ This function generates output path substitutions for workflows and nodes that conform to a common standard.
     """
     WFName=""#GenerateWFName(projectid,subjectid,sessionid)
-    patternList=[]
+    patternList = []
     if uidIsFirst == True:
-        find_pat=os.path.join(DefaultNodeName,WFName)
+        find_pat = os.path.join(DefaultNodeName, WFName)
     else:
-        find_pat=os.path.join(WFName,DefaultNodeName)
-    replace_pat=os.path.join(projectid,subjectid,sessionid,DefaultNodeName)
-    patternList.append( (find_pat,replace_pat) )
+        find_pat = os.path.join(WFName, DefaultNodeName)
+    replace_pat = os.path.join(projectid, subjectid, sessionid, DefaultNodeName)
+    patternList.append((find_pat,replace_pat))
     return patternList
 
 ###########################################################################
@@ -161,7 +161,7 @@ def MakeOneSubWorkFlow(projectid, subjectid, sessionid, BAtlas, WORKFLOW_COMPONE
 
     if 'TISSUE_CLASSIFY' in WORKFLOW_COMPONENTS:
         from WorkupT1T2TissueClassifiy import CreateTissueClassifyWorkflow
-        myLocalTCWF= CreateTissueClassifyWorkflow("TissueClassify",CLUSTER_QUEUE,InterpolationMode)
+        myLocalTCWF = CreateTissueClassifyWorkflow("TissueClassify", CLUSTER_QUEUE, InterpolationMode)
         T1T2WorkupSingle.connect( inputsSpec, 'allT1s', myLocalTCWF, 'inputspec.T1List')
         T1T2WorkupSingle.connect( inputsSpec, 'allT2s', myLocalTCWF, 'inputspec.T2List')
         T1T2WorkupSingle.connect( inputsSpec, 'allPDs', myLocalTCWF, 'inputspec.PDList')
@@ -172,11 +172,12 @@ def MakeOneSubWorkFlow(projectid, subjectid, sessionid, BAtlas, WORKFLOW_COMPONE
         T1T2WorkupSingle.connect( myLocalLMIWF,'outputspec.atlasToSubjectTransform',myLocalTCWF,'inputspec.atlasToSubjectInitialTransform')
 
         ### Now define where the final organized outputs should go.
-        TC_DataSink=pe.Node(nio.DataSink(),name="TISSUE_CLASSIFY_DS")
-        TC_DataSink.inputs.base_directory=ExperimentBaseDirectoryResults
-        TC_DataSink.inputs.regexp_substitutions = GenerateOutputPattern(projectid, subjectid, sessionid,'TissueClassify',False)
-        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.TissueClassifyOutputDir', TC_DataSink,'TissueClassify.@TissueClassifyOutputDir')
-
+        TC_DataSink = pe.Node(nio.DataSink(),name="TISSUE_CLASSIFY_DS")
+        TC_DataSink.inputs.base_directory = ExperimentBaseDirectoryResults
+        TC_DataSink.inputs.regexp_substitutions = GenerateOutputPattern(projectid, subjectid,
+                                                                        sessionid, 'TissueClassify',
+                                                                        False)
+        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.TissueClassifyOutputDir', TC_DataSink, 'TissueClassify.@TissueClassifyOutputDir')
         ### Now connect outputspec
         T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t1_average', outputsSpec,'t1_average')
         T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t2_average', outputsSpec,'t2_average')
