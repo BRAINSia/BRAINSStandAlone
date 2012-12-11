@@ -51,39 +51,37 @@ class BRAINSABCextOutputSpec(BRAINSABCOutputSpec):
     outputT2AverageImage = traits.Either( File(exits=True), None )
     outputPDAverageImage = traits.Either( File(exits=True), None )
     outputFLAverageImage = traits.Either( File(exits=True), None )
-    posteriorImages = OutputMultiPath(File(exists=True), exists = True)
+    posteriorImages = OutputMultiPath(File(exists=True), exists=True)
 
 class BRAINSABCext(BRAINSABC):
     #input_spec= BRAINSABCextInputSpec
     output_spec = BRAINSABCextOutputSpec
 
     def _list_outputs(self):
-        custom_implied_outputs_with_no_inputs = [ 'posteriorImages','outputT1AverageImage','outputT2AverageImage','outputPDAverageImage','outputFLAverageImage' ]
+        custom_implied_outputs_with_no_inputs = ['posteriorImages',
+                                                 'outputT1AverageImage',
+                                                 'outputT2AverageImage',
+                                                 'outputPDAverageImage',
+                                                 'outputFLAverageImage' ]
         full_outputs = self.output_spec().get()
-        pruned_outputs= dict((key,value) for key, value in full_outputs.iteritems() if key not in custom_implied_outputs_with_no_inputs )
-
-        outputs=super(BRAINSABCext,self)._outputs_from_inputs( pruned_outputs )
-
-        if 'T1' in self.inputs.inputVolumeTypes:
-            outputs['outputT1AverageImage']=os.path.abspath('t1_average_BRAINSABC.nii.gz')
-        else:
-            outputs['outputT1AverageImage']=None
-        if 'T2' in self.inputs.inputVolumeTypes:
-            outputs['outputT2AverageImage']=os.path.abspath('t2_average_BRAINSABC.nii.gz')
-        else:
-            outputs['outputT2AverageImage']=None
-        if 'PD' in self.inputs.inputVolumeTypes:
-            outputs['outputPDAverageImage']=os.path.abspath('pd_average_BRAINSABC.nii.gz')
-        else:
-            outputs['outputPDAverageImage']=None
-        if 'FL' in self.inputs.inputVolumeTypes:
-            outputs['outputFLAverageImage']=os.path.abspath('fl_average_BRAINSABC.nii.gz')
-        else:
-            outputs['outputFLAverageImage']=None
+        pruned_outputs = dict()
+        for key, value in full_outputs.iteritems():
+            if key not in custom_implied_outputs_with_no_inputs:
+                pruned_outputs[key] = value
+        outputs = super(BRAINSABCext,self)._outputs_from_inputs( pruned_outputs )
+        input_check = {'T1':('outputT1AverageImage', 't1_average_BRAINSABC.nii.gz'),
+                       'T2':('outputT2AverageImage', 't2_average_BRAINSABC.nii.gz'),
+                       'PD':('outputPDAverageImage', 'pd_average_BRAINSABC.nii.gz'),
+                       'FL':('outputFLAverageImage', 'fl_average_BRAINSABC.nii.gz')}
+        for key, values in input_check.iteritems():
+            if key in self.inputs.inputVolumeTypes:
+                outputs[values[0]] = os.path.abspath(values[1])
+            else:
+                outputs[values[0]] = None
         ## outputs['outputAverageImages'] = [ os.path.abspath(avgs) for avgs in templist ]
         ##  outputs['outputAverageImages'] = [ os.path.abspath('{imageType}_average.nii.gz'.format(imageType=test)) for test in set(self.inputs.inputVolumeTypes) ]
 
         PosteriorOutputs = GetPosteriorsFromAtlasXML(self.inputs.atlasDefinition)
-        fullPosteriorPaths = [ os.path.abspath(post) for post in PosteriorOutputs.getPosteriorFileNameList(self.inputs.posteriorTemplate) ]
-        outputs['posteriorImages']= fullPosteriorPaths
+        PosteriorPaths = PosteriorOutputs.getPosteriorFileNameList(self.inputs.posteriorTemplate)
+        outputs['posteriorImages'] = [os.path.abspath(postPath) for postPath in PosteriorPaths]
         return outputs
