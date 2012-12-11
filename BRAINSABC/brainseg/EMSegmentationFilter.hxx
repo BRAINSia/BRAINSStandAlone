@@ -1640,7 +1640,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
     }
 
   // NOTE:  Labels are only needed if debugging them.
-  ComputeLabels<TProbabilityImage>(this->m_WarpedPriors, this->m_PriorIsForegroundPriorVector,
+  ComputeLabels<TProbabilityImage,ByteImageType,double>(this->m_WarpedPriors, this->m_PriorIsForegroundPriorVector,
                                    this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyLabels,
                                    this->m_CleanedLabels);
   this->WriteDebugLabels(0);
@@ -1712,7 +1712,7 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
                                                         this->m_ListOfClassStatistics);
     NormalizeProbListInPlace<TProbabilityImage>(this->m_Posteriors);
     this->WriteDebugPosteriors(CurrentEMIteration);
-    ComputeLabels<TProbabilityImage>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
+    ComputeLabels<TProbabilityImage,ByteImageType,double>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
                                      this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyLabels,
                                      this->m_CleanedLabels);
     this->WriteDebugLabels(CurrentEMIteration);
@@ -1811,11 +1811,11 @@ EMSegmentationFilter<TInputImage, TProbabilityImage>
                                                       this->m_ListOfClassStatistics);
   NormalizeProbListInPlace<TProbabilityImage>(this->m_Posteriors);
   this->WriteDebugPosteriors(CurrentEMIteration + 100);
-  ComputeLabels<TProbabilityImage>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
+  ComputeLabels<TProbabilityImage,ByteImageType,double>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
                                    this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyLabels,
                                    this->m_CleanedLabels);
   FloatingPrecision inclusionThreshold = 0.75F;
-  ComputeLabels<TProbabilityImage>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
+  ComputeLabels<TProbabilityImage,ByteImageType,double>(this->m_Posteriors, this->m_PriorIsForegroundPriorVector,
                                    this->m_PriorLabelCodeVector, this->m_NonAirRegion, this->m_DirtyThresholdedLabels,
                                    this->m_ThresholdedLabels, inclusionThreshold);
   this->WriteDebugLabels(CurrentEMIteration + 100);
