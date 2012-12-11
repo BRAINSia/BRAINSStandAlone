@@ -172,15 +172,23 @@ def MakeOneSubWorkFlow(projectid, subjectid, sessionid, BAtlas, WORKFLOW_COMPONE
         T1T2WorkupSingle.connect( myLocalLMIWF,'outputspec.atlasToSubjectTransform',myLocalTCWF,'inputspec.atlasToSubjectInitialTransform')
 
         ### Now define where the final organized outputs should go.
-        TC_DataSink = pe.Node(nio.DataSink(),name="TISSUE_CLASSIFY_DS")
+        ###     For posterior probability files, we need to use a MapNode for the keys from the
+        ### myLocalTCWF.outputspec.posteriorImages dictionary.  To use a MapNode, we must know
+        ### the list BEFORE we run the pipeline...
+        from PipeLineFunctionHelpers import POSTERIORS
+        TC_DataSink = pe.MapNode(nio.DataSink(infields=['TissueClassify.@posteriors']), name="TISSUE_CLASSIFY_DS")
         TC_DataSink.inputs.base_directory = ExperimentBaseDirectoryResults
         TC_DataSink.inputs.regexp_substitutions = GenerateOutputPattern(projectid, subjectid,
                                                                         sessionid, 'TissueClassify',
                                                                         False)
-        ### T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.TissueClassifyOutputDir', TC_DataSink, 'TissueClassify.@TissueClassifyOutputDir')
+        setattr(TC_DataSink.inputs, 'TissueClassify.@posteriors',
+                ['POSTERIOR_%s.nii.gz' % label for label in POSTERIORS])
+        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t1_average', TC_DataSink, 'TissueClassify.@t1_average')
+        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t2_average', TC_DataSink, 'TissueClassify.@t2_average')
+        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.posteriorImages', TC_DataSink, 'TissueClassify.@posteriorImages')
         ### Now connect outputspec
-        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t1_average', outputsSpec,'t1_average')
-        T1T2WorkupSingle.connect(myLocalTCWF, 'outputspec.t2_average', outputsSpec,'t2_average')
+        T1T2WorkupSingle.connect(TC_DataSink, 'TissueClassify.@t1_average', outputsSpec,'t1_average')
+        T1T2WorkupSingle.connect(TC_DataSink, 'TissueClassify.@t2_average', outputsSpec,'t2_average')
 
     ## Make deformed Atlas image space
     if 'ANTS' in WORKFLOW_COMPONENTS:

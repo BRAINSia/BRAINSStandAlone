@@ -9,6 +9,11 @@
 ## AVOID REFORMATTING THIS FILE, it causes the hash to change in
 ## nipype and that require re-running the function.
 
+# Globals
+POSTERIORS = ['WM', 'SURFGM', 'ACCUMBEN', 'CAUDATE', 'PUTAMEN', 'GLOBUS', 'THALAMUS',
+              'HIPPOCAMPUS', 'CRBLGM', 'CRBLWM', 'CSF', 'VB', 'NOTCSF', 'NOTGM', 'NOTWM',
+              'NOTVB', 'AIR']
+
 def getListIndex( imageList, index):
     return imageList[index]
 

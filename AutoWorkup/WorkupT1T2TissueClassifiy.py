@@ -7,6 +7,7 @@ import nipype.interfaces.io as nio   # Data i/o
 import nipype.pipeline.engine as pe  # pypeline engine
 
 from BRAINSABCext import *
+
 """
     from WorkupT1T2TissueClassify import CreateTissueClassifyWorkflow
     myLocalTCWF= CreateTissueClassifyWorkflow("TissueClassify")
@@ -70,13 +71,14 @@ def getListIndexOrNoneIfOutOfRange( imageList, index):
       return imageList[index]
     else:
       return None
+
 def MakePosteriorDictionaryFunc(posteriorImages):
-    posteriorNames=['WM', 'SURFGM', 'ACCUMBEN', 'CAUDATE', 'PUTAMEN', 'GLOBUS', 'THALAMUS', 'HIPPOCAMPUS', 'CRBLGM', 'CRBLWM', 'CSF', 'VB', 'NOTCSF', 'NOTGM', 'NOTWM', 'NOTVB', 'AIR']
-    if len(posteriorNames) != len(posteriorImages):
+    from PipeLineFunctionHelpers import POSTERIORS
+    if len(POSTERIORS) != len(posteriorImages):
         print "ERROR: ", posteriorNames
-        print "ERROR: ", posteriorImages
+        print "ERROR: ", POSTERIORS
         return -1
-    temp_dictionary=dict(zip(posteriorNames,posteriorImages))
+    temp_dictionary = dict(zip(POSTERIORS, posteriorImages))
     return temp_dictionary
 
 def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
@@ -196,8 +198,6 @@ def CreateTissueClassifyWorkflow(WFname,CLUSTER_QUEUE,InterpolationMode):
     ##  remove tissueClassifyWF.connect( [ ( BABCext, outputsSpec, [ (( 'outputAverageImages', getListIndexOrNoneIfOutOfRange, 0 ), "t1_average")] ), ] )
     ##  remove tissueClassifyWF.connect( [ ( BABCext, outputsSpec, [ (( 'outputAverageImages', getListIndexOrNoneIfOutOfRange, 1 ), "t2_average")] ), ] )
     ##  remove tissueClassifyWF.connect( [ ( BABCext, outputsSpec, [ (( 'outputAverageImages', getListIndexOrNoneIfOutOfRange, 2 ), "pd_average")] ), ] )
-
-    ##  remove tissueClassifyWF.connect(BABCext,'outputDir',outputsSpec,'TissueClassifyOutputDir')
 
     MakePosteriorDictionaryNode = pe.Node( Function(function=MakePosteriorDictionaryFunc,
                                       input_names = ['posteriorImages'],
