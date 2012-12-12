@@ -1,2 +1,2 @@
 from contclassimage import BRAINSContinuousClass
-from specialized import BRAINSCut, BRAINSROIAuto, BRAINSConstellationDetector, BinaryMaskEditorBasedOnLandmarks, BRAINSABC, ESLR
+from specialized import BRAINSCut, BRAINSROIAuto, BRAINSConstellationDetector, BRAINSCreateLabelMapFromProbabilityMaps, BinaryMaskEditorBasedOnLandmarks, BRAINSABC, ESLR

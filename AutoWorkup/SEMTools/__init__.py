@@ -1,5 +1,5 @@
-from featurecreator import GenerateCsfClippedFromClassifiedImage
 from diffusion import *
+from featurecreator import GenerateCsfClippedFromClassifiedImage
 from segmentation import *
 from filtering import *
 from brains import *
