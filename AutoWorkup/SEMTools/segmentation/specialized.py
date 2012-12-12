@@ -213,8 +213,8 @@ class BRAINSABCInputSpec(CommandLineInputSpec):
     inputVolumeTypes = InputMultiPath(traits.Str, desc="The list of input image types corresponding to the inputVolumes.", sep=",", argstr="--inputVolumeTypes %s")
     outputDir = traits.Either(traits.Bool, Directory(), hash_files=False, desc="Ouput directory", argstr="--outputDir %s")
     atlasToSubjectTransformType = traits.Enum("ID", "Rigid", "Affine", "BSpline", "SyN", desc=" What type of linear transform type do you want to use to register the atlas to the reference subject image.", argstr="--atlasToSubjectTransformType %s")
-    atlasToSubjectTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="The trasform from atlas to the subject", argstr="--atlasToSubjectTransform %s")
-    atlasToSubjectInitialTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="The initial trasform from atlas to the subject", argstr="--atlasToSubjectInitialTransform %s")
+    atlasToSubjectTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="The transform from atlas to the subject", argstr="--atlasToSubjectTransform %s")
+    atlasToSubjectInitialTransform = traits.Either(traits.Bool, File(), hash_files=False, desc="The initial transform from atlas to the subject", argstr="--atlasToSubjectInitialTransform %s")
     subjectIntermodeTransformType = traits.Enum("ID", "Rigid", "Affine", "BSpline", desc=" What type of linear transform type do you want to use to register the atlas to the reference subject image.", argstr="--subjectIntermodeTransformType %s")
     outputVolumes = traits.Either(traits.Bool, InputMultiPath(File(), ), hash_files=False, desc="Corrected Output Images: should specify the same number of images as inputVolume, if only one element is given, then it is used as a file pattern where %s is replaced by the imageVolumeType, and %d by the index list location.", argstr="--outputVolumes %s...")
     outputLabels = traits.Either(traits.Bool, File(), hash_files=False, desc="Output Label Image", argstr="--outputLabels %s")
@@ -239,8 +239,8 @@ class BRAINSABCInputSpec(CommandLineInputSpec):
 
 class BRAINSABCOutputSpec(TraitedSpec):
     outputDir = Directory(desc="Output directory", exists=True)
-    atlasToSubjectTransform = File(desc="The trasform from atlas to the subject", exists=True)
-    atlasToSubjectInitialTransform = File(desc="The initial trasform from atlas to the subject", exists=True)
+    atlasToSubjectTransform = File(desc="The transform from atlas to the subject", exists=True)
+    atlasToSubjectInitialTransform = File(desc="The initial transform from atlas to the subject", exists=True)
     outputVolumes = OutputMultiPath(File(exists=True), desc="Corrected Output Images: should specify the same number of images as inputVolume, if only one element is given, then it is used as a file pattern where %s is replaced by the imageVolumeType, and %d by the index list location.", exists=True)
     outputLabels = File(desc="Output Label Image", exists=True)
     outputDirtyLabels = File(desc="Output Dirty Label Image", exists=True)
