@@ -34,7 +34,7 @@ class DWIConvertOutputSpec(TraitedSpec):
 class DWIConvert(SEMLikeCommandLine):
     """title: DICOM to NRRD Converter
 
-category: Diffusion.Diffusion Data Conversion
+category: Diffusion.DataConversion
 
 description: Converts diffusion weighted MR images in dicom series into Nrrd format for analysis in Slicer. This program has been tested on only a limited subset of DTI dicom formats available from Siemens, GE, and Phillips scanners. Work in progress to support dicom multi-frame data. The program parses dicom header to extract necessary information about measurement frame, diffusion weighting directions, b-values, etc, and write out a nrrd image. For non-diffusion weighted dicom images, it loads in an entire dicom series and writes out a single dicom volume in a .nhdr/.raw pair.
 
