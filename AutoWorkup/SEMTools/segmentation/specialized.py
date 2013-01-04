@@ -238,6 +238,38 @@ documentation-url: http://www.nitrc.org/projects/brainscdetector/
     _outputs_filenames = {'outputBinaryVolume':'outputBinaryVolume.nii'}
 
 
+class BRAINSMultiSTAPLEInputSpec(CommandLineInputSpec):
+    inputCompositeT1Volume = File(desc="Composite T1, all label maps transofrmed into the space for this image.", exists=True, argstr="--inputCompositeT1Volume %s")
+    inputLabelVolume = InputMultiPath(File(exists=True), desc="The list of proobabilityimages.", argstr="--inputLabelVolume %s...")
+    inputTransform = InputMultiPath(File(exists=True), desc="transforms to apply to label volumes", argstr="--inputTransform %s...")
+    labelForUndecidedPixels = traits.Int(desc="Label for undecided pixels", argstr="--labelForUndecidedPixels %d")
+    resampledVolumePrefix = traits.Str(desc="if given, write out resampled volumes with this prefix", argstr="--resampledVolumePrefix %s")
+    skipResampling = traits.Bool(desc="Omit resampling images into reference space", argstr="--skipResampling ")
+    outputMultiSTAPLE = traits.Either(traits.Bool, File(), hash_files=False, desc="the MultiSTAPLE average of input label volumes", argstr="--outputMultiSTAPLE %s")
+    outputConfusionMatrix = traits.Either(traits.Bool, File(), hash_files=False, desc="Confusion Matrix", argstr="--outputConfusionMatrix %s")
+
+
+class BRAINSMultiSTAPLEOutputSpec(TraitedSpec):
+    outputMultiSTAPLE = File(desc="the MultiSTAPLE average of input label volumes", exists=True)
+    outputConfusionMatrix = File(desc="Confusion Matrix", exists=True)
+
+
+class BRAINSMultiSTAPLE(SEMLikeCommandLine):
+    """title: Create best representative label map)
+
+category: Segmentation.Specialized
+
+description: given a list of label map images, create a representative/average label map.
+  
+
+"""
+
+    input_spec = BRAINSMultiSTAPLEInputSpec
+    output_spec = BRAINSMultiSTAPLEOutputSpec
+    _cmd = " BRAINSMultiSTAPLE "
+    _outputs_filenames = {'outputMultiSTAPLE':'outputMultiSTAPLE.nii','outputConfusionMatrix':'outputConfusionMatrixh5|mat|txt'}
+
+
 class BRAINSABCInputSpec(CommandLineInputSpec):
     inputVolumes = InputMultiPath(File(exists=True), desc="The list of input image files to be segmented.", argstr="--inputVolumes %s...")
     atlasDefinition = File(desc="Contains all parameters for Atlas", exists=True, argstr="--atlasDefinition %s")
