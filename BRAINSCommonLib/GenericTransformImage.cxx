@@ -234,19 +234,20 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     try
       {
       if( initialTransform.size() > 0 )
-	{
-	std::cout << "Read ITK transform from file: " << initialTransform << std::endl;
+	      {
+	      std::cout << "Read ITK transform from file: " << initialTransform << std::endl;
 
-	transformListReader->SetFileName( initialTransform.c_str() );
-	transformListReader->Update();
+	      transformListReader->SetFileName( initialTransform.c_str() );
+	      transformListReader->Update();
 
-	currentTransformList = *( transformListReader->GetTransformList() );
-	if( currentTransformList.size() == 0 )
-	  {
-	  itkGenericExceptionMacro( << "Number of currentTransformList = " << currentTransformList.size()
-	    << "FATAL ERROR: Failed to read transform" << initialTransform);
-	  }
-	}
+	      currentTransformList = *( transformListReader->GetTransformList() );
+	      if( currentTransformList.size() == 0 )
+	        {
+	        itkGenericExceptionMacro( << "Number of currentTransformList = " << currentTransformList.size()
+	          << "FATAL ERROR: Failed to read transform" << initialTransform);
+	        }
+        std::cout << "HACK: " << currentTransformList.size() << "  " << ( *( currentTransformList.begin() ) )->GetNameOfClass() << std::endl;
+	      }
       }
     catch( itk::ExceptionObject & excp )
       {
@@ -255,7 +256,7 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
       std::cerr << excp << std::endl;
       throw excp;
       }
-    std::cout << "HACK: " << currentTransformList.size() << "  " << ( *( currentTransformList.begin() ) )->GetNameOfClass() << std::endl;
+
   if( currentTransformList.size() == 1 )  // Most simple transform types
     {
     // NOTE:  The dynamic casting here circumvents the standard smart pointer
