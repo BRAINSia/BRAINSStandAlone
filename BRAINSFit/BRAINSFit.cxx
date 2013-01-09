@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
     }
   else if( maskProcessingMode == "ROI" )
     {
-    if( fixedBinaryVolume == "" || movingBinaryVolume == "")
+    if( fixedBinaryVolume == "" && movingBinaryVolume == "")
       {
       std::cout
         <<
@@ -438,12 +438,27 @@ int main(int argc, char *argv[])
         << std::endl;
       return EXIT_FAILURE;
       }
-    fixedMask = ReadImageMask<SpatialObjectType, Dimension>(
-      fixedBinaryVolume,
-      extractFixedVolume.GetPointer() );
-    movingMask = ReadImageMask<SpatialObjectType, Dimension>(
-      movingBinaryVolume,
-      extractMovingVolume.GetPointer() );
+    if( fixedBinaryVolume != "")
+      {
+      fixedMask = ReadImageMask<SpatialObjectType, Dimension>(
+        fixedBinaryVolume,
+        extractFixedVolume.GetPointer() );
+      }
+    else
+      {
+      fixedMask = NULL;
+      }
+
+    if( movingBinaryVolume != "")
+      {
+      movingMask = ReadImageMask<SpatialObjectType, Dimension>(
+        movingBinaryVolume,
+        extractMovingVolume.GetPointer() );
+      }
+    else
+      {
+      movingMask = NULL;
+      }
     }
   /* This default fills the background with zeros
    *  const double BackgroundFillValue =
