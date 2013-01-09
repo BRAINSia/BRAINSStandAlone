@@ -442,6 +442,15 @@ public:
 
   itkGetConstObjectMacro(MovingImage, MovingImageType);
 
+  /** Set/Get binary masks. */
+  void SetFixedBinaryVolume(FixedBinaryVolumePointer fixedBinaryMask);
+
+  itkGetConstObjectMacro(FixedBinaryVolume, FixedBinaryVolumeType);
+
+  void SetMovingBinaryVolume(MovingBinaryVolumePointer movingBinaryMask);
+
+  itkGetConstObjectMacro(MovingBinaryVolume, MovingBinaryVolumeType);
+
   /** Set/Get the InitialTransfrom. */
   void SetInitialTransform(typename TransformType::Pointer initialTransform);
   itkGetConstObjectMacro(InitialTransform, TransformType);
@@ -529,6 +538,8 @@ private:
 
   FixedImagePointer  m_FixedImage;
   MovingImagePointer m_MovingImage;
+  FixedBinaryVolumePointer m_FixedBinaryVolume;
+  MovingBinaryVolumePointer m_MovingBinaryVolume;
   TransformPointer   m_InitialTransform;
   TransformPointer   m_Transform;
   //
