@@ -11,7 +11,7 @@
 int main( int argc, char *argv[] )
 {
     PARSE_ARGS;
-    
+
     // ------------------------------------
     // Verify input parameters
     std::cout << "Verifying input parameters..." << std::endl;
@@ -21,7 +21,7 @@ int main( int argc, char *argv[] )
         std::cerr << "Type " << argv[0] << " -h for more help." << std::endl;
         return EXIT_FAILURE;
     }
-    
+
     // Get a warning if none of the main output filename is specified
     if( ( outputVolume.compare( "" ) == 0 )
        && ( outputResampledVolume.compare( "" ) == 0 )
@@ -41,49 +41,49 @@ int main( int argc, char *argv[] )
         std::cout << "outputLandmarksInInputSpace" << std::endl;
         std::cout << "outputUntransformedClippedVolume\n" << std::endl;
     }
-    
+
     // set the template model to default
     if( inputTemplateModel.compare( "" ) == 0 )
     {
         std::string pathOut;
         std::string errorMsg;
-        
+
         if( !itksys::SystemTools::FindProgramPath( argv[0], pathOut, errorMsg) )
-            
+
         {
             std::cerr << "Error: Input Template Model File not found" << std::endl;
             std::cerr << errorMsg << std::endl;
-            
+
             return 1;
         }
-        
+
         inputTemplateModel = itksys::SystemTools::GetProgramPath( pathOut.c_str() ) + "/" + "T1.mdl";
         std::cout << "Set inputTemplateModel to default: " << std::endl;
         std::cout << inputTemplateModel << std::endl;
     }
-    
-    // set the llsModel to default    
+
+    // set the llsModel to default
     if( llsModel == "" )
     {
         std::string pathOut;
         std::string errorMsg;
-        
+
         if( !itksys::SystemTools::FindProgramPath( argv[0], pathOut, errorMsg) )
-            
+
         {
             std::cerr << "Error: Input LLSModel File not found" << std::endl;
             std::cerr << errorMsg << std::endl;
-            
+
             return 1;
         }
-        
+
         llsModel = itksys::SystemTools::GetProgramPath( pathOut.c_str() ) + "/" + "LLSModel.h5";
         std::cout << "Set LLSModel to default: " << std::endl;
         std::cout << llsModel << std::endl;
     }
-    
+
     BRAINSConstellationDetectorPrimary BCD;
-    
+
     BCD.SetNumberOfThreads( numberOfThreads );
     BCD.SetInputLandmarksEMSP( inputLandmarksEMSP );
     BCD.SetLLSModel( llsModel );
@@ -124,9 +124,18 @@ int main( int argc, char *argv[] )
     BCD.SetOutputMRML( outputMRML );
     BCD.SetOutputVerificationScript( outputVerificationScript );
     BCD.SetOutputUntransformedClippedVolume( outputUntransformedClippedVolume );
-    
-    BCD.Compute();
-    
+
+    try
+    {
+      BCD.Compute();
+    }
+    catch( itk::ExceptionObject & err )
+    {
+      std::cerr << "Exception Object caught:\n"
+                << err << std::endl;
+      return EXIT_FAILURE;
+    }
+
   return 0;
 }
 
