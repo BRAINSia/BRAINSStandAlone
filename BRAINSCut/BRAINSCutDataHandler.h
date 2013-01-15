@@ -136,6 +136,7 @@ public:
 
   int          GetMaxTreeCount();
 
+  WorkingImagePointer GetCandidateRegion( DataSet& subject) const;
 protected:
   TrainingVectorConfigurationType * trainingVectorConfiguration;
 
