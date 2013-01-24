@@ -1046,15 +1046,17 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     global_All3T_T2s = ExperimentDatabase.getFilenamesByScantype(sessionid, ['T2-30'])
                     # RunAllFSComponents=False ## A hack to avoid 26 hour run of freesurfer
                     RunAllFSComponents = True  # A hack to avoid 26 hour run of freesurfer
-                    if (len(global_All3T_T2s) > 0):
+                    RunMultiMode = (len(global_All3T_T2s) > 0)
+                    assert isinstance(RunMultiMode, bool)
+                    if RunMultiMode:
                         # If multi-modal, then create synthesized image before running
                         print("HACK  FREESURFER len(global_All3T_T2s) > 0 ")
-                        myLocalFSWF[sessionid] = CreateFreeSurferWorkflow_custom(projectid, subjectid, sessionid, "Level1_FSTest",
-                                                                                 CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents, True, constructed_FS_SUBJECTS_DIR)
-                    else:
-                        myLocalFSWF[sessionid] = CreateFreeSurferWorkflow_custom(projectid, subjectid, sessionid, "Level1_FSTest",
-                                                                                 CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents, False, constructed_FS_SUBJECTS_DIR)
-
+                    myLocalFSWF[sessionid] = CreateFreeSurferWorkflow_custom(projectid, subjectid, sessionid,
+                                                                             "Level1_FSTest", CLUSTER_QUEUE,
+                                                                             CLUSTER_QUEUE_LONG,
+                                                                             RunAllFSComponents,
+                                                                             RunMultiMode,
+                                                                             constructed_FS_SUBJECTS_DIR)
                     FREESURFER_ID[sessionid] = pe.Node(interface=IdentityInterface(fields=['FreeSurfer_ID']),
                                                       run_without_submitting=True,
                                                       name='99_FSNodeName' + str(subjectid) + "_" + str(sessionid))
@@ -1068,9 +1070,6 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     baw200.connect([(PHASE_2_oneSubjWorkflow[sessionid], myLocalFSWF[sessionid],
                                 [(('outputspec.posteriorImages', GetOnePosteriorImageFromDictionaryFunction, 'WM'), 'inputspec.wm_prob')])])
                     baw200.connect(FREESURFER_ID[sessionid], 'FreeSurfer_ID', myLocalFSWF[sessionid], 'inputspec.FreeSurfer_ID')
-                    baw200.connect(FREESURFER_ID[sessionid], 'FreeSurfer_ID',FreeSurferSessionID_MergeNode[subjectid],'in'+str(FSindex))
-                    FSindex += 1
-
                     ### Now define where the final organized outputs should go.
                     if RunAllFSComponents == True:
                         FS_DS[sessionid] = pe.Node(nio.DataSink(), name="FREESURFER_DS_" + str(subjectid) + "_" + str(sessionid))
@@ -1094,26 +1093,32 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     print "========================="
                     print "========================="
                     baw200.connect(myLocalFSWF[sessionid], 'outputspec.cnr_optimal_image', FSPREP_DataSink[sessionid], 'FREESURFER_PREP.@cnr_optimal_image')
+                    baw200.connect(myLocalFSWF[sessionid], 'outputsSpec.subject_id',
+                                   FreeSurferSessionID_MergeNode[subjectid], 'in' + str(FSindex))
+                    FSindex += 1
+
 
                 #} end of "for sessionid in allSessions:"
                 #{  Do template building
                 ##HACK : Move later
                 FS_TEMPLATE_oneSubjWorkflow = CreateFreeSurferSubjectTemplate(projectid,
                                                                                subjectid,
-                                                                               allSessions,
                                                                                "FS55",
                                                                                CLUSTER_QUEUE,
                                                                                CLUSTER_QUEUE_LONG,
                                                                                True,
                                                                                True,
                                                                                constructed_FS_SUBJECTS_DIR)
+                baw200.connect(FreeSurferSessionID_MergeNode[subjectid], 'out',
+                               FS_TEMPLATE_oneSubjWorkflow, 'inputspec.FreeSurferSession_IDs')
+
                 FREESURFER_SUBJ_ID = pe.Node(interface=IdentityInterface(fields=['subjectTemplate_id']),
                                              run_without_submitting=True,
                                              name='99_FSNodeName_' + str(subjectid) + "_template")
                 FREESURFER_SUBJ_ID.inputs.subjectTemplate_id = str(subjectid) + "_template"
 
-                baw200.connect(FREESURFER_SUBJ_ID, 'subjectTemplate_id', FS_TEMPLATE_oneSubjWorkflow, 'inputspec.subjectTemplate_id')
-                baw200.connect(FreeSurferSessionID_MergeNode[subjectid],'out', FS_TEMPLATE_oneSubjWorkflow, 'inputspec.FreeSurferSession_IDs')
+                baw200.connect(FREESURFER_SUBJ_ID, 'subjectTemplate_id',
+                               FS_TEMPLATE_oneSubjWorkflow, 'inputspec.subjectTemplate_id')
 
                 FSTEMP_DataSink[subjectid] = pe.Node(nio.DataSink(), name='FREESURFER_TEMP_' + str(subjectid))
                 FSTEMP_DataSink[subjectid].overwrite = GLOBAL_DATA_SINK_REWRITE
@@ -1134,8 +1139,10 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                                                                                True,
                                                                                True,
                                                                                constructed_FS_SUBJECTS_DIR)
-                    baw200.connect(FS_TEMPLATE_oneSubjWorkflow, 'outputspec.FreeSurferTemplateDir', FS_LONG_oneSubjWorkflow[sessionid], 'inputspec.SingleSubject_ID')
-                    # baw200.connect(FREESURFER_SUBJ_ID, 'subjectTemplate_id', FS_LONG_oneSubjWorkflow[sessionid], 'inputspec.SingleSubject_ID')
+                    baw200.connect(myLocalFSWF[sessionid], 'outputsSpec.subject_id',
+                                   FS_LONG_oneSubjectWorkflow[sessionid], 'inputsSpec.FreeSurferSession_ID')
+                    baw200.connect(FS_TEMPLATE_oneSubjWorkflow, 'outputspec.FreeSurferTemplateDir',
+                                   FS_LONG_oneSubjWorkflow[sessionid], 'inputspec.SingleSubject_ID')
                     FSLONG_DataSink[sessionid] = pe.Node(nio.DataSink(), name='_'.join(['FREESURFER_LONG', str(subjectid), str(sessionid)]))
                     FSLONG_DataSink[sessionid].overwrite = GLOBAL_DATA_SINK_REWRITE
                     FSLONG_DataSink[sessionid].inputs.base_directory = ExperimentBaseDirectoryResults

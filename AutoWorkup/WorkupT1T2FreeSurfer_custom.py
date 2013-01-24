@@ -77,25 +77,29 @@ def CreateFreeSurferWorkflow_custom(projectid, subjectid, sessionid, WFname, CLU
         freesurferWF.connect(inputsSpec, 'FreeSurfer_ID', fs_reconall, 'subject_id')
         if RunMultiMode:
             ## Use the output of the synthesized T1 with maximized contrast
-            ## HACK:  REMOVE FOR NOW NEEDS FURTHER TESTING freesurferWF.connect(msLDA_GenerateWeights, 'vol_synth_file', fs_reconall, 'T1_files')
+            ## HACK:  REMOVE FOR NOW - NEEDS FURTHER TESTING
+            ## freesurferWF.connect(msLDA_GenerateWeights, 'vol_synth_file', fs_reconall, 'T1_files')
             freesurferWF.connect(inputsSpec, 'T1_files', fs_reconall, 'T1_files')
+            ## END HACK
         else:
             ## Use the output of the T1 only image
             freesurferWF.connect(inputsSpec, 'T1_files', fs_reconall, 'T1_files')
 
-        computeFinalDirectory = pe.Node(Function(function=MakeFreeSurferOutputDirectory, input_names=['subjects_dir', 'subject_id'], output_names=['FreeSurferOutputDirectory']), run_without_submitting=True, name="99_computeFreeSurferOutputDirectory")
+        computeFinalDirectory = pe.Node(Function(function=MakeFreeSurferOutputDirectory,
+                                                 input_names=['subjects_dir', 'subject_id'],
+                                                 output_names=['FreeSurferOutputDirectory']),
+                                                 run_without_submitting=True,
+                                                 name="99_computeFreeSurferOutputDirectory")
         freesurferWF.connect(inputsSpec, 'subjects_dir', computeFinalDirectory, 'subjects_dir')
         freesurferWF.connect(inputsSpec, 'FreeSurfer_ID', computeFinalDirectory, 'subject_id')
 
         freesurferWF.connect(inputsSpec, 'label_file', fs_reconall, 'brainmask')
         freesurferWF.connect(inputsSpec, 'subjects_dir', fs_reconall, 'subjects_dir')
-
-        freesurferWF.connect(inputsSpec, 'FreeSurfer_ID', outputsSpec, 'subject_id')
-        freesurferWF.connect(inputsSpec, 'subjects_dir', outputsSpec, 'subjects_dir')
+        freesurferWF.connect(fs_reconall, 'subject_id', outputsSpec, 'subject_id')
         freesurferWF.connect(computeFinalDirectory, 'FreeSurferOutputDirectory', outputsSpec, 'FreeSurferOutputDirectory')
     return freesurferWF
 
-def CreateFreeSurferSubjectTemplate(projectid, subjectid, session_ids, WFname, CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents=True, RunMultiMode=True, constructed_FS_SUBJECTS_DIR='/never_use_this', subcommand='template'):
+def CreateFreeSurferSubjectTemplate(projectid, subjectid, WFname, CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents=True, RunMultiMode=True, constructed_FS_SUBJECTS_DIR='/never_use_this', subcommand='template'):
     """ Construct the longitudinal workflow
     Step 1: Construct the within-subject cross-sectional template (using all subject's sessions)
     """
@@ -110,7 +114,6 @@ def CreateFreeSurferSubjectTemplate(projectid, subjectid, session_ids, WFname, C
     print("""Run FreeSurfer Within Subject Template at""")
     fs_template = pe.Node(interface=fswrap.FSScript(), name="FS52_base_"+str(subjectid))
     fs_template.plugin_args = freesurfer_sge_options_dictionary
-    fs_template.inputs.session_ids = session_ids
     fs_template.inputs.subcommand = 'template'
     subjectTemplate_freesurferWF.connect(inputsSpec, 'subjectTemplate_id', fs_template, 'subjectTemplate_id')
     subjectTemplate_freesurferWF.connect(inputsSpec, 'FreeSurferSession_IDs', fs_template, 'session_ids')
@@ -121,13 +124,13 @@ def CreateFreeSurferSubjectTemplate(projectid, subjectid, session_ids, WFname, C
 
     return subjectTemplate_freesurferWF
 
-def CreateFreeSurferLongitudinalWorkflow(projectid, sessionid, subjectid, WFname, CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents=True, RunMultiMode=True, constructed_FS_SUBJECTS_DIR='/never_use_this', subcommand='template'):
+def CreateFreeSurferLongitudinalWorkflow(projectid, subjectid, sessionid, WFname, CLUSTER_QUEUE, CLUSTER_QUEUE_LONG, RunAllFSComponents=True, RunMultiMode=True, constructed_FS_SUBJECTS_DIR='/never_use_this', subcommand='template'):
     """ Construct the longitudinal workflow
     Step 2: Construct the longitudinal subject results (for each session individually)
     """
     freesurfer_sge_options_dictionary = {'qsub_args': '-S /bin/bash -pe smp1 1 -l h_vmem=18G,mem_free=8G -o /dev/null -e /dev/null ' + CLUSTER_QUEUE, 'overwrite': True}
     long_freesurferWF = pe.Workflow(name=GenerateWFName(projectid, subjectid, sessionid, WFname))
-    inputsSpec = pe.Node(interface=IdentityInterface(fields=['SingleSubject_ID', 'subjects_dir']), name='inputspec')
+    inputsSpec = pe.Node(interface=IdentityInterface(fields=['SingleSubject_ID', 'FreeSurferSession_ID', 'subjects_dir']), name='inputspec')
     ### HACK: the nipype interface requires that this environmental variable is set before running
     print "HACK SETTING SUBJECTS_DIR {0}".format(constructed_FS_SUBJECTS_DIR)
     os.environ['SUBJECTS_DIR'] = constructed_FS_SUBJECTS_DIR
@@ -136,9 +139,8 @@ def CreateFreeSurferLongitudinalWorkflow(projectid, sessionid, subjectid, WFname
     fs_longitudinal = pe.Node(interface=fswrap.FSScript(), name="FS52_long_"+str(sessionid))
     fs_longitudinal.plugin_args = freesurfer_sge_options_dictionary
     fs_longitudinal.inputs.subcommand = 'longitudinal'
-    fs_longitudinal.inputs.session_id = sessionid
     long_freesurferWF.connect(inputsSpec, 'SingleSubject_ID', fs_longitudinal, 'template_id')
-
+    long_freesurferWF.connect(inputsSpec, 'FreeSurferSession_ID', fs_longitudinal, 'session_id')
     outputsSpec = pe.Node(interface=IdentityInterface(fields=['FreeSurferLongitudinalDir']), name='outputspec')
     long_freesurferWF.connect(fs_longitudinal, 'outDir', outputsSpec, 'FreeSurferLongitudinalDir')
 
