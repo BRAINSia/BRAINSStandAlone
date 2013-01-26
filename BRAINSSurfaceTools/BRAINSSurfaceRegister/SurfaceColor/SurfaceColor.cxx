@@ -206,12 +206,11 @@ int main( int argc, char * argv[] )
 			}
 
             pixelValue = newValue;
-
+                        delete [] counter;
 			}
 		}
 
 		label -> InsertValue( i,pixelValue );
-
 	}
 
 	label -> SetName("LabelValue");
