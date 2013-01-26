@@ -127,7 +127,7 @@ BRAINSFitHelper::Update(void)
             {
             std::cout << "Exception Object caught: " << std::endl;
             std::cout << err << std::endl;
-            throw err;
+            throw;
             }
           }
           {
@@ -144,7 +144,7 @@ BRAINSFitHelper::Update(void)
             {
             std::cout << "Exception Object caught: " << std::endl;
             std::cout << err << std::endl;
-            throw err;
+            throw;
             }
           }
         }
@@ -205,7 +205,7 @@ BRAINSFitHelper::Update(void)
         {
         std::cout << "Exception Object caught: " << std::endl;
         std::cout << err << std::endl;
-        throw err;
+        throw;
         }
       }
     }
@@ -438,7 +438,7 @@ BRAINSFitHelper::PrintCommandLine(const bool dumpTempVolumes, const std::string 
         {
         oss << "Exception Object caught: " << std::endl;
         oss << err << std::endl;
-        throw err;
+        throw;
         }
       }
       {
@@ -455,7 +455,7 @@ BRAINSFitHelper::PrintCommandLine(const bool dumpTempVolumes, const std::string 
         {
         oss << "Exception Object caught: " << std::endl;
         oss << err << std::endl;
-        throw err;
+        throw;
         }
       }
     }

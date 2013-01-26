@@ -356,7 +356,7 @@ typename TransformType::Pointer
                 {
                 std::cout << "Caught an ITK exception: " << std::endl;
                 std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-                throw err;
+                throw;
                 }
               char filename[300];
               sprintf(filename, "%05.2f_%05.2f_%05.2f.nii.gz",
@@ -377,7 +377,7 @@ typename TransformType::Pointer
                   {
                   std::cout << "Exception Object caught: " << std::endl;
                   std::cout << err << std::endl;
-                  throw err;
+                  throw;
                   }
                 }
               }
@@ -431,7 +431,7 @@ typename TransformType::Pointer
         {
         std::cout << "Caught an ITK exception: " << std::endl;
         std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-        throw err;
+        throw;
         }
       char filename[300];
       sprintf(filename, "FINAL_%05.2f_%05.2f_%05.2f.nii.gz",
@@ -453,7 +453,7 @@ typename TransformType::Pointer
           {
           std::cout << "Exception Object caught: " << std::endl;
           std::cout << err << std::endl;
-          throw err;
+          throw;
           }
         }
       }
@@ -804,7 +804,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           std::cerr
           << "Error while reading the m_CurrentGenericTransform" << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -900,7 +900,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -1004,7 +1004,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -1108,7 +1108,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-          throw excp;
+          throw;
           }
         }
 
@@ -1380,7 +1380,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-          throw excp;
+          throw;
           }
         }
 
@@ -1537,7 +1537,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
               << "Error while reading the m_CurrentGenericTransform"
               << std::endl;
               std::cerr << excp << std::endl;
-	      throw excp;
+	      throw;
           }
       }
 
