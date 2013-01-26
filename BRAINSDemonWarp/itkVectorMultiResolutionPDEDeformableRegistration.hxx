@@ -450,8 +450,7 @@ VectorMultiResolutionPDEDeformableRegistration<TFixedImage, TMovingImage,
       {
       std::cout << "Caught an exception: " << std::endl;
       std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-      throw err;
-      throw err;
+      throw;
       }
     catch( ... )
       {
