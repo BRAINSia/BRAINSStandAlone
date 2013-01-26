@@ -25,7 +25,7 @@ public:
 
 protected:
   StreamToRead() ; //purposefully not implemented : m_F(0) { }
-  void operator=(Self &); //purposefully not implemented
+  StreamToRead & operator=(Self &); //purposefully not implemented
 private:
   OutputType m_F;
 };
