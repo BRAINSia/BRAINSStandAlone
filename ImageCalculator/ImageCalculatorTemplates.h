@@ -564,7 +564,7 @@ void statfilters( const typename ImageType::Pointer AccImage , MetaCommand comma
 
 /*This function is called when the user wants to write the ouput image to a file. The output image is typecasted to the user specified data type. */
 template <class InPixelType , class PixelType , int dims>
-void ProcessOutputStage( const typename itk::Image< InPixelType, dims >::Pointer AccImage , const std::string outputImageFilename, MetaCommand command)
+void ProcessOutputStage( const typename itk::Image< InPixelType, dims >::Pointer AccImage , const std::string & outputImageFilename, MetaCommand command)
 {
   typedef itk::Image<InPixelType , dims>  InputImageType;
   typedef itk::Image<PixelType , dims>    OutputImageType;

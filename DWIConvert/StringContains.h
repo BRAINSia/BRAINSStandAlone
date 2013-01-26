@@ -11,7 +11,7 @@ inline void strupper(std::string &s)
 }
 
 inline bool
-StringContains(const std::string &string,const std::string pattern)
+StringContains(const std::string &string,const std::string & pattern)
 {
   return string.find(pattern) != std::string::npos;
 }

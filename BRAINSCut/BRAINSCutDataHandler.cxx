@@ -81,7 +81,7 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetNetConfigurationFilename(const std::string filename)
+::SetNetConfigurationFilename(const std::string & filename)
 {
   myConfigurationFilename = filename;
 }
