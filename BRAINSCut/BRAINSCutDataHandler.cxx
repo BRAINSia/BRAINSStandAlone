@@ -419,8 +419,8 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetRFModelFilename( int depth,
-                      int NTrees)
+::GetRFModelFilename( unsigned int depth,
+                      unsigned int NTrees)
 {
   std::string basename = GetModelBaseName();
 
