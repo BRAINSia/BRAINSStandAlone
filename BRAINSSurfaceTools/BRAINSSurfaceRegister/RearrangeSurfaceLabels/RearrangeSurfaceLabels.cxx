@@ -118,6 +118,7 @@ int main( int argc, char * argv[] )
     writer -> SetInput (surface_in);
     writer -> SetFileName (outputSurfaceFile.c_str());
     writer -> Update();
-
+ delete [] frequency;
+ delete [] labelTransform;
  return 0;
 }

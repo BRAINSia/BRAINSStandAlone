@@ -265,6 +265,7 @@ int SurfaceConnectivityCells(vtkSmartPointer<vtkPolyData> mesh)
             }
         }
     }
+    delete [] neighborLabels;
     return numChanges;
 }
 
@@ -399,6 +400,7 @@ int SurfaceConnectivityPoints(vtkSmartPointer<vtkPolyData> mesh)
             }
         }
     }
+    delete [] neighborLabels;
     return numChanges;
 }
 
@@ -522,6 +524,7 @@ int RemoveIsolatedPoints(vtkSmartPointer<vtkPolyData> mesh)
             }
         }
     }
+    delete [] neighborLabels;
     return numChanges;
 }
 
@@ -655,4 +658,5 @@ void FlipSharpTriangles(vtkSmartPointer<vtkPolyData> mesh)
         }
         iter += 1;
     }
+    delete [] neighborLabels;
 }
