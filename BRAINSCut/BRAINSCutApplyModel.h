@@ -10,10 +10,8 @@ typedef LabelImageType::Pointer             LabelImagePointerType;
 class BRAINSCutApplyModel
 {
 public:
-  BRAINSCutApplyModel()
-  {
-  };
   BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler );
+  BRAINSCutApplyModel();
   ~BRAINSCutApplyModel( );
 
   void Apply();
@@ -59,6 +57,7 @@ public:
   void WriteLabelMapToBinaryImages( const DataSet& subject,const LabelImagePointerType& labelMapImage );
 
   WorkingImagePointer ClipImageWithBinaryMask( WorkingImagePointer& image, WorkingImagePointer mask); 
+protected:
 
 
 private:
