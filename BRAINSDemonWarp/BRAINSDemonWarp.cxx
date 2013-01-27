@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
   if( command.inputPixelType != "" )
     {
     // check to see if valid type
-    if( ( CompareNoCase( command.inputPixelType), std::string("uchar") ) )
+    if( ( CompareNoCase( command.inputPixelType, std::string("uchar") ) )
         && ( CompareNoCase( command.inputPixelType, std::string("short") ) )
         && ( CompareNoCase( command.inputPixelType,
                             std::string("ushort") ) )
