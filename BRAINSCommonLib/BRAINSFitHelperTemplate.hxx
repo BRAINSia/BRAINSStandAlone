@@ -36,6 +36,10 @@ ValidateTransformRankOrdering(const std::vector<std::string> & transformType)
                            << "smallest to largest.  Please review settings for transformType.\n" \
                            << "Rigid < ScaleVersor3D < ScaleSkewVersor3D < Affine < (BSpline | SyN)")
 
+  if ( transformType.empty() )
+    {
+    itkGenericExceptionMacro(<< " ERROR:  No transform type specified.");
+    }
   unsigned int CurrentTransformRank = 0;
   for( unsigned int l = 0; l < transformType.size(); ++l )
     {
