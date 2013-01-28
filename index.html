@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="BRAINSStandAlone : A thin wrapper project for holding onto several git submodules to ease building" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>BRAINSStandAlone</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/BRAINSia/BRAINSStandAlone">View on GitHub</a>
+
+          <h1 id="project_title">BRAINSStandAlone</h1>
+          <h2 id="project_tagline">A thin wrapper project for holding onto several git submodules to ease building</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/BRAINSia/BRAINSStandAlone/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/BRAINSia/BRAINSStandAlone/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>The BRAINSStandAlone is a harness to assist in building the many BRAINSTools under development.</p>
+
+<p>Developers should run the "GitSetupEnvironmnet.sh" script to get started.</p>
+
+<hr><p>Example session for a clean build:</p>
+
+<p><code>mkdir ~/src/mytester</code></p>
+
+<p><code>cd ~/src/mytester</code></p>
+
+<p><code>git clone git://github.com/BRAINSia/BRAINSStandAlone.git</code></p>
+
+<p><code>cd BRAINSStandAlone/</code></p>
+
+<p><code>bash GitSetupEnvironmnet.sh</code></p>
+
+<p><code>mkdir -p ../BRAINSStandAlone-build</code></p>
+
+<p><code>cd ../BRAINSStandAlone-build/</code></p>
+
+<p><code>CC=/usr/bin/gcc-4.2 CXX=/usr/bin/g++-4.2 ccmake ../BRAINSStandAlone -DUSE_BRAINSFit:BOOL=ON -DUSE_BRAINSConstellationDetector:BOOL=ON -DUSE_BRAINSABC:BOOL=ON</code></p>
+
+<p><code>export NUMBEROFTHREADS=8 # Use all cores of an eight-core machine for building</code></p>
+
+<p><code>make -j${NUMBEROFTHREADS} -k ; ## NOTE: The fetching of data may have problems with parallel builds, so you may need to restart it a few times</code></p>
+
+<p><code>make</code></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">BRAINSStandAlone maintained by <a href="https://github.com/BRAINSia">BRAINSia</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
