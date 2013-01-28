@@ -32,7 +32,7 @@ VTKFiberListType ConvertFiberToVTK(FiberListType & fiberList, int order, Anisotr
   VTKFiberListType vtkFiberList;
 
   FiberListType::iterator fiberIt;
-  for( fiberIt = fiberList.begin(); fiberIt != fiberList.end(); fiberIt++ )
+  for( fiberIt = fiberList.begin(); fiberIt != fiberList.end(); ++fiberIt )
     {
     FiberType      fiber = *fiberIt;
     vtkPoints *    points = vtkPoints::New();
@@ -52,12 +52,12 @@ VTKFiberListType ConvertFiberToVTK(FiberListType & fiberList, int order, Anisotr
       points->InsertPoint(N, p[0], p[1], p[2]);
       scalars->InsertTuple1(N, 1 - fp.m_AI);
       fiber.pop_front();
-      N++;
+      ++N;
       }
 
     vtkCellArray *line = vtkCellArray::New();
     line->InsertNextCell(N);
-    for( int i = 0; i < N; i++ )
+    for( int i = 0; i < N; ++i )
       {
       line->InsertCellPoint(i);
       }
@@ -107,13 +107,13 @@ VTKFiberListType MergeFibers(VTKFiberListType & fiberList1, VTKFiberListType & f
     double upperT = 4;
     double mean, sd;
     double sum = 0;
-    for( int i = 0; i < N1; i++ )
+    for( int i = 0; i < N1; ++i )
       {
       sum += dis1[i];
       }
     mean = sum / N1;
     sum = 0;
-    for( int i = 0; i < N1; i++ )
+    for( int i = 0; i < N1; ++i )
       {
       sum += vcl_pow(dis1[i] - mean, 2.0);
       }
@@ -129,20 +129,20 @@ VTKFiberListType MergeFibers(VTKFiberListType & fiberList1, VTKFiberListType & f
         }
       else
         {
-        disC++;
+        ++disC;
         }
       fiberList1.pop_front();
-      index++;
+      ++index;
       }
 
     sum = 0;
-    for( int i = 0; i < N2; i++ )
+    for( int i = 0; i < N2; ++i )
       {
       sum += dis2[i];
       }
     mean = sum / N2;
     sum = 0;
-    for( int i = 0; i < N2; i++ )
+    for( int i = 0; i < N2; ++i )
       {
       sum += vcl_pow(dis2[i] - mean, 2);
       }
@@ -154,7 +154,7 @@ VTKFiberListType MergeFibers(VTKFiberListType & fiberList1, VTKFiberListType & f
       {
       if( dis2[index] < lowerT )
         {
-        merC++;
+        ++merC;
         }
       else if( dis2[index] < upperT )
         {
@@ -162,10 +162,10 @@ VTKFiberListType MergeFibers(VTKFiberListType & fiberList1, VTKFiberListType & f
         }
       else
         {
-        disC++;
+        ++disC;
         }
       fiberList2.pop_front();
-      index++;
+      ++index;
       }
 
     std::cout << "Done!" << std::endl;
@@ -195,12 +195,12 @@ void MinimumDistanceBetweenFiberGroups(VTKFiberListType fiberList1,
 
   VTKFiberListType::iterator fiberIt1, fiberIt2;
   int                        index = 0;
-  for( fiberIt1 = fiberList1.begin(); fiberIt1 != fiberList1.end(); index++, fiberIt1++ )
+  for( fiberIt1 = fiberList1.begin(); fiberIt1 != fiberList1.end(); ++index, ++fiberIt1 )
     {
     vtkPolyData *      fiber1 = *fiberIt1;
     std::vector<float> avrDis;
     avrDis.clear();
-    for( fiberIt2 = fiberList2.begin(); fiberIt2 != fiberList2.end(); fiberIt2++ )
+    for( fiberIt2 = fiberList2.begin(); fiberIt2 != fiberList2.end(); ++fiberIt2 )
       {
       vtkPolyData *         fiber2 = *fiberIt2;
       PointSetType::Pointer pSet1 = PolyDataToPointSet(fiber1);
@@ -212,7 +212,7 @@ void MinimumDistanceBetweenFiberGroups(VTKFiberListType fiberList1,
       DistanceType::MeasureType value = distance->GetValue(parameter);
       int                       n = distance->GetNumberOfValues();
       float                     avr = 0;
-      for( int i = 0; i < n; i++ )
+      for( int i = 0; i < n; ++i )
         {
         avr += value[i];
         }
@@ -220,7 +220,7 @@ void MinimumDistanceBetweenFiberGroups(VTKFiberListType fiberList1,
       avrDis.push_back(avr);
       }
     float min = 999;
-    for( unsigned int i = 0; i < avrDis.size(); i++ )
+    for( unsigned int i = 0; i < avrDis.size(); ++i )
       {
       if( min > avrDis[i] )
         {
@@ -238,7 +238,7 @@ void SaveFiber(const char *fileName, VTKFiberListType & fiberList)
   std::cout << fileName << std::endl;
   vtkAppendPolyData *        append = vtkAppendPolyData::New();
   VTKFiberListType::iterator fiberIt;
-  for( fiberIt = fiberList.begin(); fiberIt != fiberList.end(); fiberIt++ )
+  for( fiberIt = fiberList.begin(); fiberIt != fiberList.end(); ++fiberIt )
     {
     append->AddInput(*fiberIt);
     }
@@ -269,7 +269,7 @@ PointSetType::Pointer PolyDataToPointSet(vtkPolyData *fiber)
   PointSetType::Pointer   pSet = PointSetType::New();
   vtkFloatingPointType    p[3];
   PointSetType::PointType point;
-  for( int i = 0; i < npts; i++ )
+  for( int i = 0; i < npts; ++i )
     {
     fiber->GetPoint(i, p);
     point[0] = p[0]; point[1] = p[1]; point[2] = p[2];
@@ -306,7 +306,7 @@ void OpenFiber(const char *fileName, VTKFiberListType & fiberList, bool reverse)
         vtkCellArray *cells  = vtkCellArray::New();
         vtkPolyData * pdata  = vtkPolyData::New();
         cells->InsertNextCell(npts);
-        for( int i = 0; i < npts; i++ )
+        for( int i = 0; i < npts; ++i )
           {
           if( reverse )
             {
