@@ -36,7 +36,7 @@ inline bool Validate( double input, double desired, double tolerance )
   return abs( input - desired ) > tolerance * abs( desired );
 }
 
-int itkResampleInPlaceImageFilterTest( int argc, char * argv[] )
+int main( int argc, char * argv[] )
 {
   // Simple parameter check
   if( argc < 3 )
@@ -108,7 +108,7 @@ int itkResampleInPlaceImageFilterTest( int argc, char * argv[] )
   ImageSpacingType   spacing = outputImage->GetSpacing();
 
   // Read in baseline image
-  ImagePointer baselineImage;
+  ImagePointer baselineImage=NULL;
     {
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName( argv[2] );

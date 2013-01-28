@@ -32,7 +32,7 @@ static void CheckLandmarks( const LandmarksMapType & ldmk ,const LandmarkWeightM
     }
   for(std::map< std::string, float>::const_iterator i=weightMap.begin();
     i != weightMap.end();
-    i++)
+    ++i)
     {
     if(ldmk.find ( i->first ) == ldmk.end() )
       {
@@ -47,7 +47,7 @@ static void CheckLandmarks( const LandmarksMapType & ldmk ,const LandmarkWeightM
     }
 }
 
-static LandmarkWeightMapType ReadLandmarkWeights( const std::string weightFilename )
+static LandmarkWeightMapType ReadLandmarkWeights( const std::string & weightFilename )
 {
   std::ifstream weightFileStream( weightFilename.c_str() );
   if( ! weightFileStream.is_open() )

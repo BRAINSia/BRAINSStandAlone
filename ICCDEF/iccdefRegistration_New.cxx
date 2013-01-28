@@ -116,8 +116,8 @@ int CompareNoCase( const std::string & s, const std::string & s2 )
       {
       return ( toupper(*p) < toupper(*p2) ) ? -1 : 1;
       }
-    p++;
-    p2++;
+    ++p;
+    ++p2;
     }
 
   return ( s2.size() == s.size() ) ? 0 : ( s.size() < s2.size() ) ? -1 : 1;
@@ -594,11 +594,11 @@ int main(int argc, char *argv[])
     command.movingLandmark = movingLandmark;
 //    command.lowerThresholdForBOBF = lowerThresholdForBOBF;
 //    command.upperThresholdForBOBF = upperThresholdForBOBF;
-    for( int i = 0; i < numberOfPyramidLevels; i++ )
+    for( int i = 0; i < numberOfPyramidLevels; ++i )
       {
       command.numberOfIterations[i] = arrayOfPyramidLevelIterations[i];
       }
-    for( int i = 0; i < 3; i++ )
+    for( int i = 0; i < 3; ++i )
       {
       command.medianFilterSize[i] = medianFilterSize[i];
 //      command.seedForBOBF[i] = seedForBOBF[i];
@@ -698,17 +698,17 @@ int main(int argc, char *argv[])
   if( command.inputPixelType != "" )
     {
     // check to see if valid type
-    if( ( CompareNoCase( command.inputPixelType.c_str(), std::string("uchar" ) ) )
-        && ( CompareNoCase( command.inputPixelType.c_str(), std::string("short" ) ) )
-        && ( CompareNoCase( command.inputPixelType.c_str(),
+    if( ( CompareNoCase( command.inputPixelType, std::string("uchar" ) ) )
+        && ( CompareNoCase( command.inputPixelType, std::string("short" ) ) )
+        && ( CompareNoCase( command.inputPixelType,
                             std::string("ushort") ) )
-        && ( CompareNoCase( command.inputPixelType.c_str(), std::string("int"   ) ) )
-        && ( CompareNoCase( command.inputPixelType.c_str(), std::string("float" ) ) )
+        && ( CompareNoCase( command.inputPixelType, std::string("int"   ) ) )
+        && ( CompareNoCase( command.inputPixelType, std::string("float" ) ) )
 #ifdef _USE_UNCOMMON_TYPES // This is commented out because it causes too many
                            // segments in one object file for the intel compiler
         &&
-        ( CompareNoCase( command.inputPixelType.c_str(), std::string("uint"  ) ) )
-        && ( CompareNoCase( command.inputPixelType.c_str(),
+        ( CompareNoCase( command.inputPixelType, std::string("uint"  ) ) )
+        && ( CompareNoCase( command.inputPixelType,
                             std::string("double") ) )
 #endif
         )
@@ -725,20 +725,20 @@ int main(int argc, char *argv[])
   if( command.outputPixelType != "" )
     {
     // check to see if valid type
-    if( ( CompareNoCase( command.outputPixelType.c_str(),
+    if( ( CompareNoCase( command.outputPixelType,
                          std::string("uchar" ) ) )
-        &&            ( CompareNoCase( command.outputPixelType.c_str(),
+        &&            ( CompareNoCase( command.outputPixelType,
                                        std::string("SHORT") ) )
-        && ( CompareNoCase( command.outputPixelType.c_str(),
+        && ( CompareNoCase( command.outputPixelType,
                             std::string("ushort") ) )
-        && ( CompareNoCase( command.outputPixelType.c_str(), std::string("int"   ) ) )
-        && ( CompareNoCase( command.outputPixelType.c_str(),
+        && ( CompareNoCase( command.outputPixelType, std::string("int"   ) ) )
+        && ( CompareNoCase( command.outputPixelType,
                             std::string("float" ) ) )
 #ifdef _USE_UNCOMMON_TYPES // This is commented out because it causes too many
                            // segments in one object file for the intel compiler
         &&
-        ( CompareNoCase( command.outputPixelType.c_str(), std::string("uint"  ) ) )
-        && ( CompareNoCase( command.outputPixelType.c_str(),
+        ( CompareNoCase( command.outputPixelType, std::string("uint"  ) ) )
+        && ( CompareNoCase( command.outputPixelType,
                             std::string("double") ) )
 #endif
         )

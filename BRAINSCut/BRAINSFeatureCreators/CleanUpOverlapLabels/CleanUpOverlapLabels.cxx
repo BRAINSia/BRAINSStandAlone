@@ -62,7 +62,7 @@ int main( int argc, char * argv[] )
 
   for( inputBinaryVolumeStringIt = inputBinaryVolumes.begin();
        inputBinaryVolumeStringIt < inputBinaryVolumes.end();
-       inputBinaryVolumeStringIt++)
+       ++inputBinaryVolumeStringIt)
     {
     std::cout<< "* Read image: " << *inputBinaryVolumeStringIt <<std::endl;
     InputBinaryVolumeReaderType::Pointer reader = InputBinaryVolumeReaderType::New();
@@ -92,7 +92,7 @@ int main( int argc, char * argv[] )
 
   for( unsigned int i = 1; // should start from second image
        i < inputBinaryVolumeVector.size();
-       i++)
+       ++i)
     {
     adder->SetInput1( sumVolume );
     adder->SetInput2( inputBinaryVolumeVector[ i ] );
@@ -131,7 +131,7 @@ int main( int argc, char * argv[] )
 
   for( unsigned int i = 0; 
        i < inputBinaryVolumeVector.size();
-       i++)
+       ++i)
     {
     // write out overlap between current mask and summed mask
     //

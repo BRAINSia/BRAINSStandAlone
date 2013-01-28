@@ -294,22 +294,21 @@ typename TransformType::Pointer
 
     CostMetricObject->SetTransform(currentEulerAngles3D);
     CostMetricObject->Initialize();
-    double max_cc = 0.0;
     // void QuickSampleParameterSpace(void)
       {
       currentEulerAngles3D->SetRotation(0, 0, 0);
       // Initialize with current guess;
-      max_cc = CostMetricObject->GetValue( currentEulerAngles3D->GetParameters() );
-      const double HARange = 12.0;
-      const double PARange = 12.0;
+      double max_cc = CostMetricObject->GetValue( currentEulerAngles3D->GetParameters() );
       // rough search in neighborhood.
       const double one_degree = 1.0F * vnl_math::pi / 180.0F;
       const double HAStepSize = 3.0 * one_degree;
       const double PAStepSize = 3.0 * one_degree;
       // Quick search just needs to get an approximate angle correct.
         {
+        const double HARange = 12.0;
         for( double HA = -HARange * one_degree; HA <= HARange * one_degree; HA += HAStepSize )
           {
+          const double PARange = 12.0;
           for( double PA = -PARange * one_degree; PA <= PARange * one_degree; PA += PAStepSize )
             {
             currentEulerAngles3D->SetRotation(PA, 0, HA);
@@ -357,7 +356,7 @@ typename TransformType::Pointer
                 {
                 std::cout << "Caught an ITK exception: " << std::endl;
                 std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-                throw err;
+                throw;
                 }
               char filename[300];
               sprintf(filename, "%05.2f_%05.2f_%05.2f.nii.gz",
@@ -378,7 +377,7 @@ typename TransformType::Pointer
                   {
                   std::cout << "Exception Object caught: " << std::endl;
                   std::cout << err << std::endl;
-                  throw err;
+                  throw;
                   }
                 }
               }
@@ -432,7 +431,7 @@ typename TransformType::Pointer
         {
         std::cout << "Caught an ITK exception: " << std::endl;
         std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-        throw err;
+        throw;
         }
       char filename[300];
       sprintf(filename, "FINAL_%05.2f_%05.2f_%05.2f.nii.gz",
@@ -454,7 +453,7 @@ typename TransformType::Pointer
           {
           std::cout << "Exception Object caught: " << std::endl;
           std::cout << err << std::endl;
-          throw err;
+          throw;
           }
         }
       }
@@ -532,8 +531,9 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::BRAINSFitHelperTemplat
   m_FinalMetricValue(0.0),
   m_ObserveIterations(true),
   m_CostMetricObject(NULL),
+  m_UseROIBSpline(0),
   m_PermitParameterVariation(0),
-  m_UseROIBSpline(0)
+  m_ForceMINumberOfThreads(-1)
 {
   m_SplineGridSize[0] = 14;
   m_SplineGridSize[1] = 10;
@@ -805,7 +805,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           std::cerr
           << "Error while reading the m_CurrentGenericTransform" << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -901,7 +901,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -1005,7 +1005,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-	  throw excp;
+	  throw;
           }
         }
         {
@@ -1109,7 +1109,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-          throw excp;
+          throw;
           }
         }
 
@@ -1381,7 +1381,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
           << "Error while reading the m_CurrentGenericTransform"
           << std::endl;
           std::cerr << excp << std::endl;
-          throw excp;
+          throw;
           }
         }
 
@@ -1538,7 +1538,7 @@ BRAINSFitHelperTemplate<FixedImageType, MovingImageType>::Update(void)
               << "Error while reading the m_CurrentGenericTransform"
               << std::endl;
               std::cerr << excp << std::endl;
-	      throw excp;
+	      throw;
           }
       }
 

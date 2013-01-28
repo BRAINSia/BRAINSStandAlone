@@ -269,9 +269,9 @@ private:
   bool                                       m_PromptUserAfterDisplay;
   double                                     m_FinalMetricValue;
   bool                                       m_ObserveIterations;
+  typename MetricType::Pointer               m_CostMetricObject;
   bool                                       m_UseROIBSpline;
-  typename MetricType::Pointer                 m_CostMetricObject;
-  std::vector<int> m_PermitParameterVariation;
+  std::vector<int>                           m_PermitParameterVariation;
   //DEBUG OPTION:
   int                                        m_ForceMINumberOfThreads;
 };  // end BRAINSFitHelperTemplate class

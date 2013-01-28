@@ -5,7 +5,10 @@
 
 // ----------------------------------------------------- //
 BRAINSCutGenerateRegistrations
-::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler )
+::BRAINSCutGenerateRegistrations(  BRAINSCutDataHandler& dataHandler ):
+  myDataHandler(NULL),
+  atlasToSubjectRegistraionOn(false),
+  subjectDataSets()
 {
   myDataHandler =  &dataHandler;
   myDataHandler->SetRegistrationParameters();
@@ -98,11 +101,11 @@ BRAINSCutGenerateRegistrations
 
 void
 BRAINSCutGenerateRegistrations
-::CreateTransformFile(const std::string MovingImageFilename,
-                      const std::string FixedImageFilename,
-                      const std::string MovingBinaryImageFilename,
-                      const std::string FixedBinaryImageFilename,
-                      const std::string OutputRegName,
+::CreateTransformFile(const std::string & MovingImageFilename,
+                      const std::string & FixedImageFilename,
+                      const std::string & MovingBinaryImageFilename,
+                      const std::string & FixedBinaryImageFilename,
+                      const std::string & OutputRegName,
                       bool verbose)
 {
   //
@@ -303,14 +306,14 @@ BRAINSCutGenerateRegistrations
 
   // TODO: is this line really print before start registration????
 
-  if( verbose > 0 )
+  if( verbose == true )
     {
     BSplineRegistrationHelper->PrintCommandLine(true, "BSplineRegistrationHelper");
     }
 
   BSplineRegistrationHelper->Update();
 
-  if( verbose > 0 )
+  if( verbose == true )
     {
     std::cout << " - Write deformation " << std::endl
               << " :: " << OutputRegName

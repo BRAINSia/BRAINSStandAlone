@@ -10,16 +10,14 @@
 class BRAINSCutDataHandler
 {
 public:
-  BRAINSCutDataHandler()
-  {
-  };
-  BRAINSCutDataHandler(std::string modelConfigurationFilenameFilename);
+  BRAINSCutDataHandler();
+  BRAINSCutDataHandler(const std::string & modelConfigurationFilenameFilename);
 
   void                     SetNetConfiguration();
 
   BRAINSCutConfiguration * GetNetConfiguration();
 
-  void        SetNetConfigurationFilename(const std::string filename);
+  void        SetNetConfigurationFilename(const std::string & filename);
 
   std::string GetNetConfigurationFilename();
 
@@ -63,7 +61,7 @@ public:
 
   std::string GetRandomForestModelFilename();
 
-  std::string GetRFModelFilename( int depth, int NTrees);
+  std::string GetRFModelFilename( unsigned int depth, unsigned int NTrees);
 
   DataSet::StringVectorType GetROIIDsInOrder() const ;
 

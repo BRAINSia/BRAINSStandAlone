@@ -187,5 +187,6 @@ int main( int argc, char * argv[] )
  writer -> SetFileName (outputSurfaceFile.c_str());
  writer -> Update();
 
+ delete [] neighborLabels;
  return 0;
 }

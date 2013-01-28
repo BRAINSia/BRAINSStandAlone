@@ -87,8 +87,8 @@ unsigned int ConvertFromCharPtr(const char *s)
  *  document.
  */
 unsigned int
-ExtractSiemensDiffusionInformation(const std::string tagString,
-                                   const std::string nameString,
+ExtractSiemensDiffusionInformation(const std::string & tagString,
+                                   const std::string & nameString,
                                    std::vector<double>& valueArray)
 {
   ::size_t atPosition = tagString.find( nameString );

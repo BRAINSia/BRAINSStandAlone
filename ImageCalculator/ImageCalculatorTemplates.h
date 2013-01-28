@@ -533,7 +533,7 @@ void statfilters( const typename ImageType::Pointer AccImage , MetaCommand comma
   if(command.GetValueAsBool("Statallcodes","statallcodes")  )
     {
     for( std::map<std::string,std::string>::const_iterator p=StatDescription.begin();
-         p != StatDescription.end(); p++)
+         p != StatDescription.end(); ++p)
       {
       std::cout << p->first << '\t' << p->second << std::endl;
       }
@@ -553,7 +553,7 @@ void statfilters( const typename ImageType::Pointer AccImage , MetaCommand comma
       }
     }
   {
-  for(std::map<std::string,float>::const_iterator p=StatValues.begin(); p != StatValues.end(); p++)
+  for(std::map<std::string,float>::const_iterator p=StatValues.begin(); p != StatValues.end(); ++p)
     {
     std::cout << p->first << ' ' << p->second << ",  ";
     }
@@ -564,7 +564,7 @@ void statfilters( const typename ImageType::Pointer AccImage , MetaCommand comma
 
 /*This function is called when the user wants to write the ouput image to a file. The output image is typecasted to the user specified data type. */
 template <class InPixelType , class PixelType , int dims>
-void ProcessOutputStage( const typename itk::Image< InPixelType, dims >::Pointer AccImage , const std::string outputImageFilename, MetaCommand command)
+void ProcessOutputStage( const typename itk::Image< InPixelType, dims >::Pointer AccImage , const std::string & outputImageFilename, MetaCommand command)
 {
   typedef itk::Image<InPixelType , dims>  InputImageType;
   typedef itk::Image<PixelType , dims>    OutputImageType;
@@ -616,7 +616,7 @@ private:
       this->resize(i+1);
       _end = input.find_first_of(sep,start);
       (*this)[i] = input.substr(start, _end - start);
-      i++;
+      ++i;
       }
   }
 };
@@ -634,7 +634,7 @@ void ImageCalculatorReadWrite( MetaCommand &command )
   string_tokenizer InputList(tempFilenames," ");
 
   // Finally, return the blanks to the filenames
-  for (size_t i = 0; i < InputList.size(); i++)
+  for (size_t i = 0; i < InputList.size(); ++i)
     {
     ReplaceSubWithSub(InputList[i], "BACKSLASH_BLANK", " ");
     }
@@ -672,7 +672,7 @@ void ImageCalculatorReadWrite( MetaCommand &command )
 
 
   /* Accumulator contains the first image initially and is updated by the next image at each count */
-  for(unsigned int currimage=1; currimage < InputList.size(); currimage++)
+  for(unsigned int currimage=1; currimage < InputList.size(); ++currimage)
     {
     std::cout << "Reading image.... " << InputList.at(currimage).c_str() << std::endl;
 
@@ -798,31 +798,31 @@ void ImageCalculatorReadWrite( MetaCommand &command )
     if ( command.GetValueAsString("OutputPixelType","PixelType" ) != "" )
       {
       // process the string for the data type
-      if ( CompareNoCase( OutType.c_str(), std::string("UCHAR") ) == 0 )
+      if ( CompareNoCase( OutType, std::string("UCHAR") ) == 0 )
         {
         ProcessOutputStage< PixelType , unsigned char , dims >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("SHORT") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("SHORT") ) == 0 )
         {
         ProcessOutputStage< PixelType , short , dims  >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("USHORT") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("USHORT") ) == 0 )
         {
         ProcessOutputStage< PixelType , unsigned short , dims  >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("INT") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("INT") ) == 0 )
         {
         ProcessOutputStage< PixelType , int , dims  >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("UINT") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("UINT") ) == 0 )
         {
         ProcessOutputStage< PixelType , unsigned int , dims  >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("FLOAT") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("FLOAT") ) == 0 )
         {
         ProcessOutputStage< PixelType , float , dims  >(AccImage,outputFilename,command);
         }
-      else if ( CompareNoCase( OutType.c_str(), std::string("DOUBLE") ) == 0 )
+      else if ( CompareNoCase( OutType, std::string("DOUBLE") ) == 0 )
         {
 
         ProcessOutputStage< PixelType, double , dims  >(AccImage,outputFilename,command);

@@ -4,7 +4,57 @@
 
 /** constructors */
 BRAINSCutDataHandler
-::BRAINSCutDataHandler( std::string modelConfigurationFilename )
+::BRAINSCutDataHandler( ) :
+  TrainConfiguration(NULL),
+  m_atlasDataSet(NULL),
+  m_atlasFilename(""),
+  m_atlasBinaryFilename(""),
+  m_atlasImage(NULL),
+  m_roiDataList(NULL),
+  m_roiIDsInOrder(),
+  roiCount(0),
+  registrationParser(NULL),
+  registrationImageTypeToUse(""),
+  registrationID(""),
+  roiAutoDilateSize(0),
+  m_rho(NULL),
+  m_phi(NULL),
+  m_theta(NULL),
+  m_gradientSize(0),
+  m_trainVectorFilename(""),
+  m_normalization(""),
+  ANNModelFilename(""),
+  RandomForestModelFilename(""),
+  ANNTestingSSEFilename(""),
+  myConfigurationFilename(""),
+  myConfiguration(NULL)
+{}
+
+BRAINSCutDataHandler
+::BRAINSCutDataHandler( const std::string & modelConfigurationFilename ) :
+  TrainConfiguration(NULL),
+  m_atlasDataSet(NULL),
+  m_atlasFilename(""),
+  m_atlasBinaryFilename(""),
+  m_atlasImage(NULL),
+  m_roiDataList(NULL),
+  m_roiIDsInOrder(),
+  roiCount(0),
+  registrationParser(NULL),
+  registrationImageTypeToUse(""),
+  registrationID(""),
+  roiAutoDilateSize(0),
+  m_rho(NULL),
+  m_phi(NULL),
+  m_theta(NULL),
+  m_gradientSize(0),
+  m_trainVectorFilename(""),
+  m_normalization(""),
+  ANNModelFilename(""),
+  RandomForestModelFilename(""),
+  ANNTestingSSEFilename(""),
+  myConfigurationFilename(""),
+  myConfiguration(NULL)
 {
   try
     {
@@ -81,7 +131,7 @@ BRAINSCutDataHandler
 
 void
 BRAINSCutDataHandler
-::SetNetConfigurationFilename(const std::string filename)
+::SetNetConfigurationFilename(const std::string & filename)
 {
   myConfigurationFilename = filename;
 }
@@ -419,8 +469,8 @@ BRAINSCutDataHandler
 
 std::string
 BRAINSCutDataHandler
-::GetRFModelFilename( int depth,
-                      int NTrees)
+::GetRFModelFilename( unsigned int depth,
+                      unsigned int NTrees)
 {
   std::string basename = GetModelBaseName();
 

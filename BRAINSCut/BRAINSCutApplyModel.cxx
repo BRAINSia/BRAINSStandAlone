@@ -16,11 +16,39 @@
 
 
 // TODO: consider using itk::LabelMap Hole filling process in ITK4
+BRAINSCutApplyModel
+::BRAINSCutApplyModel( ) :
+  m_myDataHandler(NULL),
+  m_applyDataSetList(),
+  m_method(""),
+  m_normalization(""),
+  m_computeSSE(true),
+  m_trainIteration(0),
+  m_numberOfTrees(0),
+  m_depthOfTree(0),
+  m_ANNTestingSSEFileStream(),
+  m_annOutputThreshold(0),
+  m_gaussianSmoothingSigma(0),
+  m_openCVANN(NULL),
+  m_openCVRandomForest(NULL)
+{
+}
 
 BRAINSCutApplyModel
-::BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler )
-  : m_numberOfTrees(-1),
-  m_depthOfTree(-1)
+::BRAINSCutApplyModel( BRAINSCutDataHandler& dataHandler ) :
+  m_myDataHandler(NULL),
+  m_applyDataSetList(),
+  m_method(""),
+  m_normalization(""),
+  m_computeSSE(true),
+  m_trainIteration(0),
+  m_numberOfTrees(0),
+  m_depthOfTree(0),
+  m_ANNTestingSSEFileStream(),
+  m_annOutputThreshold(0),
+  m_gaussianSmoothingSigma(0),
+  m_openCVANN(NULL),
+  m_openCVRandomForest(NULL)
 {
   this->m_myDataHandler = &dataHandler;
   // TODO Take this apart to generate registration one by one!
@@ -133,7 +161,7 @@ BRAINSCutApplyModel
     //TODO Clip deformed ROI here
     for( DeformedROIMapType::iterator it = deformedROIs.begin();
          it != deformedROIs.end();
-         it++)
+         ++it)
       {
       it->second = ClipImageWithBinaryMask( it->second, candidateRegion );
       }
@@ -250,7 +278,7 @@ BRAINSCutApplyModel
         }
       else /* testing phase */
         {
-        for( int currentIteration = 1; currentIteration <= m_trainIteration; currentIteration++ )
+        for( int currentIteration = 1; currentIteration <= m_trainIteration; ++currentIteration )
           {
           this->m_myDataHandler->SetANNModelFilenameAtIteration( currentIteration );
           PredictROI( roiInputVector, predictedOutputVector,
@@ -268,7 +296,7 @@ BRAINSCutApplyModel
         }
       predictedOutputVector.clear();
       }
-    roiIDsOrderNumber++;
+    ++roiIDsOrderNumber;
     }
   if( m_method =="RandomForest" )
       {
@@ -288,7 +316,7 @@ BRAINSCutApplyModel
 float
 BRAINSCutApplyModel
 ::ComputeSSE( const PredictValueMapType& predictedOutputVector,
-              const std::string roiReferenceFilename )
+              const std::string & roiReferenceFilename )
 {
   WorkingImagePointer ReferenceVolume = ReadImageByFilename( roiReferenceFilename );
 
@@ -316,7 +344,7 @@ BRAINSCutApplyModel
   try{
     for( unsigned char roiID = 0;
          roiID < this->m_myDataHandler->GetROIIDsInOrder().size();
-         roiID++)
+         ++roiID)
         {
         LabelImagePointerType currentBinaryImage = ExtractLabel( labelMapImage, 
                                                                  roiID+1  );// label starts from 1
@@ -484,7 +512,7 @@ BRAINSCutApplyModel
 
       resultLabel = CombineLabel( resultLabel, tempBinaryImage, *vIt );
       }
-      labelNumber++;
+      ++labelNumber;
     }
   return resultLabel;
 }
@@ -786,8 +814,8 @@ BRAINSCutApplyModel
 ::WritePredictROIProbabilityBasedOnReferenceImage( const PredictValueMapType& predictedOutput,
                                                    const WorkingImagePointer& referenceImage,
                                                    const WorkingImagePointer& roi,
-                                                   const std::string imageFilename,
-                                                   const WorkingPixelType labelValue )
+                                                   const std::string & imageFilename,
+                                                   const WorkingPixelType & labelValue )
 {
   WorkingImagePointer ANNContinuousOutputImage = WorkingImageType::New();
 
@@ -838,7 +866,7 @@ BRAINSCutApplyModel
 /* get continuous file name */
 inline std::string
 BRAINSCutApplyModel
-::GetContinuousPredictionFilename( const DataSet& subject, const std::string currentROIName)
+::GetContinuousPredictionFilename( const DataSet& subject, const std::string & currentROIName)
 {
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );
 
@@ -855,7 +883,7 @@ BRAINSCutApplyModel
 /* get output mask file name of subject */
 inline std::string
 BRAINSCutApplyModel
-::GetROIVolumeName( const DataSet& subject, const std::string currentROIName)
+::GetROIVolumeName( const DataSet& subject, const std::string & currentROIName)
 {
   std::string       givenROIName = subject.GetMaskFilenameByType( currentROIName );
   const std::string subjectID(subject.GetAttribute<StringValue>("Name") );

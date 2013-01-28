@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
       {
       anisotropy = static_cast<float>( tensorPixel.GetAxialDiffusivity() );
       }
-    else if( anisotropyType == "RD"  ||  anisotropyType == "RD" )
+    else if( anisotropyType == "RD"  ||  anisotropyType == "rd" )
       {
       anisotropy = static_cast<float>( tensorPixel.GetRadialDiffusivity() );
       }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     {
     anisotropyWriter->Update();
     }
-  catch( itk::ExceptionObject e )
+  catch( itk::ExceptionObject & e )
     {
     std::cout << e << std::endl;
     }

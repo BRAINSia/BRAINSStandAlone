@@ -285,7 +285,7 @@ static void RescaleFunctionLocal( std::vector<FloatImageType::Pointer> & localLi
     }
 }
 
-static std::vector<bool> FindDuplicateImages(const std::vector<FloatImagePointer> candidateSameImageList,
+static std::vector<bool> FindDuplicateImages(const std::vector<FloatImagePointer> & candidateSameImageList,
      const std::vector<std::string> & inputVolumeTypes )
 {
   // Images with higher correlation are considered soo much the same that they are duplicates.
@@ -1152,7 +1152,7 @@ int main(int argc, char * *argv)
   // occurs when two or more of the images are linearly dependant (i.e.
   // nearly the same image).
   candidateDuplicatesList = FindDuplicateImages(intraSubjectRegisteredImageList, inputVolumeTypes);
-  if( candidateDuplicatesList.size() > 0 )
+  if( ! candidateDuplicatesList.empty() )
     {
     unsigned int actualDuplicates=0;
     for( size_t q = 0; q < candidateDuplicatesList.size(); q++ )

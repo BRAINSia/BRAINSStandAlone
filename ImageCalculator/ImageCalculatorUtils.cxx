@@ -59,8 +59,8 @@ int CompareNoCase( const std::string &s, const std::string& s2 )
   while ( p != s.end() && p2 != s2.end() )
       {
       if ( toupper(*p) != toupper(*p2) ) return (toupper(*p) < toupper(*p2)) ? -1 : 1;
-      p++;
-      p2++;
+      ++p;
+      ++p2;
       }
 
   return ( s2.size() == s.size() ) ? 0 : (s.size() < s2.size()) ? -1 : 1;
@@ -332,27 +332,27 @@ int PrimaryImageCalculatorRoutine(int argc, char *argv[])
   int opcount=0;
   if(command.GetValueAsBool("Add","add"))
     {
-    opcount++;
+    ++opcount;
     }
   if(command.GetValueAsBool("Sub","sub"))
     {
-    opcount++;
+    ++opcount;
     }
   if(command.GetValueAsBool("Mul","mul"))
     {
-    opcount++;
+    ++opcount;
     }
   if(command.GetValueAsBool("Div","div"))
     {
-    opcount++;
+    ++opcount;
     }
   if(command.GetValueAsBool("Var","var"))
     {
-    opcount++;
+    ++opcount;
     }
   if(command.GetValueAsBool("Avg","avg"))
     {
-    opcount++;
+    ++opcount;
     }
   if(opcount > 1)
     {

@@ -102,7 +102,7 @@ template<class TImageType>
 void
 CutBinaryVolumeByPlaneWithDirection( typename TImageType::Pointer * _imageVolume,
                                      ThreeLandmarksForPlane * currentPlane, 
-                                     const std::string direction )
+                                     const std::string & direction )
 {
   typedef itk::ImageRegionIterator< TImageType > ImageRegionIteratorType;
   ImageRegionIteratorType it(  *_imageVolume, 
@@ -129,7 +129,7 @@ template <class TImageType>
 void
 CutBinaryVolumeByPointWithDirection( typename TImageType::Pointer * _imageVolume, 
                                      const PointType _landmark,
-                                     const std::string _direction )
+                                     const std::string & _direction )
 {
   
   // set directional constant for convenient programming
@@ -238,7 +238,7 @@ int main( int argc, char * argv[] )
   for( stringVectorIteratorType ldmkIt = inputLandmarkNames.begin(),
                                 dircIt = setCutDirectionForLandmark.begin();
        ldmkIt < inputLandmarkNames.end();
-       ldmkIt++, dircIt++ )
+       ++ldmkIt, ++dircIt )
     {
     if( landmarksSet.find( *ldmkIt ) == landmarksSet.end() )
       {
@@ -295,11 +295,11 @@ int main( int argc, char * argv[] )
                 
   for( LandMarkForPlaneType::const_iterator  inputLdmrIt= inputLandmarkNamesForObliquePlane.begin();
        inputLdmrIt< inputLandmarkNamesForObliquePlane.end();
-       inputLdmrIt++ )
+       ++inputLdmrIt )
     {
     ThreeLandmarksForPlane currentPlane;
 
-    for( unsigned int it = 0; it < 3; it++  ) // make sure we have only three ldmr per plane
+    for( unsigned int it = 0; it < 3; ++it  ) // make sure we have only three ldmr per plane
       {
       if( landmarksSet.find( *inputLdmrIt ) ==  landmarksSet.end() )
         {
@@ -315,7 +315,7 @@ int main( int argc, char * argv[] )
       if( it == 1 ) { currentPlane.B = currentLandmark; }
       if( it == 2 ) { currentPlane.C = currentLandmark; }
 
-      inputLdmrIt++;
+      ++inputLdmrIt;
       }
     currentPlane.SetNormal();
     myLandmarkSetForPlanes.push_back(currentPlane);

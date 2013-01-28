@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     {
       if ( numberOfPoints != surface->GetNumberOfPoints() )
       {
-        std::cerr << "Error: Invalid number of points in " << inputSurfaces[i]";
+        std::cerr << "Error: Invalid number of points in " << inputSurfaces[i];
         std::cerr << std::endl;
         std::cerr << "  Expected " << numberOfPoints << "but found ";
         std::cerr << surface->GetNumberOfPoints(); << std::endl;
