@@ -1,0 +1,7 @@
+# Ignore all OSX-generated files
+._*
+*DS_Store
+
+# Ignore all Emacs temporary files
+\#*\#
+*~

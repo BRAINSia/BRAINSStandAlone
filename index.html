@@ -7,7 +7,9 @@
     <meta name="description" content="BRAINSStandAlone : A thin wrapper project for holding onto several git submodules to ease building" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
+    <link rel="stylesheet" href="javascripts/highlight/styles/xcode.css">
+    <script src="javascripts/highlight/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
     <title>BRAINSStandAlone</title>
   </head>
 
@@ -38,19 +40,35 @@
 <hr><p>Example session for a clean build:</p>
 
 <p>
-  <pre><code>
-mkdir ~/src/mytester
-cd ~/src/mytester
+STEP 1: Download the source
+<pre><code class="bash">mkdir ~/source
+cd ~/source
 git clone git://github.com/BRAINSia/BRAINSStandAlone.git
 cd BRAINSStandAlone/
-bash GitSetupEnvironmnet.sh
-mkdir -p ../BRAINSStandAlone-build
-cd ../BRAINSStandAlone-build/ CC=/usr/bin/gcc-4.2 CXX=/usr/bin/g++-4.2 ccmake ../BRAINSStandAlone -DUSE_BRAINSFit:BOOL=ON -DUSE_BRAINSConstellationDetector:BOOL=ON -DUSE_BRAINSABC:BOOL=ON
-export NUMBEROFTHREADS=8 # Use all cores of an eight-core machine for building
-make -j${NUMBEROFTHREADS} -k
-## NOTE: The fetching of data may have problems with parallel builds, so you may need to restart it a few times
-make
 </code></pre>
+STEP 2: Set up the build environment
+<pre><code class="bash">bash GitSetupEnvironmnet.sh
+mkdir -p ../BRAINSStandAlone-build
+cd ../BRAINSStandAlone-build/
+</code></pre>
+STEP 3: Configure using CMake
+<pre><code class="bash">CC=/usr/bin/gcc-4.2 \
+> CXX=/usr/bin/g++-4.2 \
+> ccmake ../BRAINSStandAlone \
+> -DUSE_BRAINSFit:BOOL=ON \
+> -DUSE_BRAINSConstellationDetector:BOOL=ON \
+> -DUSE_BRAINSABC:BOOL=ON
+</code></pre>
+STEP 4: Build the project
+Use eight-core machine for building
+<pre><code class="bash">#!/bin/bash
+NUMBEROFTHREADS=8
+make -j${NUMBEROFTHREADS} -k
+</code></pre>
+STEP 4a: Optional
+NOTE: The fetching of data may have problems with
+parallel builds, so you may need to restart it a few times
+<pre><code class="bash">make</code></pre>
 </p>
       </section>
     </div>
