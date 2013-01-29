@@ -246,7 +246,7 @@ BRAINSCutApplyModel
                                                            ANNContinuousOutputFilename,
                                                            roiIDsOrderNumber + 1 );
 
-          mask = itkUtil::ReadImage< LabelImageType > ( ANNContinuousOutputFilename );
+          mask = PostProcessingRF( ANNContinuousOutputFilename, roiIDsOrderNumber + 1 );
 
           if ( roiIDsOrderNumber == 0 )
             {
@@ -265,7 +265,7 @@ BRAINSCutApplyModel
             }
           else
             {
-            resultLabelFromRF = CombineLabel( resultLabelFromRF, mask );
+            resultLabelFromRF = CombineLabel( resultLabelFromRF, mask, roiIDsOrderNumber + 1 );
             }
           ambiguousLabelFromRF = AmbiguousCountLabel( ambiguousLabelFromRF, 
                                                       resultLabelFromRF, 
@@ -301,9 +301,9 @@ BRAINSCutApplyModel
   if( m_method =="RandomForest" )
       {
       std::string labelFilename = GetLabelMapFilename( subject );
-      LabelImagePointerType cleanedLabelFromRF = PostProcessingRF( resultLabelFromRF );
-      WriteLabelMapToBinaryImages( subject, cleanedLabelFromRF );
-      itkUtil::WriteImage<LabelImageType>( cleanedLabelFromRF, labelFilename ); 
+      WriteLabelMapToBinaryImages( subject, resultLabelFromRF );
+
+      itkUtil::WriteImage<LabelImageType>( resultLabelFromRF, labelFilename ); 
       itkUtil::WriteImage<LabelImageType>( ambiguousLabelFromRF, labelFilename + "_AmbiguousMap.nii.gz"); 
       }
 
@@ -454,6 +454,7 @@ BRAINSCutApplyModel
       maskVolume = ThresholdImageAtLower( continuousImage, threshold);
 
       /* Get One label */
+      maskVolume = Opening( maskVolume );
       maskVolume = GetOneConnectedRegion( maskVolume );
 
       /* opening and closing to get rid of island and holes */
@@ -468,53 +469,19 @@ BRAINSCutApplyModel
 
 LabelImagePointerType
 BRAINSCutApplyModel
-::PostProcessingRF( LabelImagePointerType& labelImage  )
+::PostProcessingRF( std::string labelImageFilename,
+                    const unsigned char labelValue )
 {
-  typedef itk::LabelStatisticsImageFilter< LabelImageType, LabelImageType > LabelStatType;
-  LabelStatType::Pointer labelStat = LabelStatType::New();
+  LabelImagePointerType labelImage = 
+    itkUtil::ReadImage< LabelImageType>( labelImageFilename );
 
-  labelStat->SetInput( labelImage );
-  labelStat->SetLabelInput( labelImage );
-  labelStat->Update();
+  LabelImagePointerType resultBinaryImage;
 
-  typedef LabelStatType::ValidLabelValuesContainerType ValidLableValuesType;
-  typedef LabelStatType::LabelPixelType                LabelPixelType;
+  resultBinaryImage = FillHole(  labelImage, labelValue  );
+  resultBinaryImage = Closing( resultBinaryImage, labelValue  );
+  resultBinaryImage = GetOneConnectedRegion( resultBinaryImage, labelValue );
 
-  LabelImagePointerType resultLabel;
-  typedef itk::ImageDuplicator< LabelImageType > DuplicatorType;
-  DuplicatorType::Pointer duplicator = DuplicatorType::New();
-  duplicator->SetInputImage( labelImage );
-  duplicator->Update();
-  resultLabel =  duplicator->GetOutput();
-  resultLabel -> FillBuffer( 0 );
- 
-  int labelNumber=1;
-
-
-  for( ValidLableValuesType::const_iterator vIt = labelStat->GetValidLabelValues().begin();
-       vIt != labelStat->GetValidLabelValues().end();
-       ++vIt )
-    {
-    if( vIt  == labelStat->GetValidLabelValues().begin() )
-      {
-
-      }
-    if( labelStat->HasLabel( *vIt) && *vIt )  // ignore label zero
-      {
-      LabelImagePointerType tempExtractedBinaryImage = ExtractLabel( labelImage, *vIt );
-      itkUtil::WriteImage< LabelImageType > ( tempExtractedBinaryImage, "TempBinaryImage_Extracted.nii.gz");
-
-      LabelImagePointerType tempBinaryImage;
-
-      tempBinaryImage = FillHole( tempExtractedBinaryImage );
-      tempBinaryImage = Closing( tempBinaryImage );
-      tempBinaryImage = GetOneConnectedRegion( tempBinaryImage );
-
-      resultLabel = CombineLabel( resultLabel, tempBinaryImage, *vIt );
-      }
-      ++labelNumber;
-    }
-  return resultLabel;
+  return resultBinaryImage;
 }
 
 LabelImagePointerType
@@ -604,11 +571,9 @@ BRAINSCutApplyModel
 
 LabelImagePointerType
 BRAINSCutApplyModel
-::GetOneConnectedRegion( LabelImagePointerType& image )
+::Opening( LabelImagePointerType& image,
+           const unsigned char labelValue )
 {
-  LabelImagePointerType resultMask;
-  try
-    {
     /*  Opening */
     //#include <itkBinaryOpeningByReconstructionImageFilter.h> consider this
     typedef itk::BinaryBallStructuringElement<LabelImageType::PixelType, DIMENSION> KernelType;
@@ -625,15 +590,27 @@ BRAINSCutApplyModel
     OpeningFilterType::Pointer openingFilter = OpeningFilterType::New();
     openingFilter->SetInput( image );
     openingFilter->SetKernel( ball );
-    openingFilter->SetForegroundValue(1);
+    openingFilter->SetForegroundValue( labelValue );
     openingFilter->Update();
 
+    return openingFilter->GetOutput();
+          
+}
+
+LabelImagePointerType
+BRAINSCutApplyModel
+::GetOneConnectedRegion( LabelImagePointerType& image,
+                         const unsigned char labelValue)
+{
+  LabelImagePointerType resultMask;
+  try
+    {
     /* relabel images if they are disconnected */
     typedef itk::ConnectedComponentImageFilter<LabelImageType, LabelImageType>
     ConnectedBinaryImageFilterType;
     ConnectedBinaryImageFilterType::Pointer relabler = ConnectedBinaryImageFilterType::New();
 
-    relabler->SetInput( openingFilter->GetOutput() );
+    relabler->SetInput( image );
 
     /* relable images from the largest to smallset one */
     typedef itk::RelabelComponentImageFilter<LabelImageType, LabelImageType> RelabelInOrderFilterType;
@@ -660,21 +637,23 @@ BRAINSCutApplyModel
 
 LabelImagePointerType
 BRAINSCutApplyModel
-::FillHole( LabelImagePointerType& mask)
+::FillHole( LabelImagePointerType& mask,
+            const unsigned char labelValue)
 {
   typedef itk::BinaryFillholeImageFilter< LabelImageType > FillHoleFilterType;
 
   FillHoleFilterType::Pointer filler = FillHoleFilterType::New();
   filler->SetInput( mask );
   filler->SetFullyConnected( false );
-  filler->SetForegroundValue ( 1 );
+  filler->SetForegroundValue ( labelValue );
   filler->Update();
   return filler->GetOutput();
 }
 
 LabelImagePointerType
 BRAINSCutApplyModel
-::Closing( LabelImagePointerType& mask)
+::Closing( LabelImagePointerType& mask,
+           const unsigned char labelValue )
 {
 
   //NOTE: Consider this filter :#include <itkBinaryFillholeImageFilter.h>
@@ -683,6 +662,7 @@ BRAINSCutApplyModel
   KernelType::SizeType ballSize;
 
   /* Create the structuring element- a disk of radius 2 */
+  std::cout<<"Ball Size for Closing: 2 "<<std::endl;
   ballSize.Fill(2);
   ball.SetRadius( ballSize );
   ball.CreateStructuringElement();
@@ -694,7 +674,7 @@ BRAINSCutApplyModel
   ClosingFilterType::Pointer closingFilter = ClosingFilterType::New();
   closingFilter->SetInput( mask );
   closingFilter->SetKernel( ball );
-  closingFilter->SetForegroundValue(1);
+  closingFilter->SetForegroundValue( labelValue );
   closingFilter->SetSafeBorder( true );
   closingFilter->Update();
 
