@@ -37,27 +37,21 @@
 
 <hr><p>Example session for a clean build:</p>
 
-<p><code>mkdir ~/src/mytester</code></p>
-
-<p><code>cd ~/src/mytester</code></p>
-
-<p><code>git clone git://github.com/BRAINSia/BRAINSStandAlone.git</code></p>
-
-<p><code>cd BRAINSStandAlone/</code></p>
-
-<p><code>bash GitSetupEnvironmnet.sh</code></p>
-
-<p><code>mkdir -p ../BRAINSStandAlone-build</code></p>
-
-<p><code>cd ../BRAINSStandAlone-build/</code></p>
-
-<p><code>CC=/usr/bin/gcc-4.2 CXX=/usr/bin/g++-4.2 ccmake ../BRAINSStandAlone -DUSE_BRAINSFit:BOOL=ON -DUSE_BRAINSConstellationDetector:BOOL=ON -DUSE_BRAINSABC:BOOL=ON</code></p>
-
-<p><code>export NUMBEROFTHREADS=8 # Use all cores of an eight-core machine for building</code></p>
-
-<p><code>make -j${NUMBEROFTHREADS} -k ; ## NOTE: The fetching of data may have problems with parallel builds, so you may need to restart it a few times</code></p>
-
-<p><code>make</code></p>
+<p>
+  <pre><code>
+mkdir ~/src/mytester
+cd ~/src/mytester
+git clone git://github.com/BRAINSia/BRAINSStandAlone.git
+cd BRAINSStandAlone/
+bash GitSetupEnvironmnet.sh
+mkdir -p ../BRAINSStandAlone-build
+cd ../BRAINSStandAlone-build/ CC=/usr/bin/gcc-4.2 CXX=/usr/bin/g++-4.2 ccmake ../BRAINSStandAlone -DUSE_BRAINSFit:BOOL=ON -DUSE_BRAINSConstellationDetector:BOOL=ON -DUSE_BRAINSABC:BOOL=ON
+export NUMBEROFTHREADS=8 # Use all cores of an eight-core machine for building
+make -j${NUMBEROFTHREADS} -k
+## NOTE: The fetching of data may have problems with parallel builds, so you may need to restart it a few times
+make
+</code></pre>
+</p>
       </section>
     </div>
 
@@ -69,7 +63,7 @@
       </footer>
     </div>
 
-    
+
 
   </body>
 </html>
