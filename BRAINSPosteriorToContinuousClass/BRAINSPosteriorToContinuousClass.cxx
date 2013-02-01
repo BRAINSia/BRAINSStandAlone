@@ -11,7 +11,7 @@
 int main(int argc, char **argv)
 {
   PARSE_ARGS;
-  
+
   bool violated=false;
   if (inputWhiteVolume.size() == 0) { violated = true; std::cout << "  --inputWhiteVolume Required! "  << std::endl; }
   if (inputBasalGmVolume.size() == 0) { violated = true; std::cout << "  --inputBasalGmVolume Required! "  << std::endl; }
@@ -22,8 +22,8 @@ int main(int argc, char **argv)
   if (inputCrblWmVolume.size() == 0) { violated = true; std::cout << "  --inputCrblWmVolume Required! "  << std::endl; }
   if (outputVolume.size() == 0) { violated = true; std::cout << "  --outputVolume Required! "  << std::endl; }
   if (violated) exit(1);
-  
-  
+
+
   typedef float               PixelType;
   typedef unsigned char       OutputPixelType;
   const unsigned int          Dimension = 3;
@@ -66,23 +66,23 @@ int main(int argc, char **argv)
     surfaceGmReader->SetFileName( inputSurfaceGmVolume );
     surfaceGmReader->Update();
     sgmVolume = surfaceGmReader->GetOutput();
-    
+
     csfReader->SetFileName( inputCsfVolume );
     csfReader->Update();
     csfVolume = csfReader->GetOutput();
-    
+
     vbReader->SetFileName( inputVbVolume );
     vbReader->Update();
     vbVolume = vbReader->GetOutput();
-    
+
     crblGmReader->SetFileName( inputCrblGmVolume );
     crblGmReader->Update();
     crblGmVolume = crblGmReader->GetOutput();
-    
+
     crblWmReader->SetFileName( inputCrblWmVolume );
     crblWmReader->Update();
     crblWmVolume = crblWmReader->GetOutput();
-    
+
     }
   catch(itk::ExceptionObject &exe)
     {
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   classVolume->SetSpacing(wmVolume->GetSpacing());
   classVolume->Allocate();
   classVolume->FillBuffer(0);
-  
+
   ImageRegionConstIteratorType wmItr( wmVolume,wmVolume->GetRequestedRegion() );
   ImageRegionConstIteratorType bgmItr( bgmVolume,bgmVolume->GetRequestedRegion() );
   ImageRegionConstIteratorType sgmItr( sgmVolume,sgmVolume->GetRequestedRegion() );
@@ -113,9 +113,9 @@ int main(int argc, char **argv)
   vbItr.GoToBegin();
   crblGmItr.GoToBegin();
   crblWmItr.GoToBegin();
-  
+
   float minThreshold = 0.2;
-  
+
   for ( outItr.GoToBegin(); !outItr.IsAtEnd(); ++outItr)
     {
     float maxGm = fmax(bgmItr.Value(),fmax(sgmItr.Value(),crblGmItr.Value()));
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
     float maxVb = vbItr.Value();
     float total;
     unsigned char voxelValue;
-    
+
     if ((maxWm > maxGm) && (maxWm > maxCsf) && (maxWm > maxVb) && (maxWm > minThreshold) )
       {
       total = maxWm + maxGm;
@@ -165,12 +165,10 @@ int main(int argc, char **argv)
     ++crblGmItr;
     ++crblWmItr;
     }
-  
+
   outputWriter->SetInput(classVolume);
   outputWriter->SetFileName(outputVolume);
   outputWriter->Update();
 
   return EXIT_SUCCESS;
 }
-
-

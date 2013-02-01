@@ -17,4 +17,3 @@ int BRAINSPosteriorToContinuousClassTest(int argc, char* argv[])
 {
   return ModuleEntryPoint(argc, argv);
 }
-
