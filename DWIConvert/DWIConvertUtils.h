@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include "DoubleToString.h"
 
 template <typename TArg>
 int
@@ -196,6 +197,7 @@ inline int
 WriteBVectors(const std::vector< std::vector<TScalar> > &bVectors,
               const std::string &filename)
 {
+  DoubleToString DoubleConvert;
   std::ofstream bVecFile;
   bVecFile.open(filename.c_str(),std::ios::out | std::ios::binary);
   bVecFile.precision(17);
@@ -210,9 +212,9 @@ WriteBVectors(const std::vector< std::vector<TScalar> > &bVectors,
       {
       return EXIT_FAILURE;
       }
-    bVecFile << bVectors[k][0] << " "
-             << bVectors[k][1] << " "
-             << bVectors[k][2]
+    bVecFile << DoubleConvert(bVectors[k][0]) << " "
+             << DoubleConvert(bVectors[k][1]) << " "
+             << DoubleConvert(bVectors[k][2])
              << std::endl;
     }
   bVecFile.close();
