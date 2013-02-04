@@ -48,6 +48,7 @@ DICOM Data Dictionary: http://medical.nema.org/Dicom/2011/11_06pu.pdf
 #include "djdecode.h"
 #include "StringContains.h"
 #include "DWIConvertUtils.h"
+#include "DoubleToString.h"
 
 unsigned int ConvertFromCharPtr(const char *s)
 {
@@ -407,6 +408,10 @@ int main(int argc, char *argv[])
 {
   PARSE_ARGS;
 
+  //
+  // just need one instance to do double to string conversions
+  DoubleToString DoubleConvert;
+
   if(conversionMode == "FSLToNrrd")
     {
     extern int FSLToNrrd(const std::string &inputVolume,
@@ -540,42 +545,6 @@ int main(int argc, char *argv[])
               << std::endl;
     return EXIT_FAILURE;
     }
-#if 0
-  // this duplicates what the itk::DCMTKSeriesFileNames does, so
-  // comment it out.
-  else if(inputFileNames.size() == 1)
-    {
-    // Use itksys::Directory to open up the given name as a directory.
-    inputFileNames.resize( 0 );
-    itksys::Directory directory;
-    directory.Load( itksys::SystemTools::CollapseFullPath(inputDicomDirectory.c_str()).c_str() );
-    typedef itk::DCMTKImageIO ImageIOType;
-
-    // for each patient directory
-    for ( unsigned int k = 0; k < directory.GetNumberOfFiles(); ++k)
-      {
-      std::string subdirectory( inputDicomDirectory.c_str() );
-      subdirectory = subdirectory + "/" + directory.GetFile(k);
-
-      const std::string sqDir( directory.GetFile(k) );
-      if (sqDir.length() == 1 && directory.GetFile(k)[0] == '.')   // skip self
-        {
-        continue;
-        }
-      else if (sqDir.length() == 2 && sqDir.find( ".." ) != std::string::npos)    // skip parent
-        {
-        continue;
-        }
-      else if (!itksys::SystemTools::FileIsDirectory( subdirectory.c_str() ))     // load only files
-        {
-        if (itk::DCMTKFileReader::IsImageFile(subdirectory.c_str()))
-          {
-          inputFileNames.push_back( subdirectory );
-          }
-        }
-      }
-    }
-#endif
 
   //////////////////////////////////////////////////
   // load all files in the dicom series.
@@ -730,12 +699,6 @@ int main(int argc, char *argv[])
         }
       readerOutput = reader->GetOutput();
       multiSliceVolume = false;
-#if 0
-          itk::ImageFileWriter< VolumeType >::Pointer writer = itk::ImageFileWriter< VolumeType >::New();
-          writer->SetFileName( "dwiconvert.nrrd");
-          writer->SetInput( readerOutput );
-          writer->Update();
-#endif
       }
     else
       {
@@ -1171,8 +1134,13 @@ int main(int argc, char *argv[])
           DiffusionVectors.push_back(vect3d);
           }
 
-        std::cout << "B-value: " << b <<
-          "; diffusion direction: " << vect3d[0] << ", " << vect3d[1] << ", " << vect3d[2] << std::endl;
+        std::cout << "B-value: " << b
+                  << "; diffusion direction: "
+                  << DoubleConvert(vect3d[0])
+                  << ", "
+                  << DoubleConvert(vect3d[1])
+                  << ", "
+                  << DoubleConvert(vect3d[2]) << std::endl;
         }
       }
     else if ( StringContains(vendor,"PHILIPS"))
@@ -1224,18 +1192,8 @@ int main(int argc, char *argv[])
 
           vnl_vector_fixed<double, 3> vect3d;
           vect3d.fill( 0 );
-          //std::cout << "HACK: " << "DiffusionDirectionality=" << DiffusionDirectionality << ", k= " <<  k << std::endl;
-          //std::cout << "HACK: " << "B0FieldFound=" << B0FieldFound << ", b=" << b << ", DiffusionDirectionality=" << DiffusionDirectionality << std::endl;
-
-          // NOTE:  I don know who decided to discard ISOTROPIC
-          // volumes, but it never actually worked, so I going to
-          // treat them like "NONE" volumes, which hopefully will make
-          // it match what FreeSurfer mri_convert does.
           if ( StringContains(DiffusionDirectionality,"ISOTROPIC") )
             { //Deal with images that are to be ignored
-            //std::cout << " SKIPPING ISOTROPIC Diffusion. " << std::endl;
-            //std::cout << "HACK: IGNORE IMAGEFILE:   " << k << " of " << filenames.size() << " " << filenames[k] << std::endl;
-            // Ignore the Trace like image
             ++nIgnoreVolume;
             useVolume.push_back(0);
             continue;
@@ -1251,7 +1209,6 @@ int main(int argc, char *argv[])
           else if ( StringContains(DiffusionDirectionality,"DIRECTIONAL") || ( DiffusionDirectionality == "" ))
             { //Deal with gradient direction images
             bValues.push_back(b);
-            //std::cout << "HACK: GRADIENT IMAGEFILE: " << k << " of " << filenames.size() << " " << filenames[k] << std::endl;
             useVolume.push_back(1);
             if (useSupplement49Definitions == true )
               {
@@ -1305,8 +1262,12 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
             }
 
-          std::cout << "B-value: " << b <<
-            "; diffusion direction: " << vect3d[0] << ", " << vect3d[1] << ", " << vect3d[2] << std::endl;
+          std::cout << "B-value: " << b
+                    << "; diffusion direction: "
+                    << DoubleConvert(vect3d[0]) << ", "
+                    << DoubleConvert(vect3d[1]) << ", "
+                    << DoubleConvert(vect3d[2])
+                    << std::endl;
           }
         }
       else
@@ -1442,8 +1403,10 @@ int main(int argc, char *argv[])
 
         for( unsigned int k2 = 0; k2 < bValues.size(); ++k2 )
           {
-          std::cout << k2 << ": direction: " <<  DiffusionVectors[k2][0]
-                    << ", " << DiffusionVectors[k2][1] << ", " << DiffusionVectors[k2][2]
+          std::cout << k2 << ": direction: "
+                    << DoubleConvert(DiffusionVectors[k2][0]) << ", "
+                    << DoubleConvert(DiffusionVectors[k2][1]) << ", "
+                    << DoubleConvert(DiffusionVectors[k2][2])
                     << ", b-value: " << bValues[k2] << std::endl;
           }
 
@@ -1655,7 +1618,12 @@ int main(int argc, char *argv[])
             // vect3d.normalize();
             DiffusionVectors.push_back(vect3d);
             int p = bValues.size();
-            std::cout << "Image#: " << k << " BV: " << bValues[p-1] << " GD: " << DiffusionVectors[k/nStride] << std::endl;
+            std::cout << "Image#: " << k <<
+              " BV: " << bValues[p-1] << " GD: "
+                      << DoubleConvert(DiffusionVectors[k/nStride][0]) << ","
+                      << DoubleConvert(DiffusionVectors[k/nStride][1]) << ","
+                      << DoubleConvert(DiffusionVectors[k/nStride][2])
+                      << std::endl;
             }
           }
         }
@@ -2050,12 +2018,22 @@ int main(int argc, char *argv[])
       header << "space: " << nrrdSpaceDefinition << "" << std::endl;
       // in nrrd, size array is the number of pixels in 1st, 2nd, 3rd, ... dimensions
       header << "sizes: " << nCols << " " << nRows << " " << nSliceInVolume << " " << nUsableVolumes << std::endl;
-      header << "thicknesses:  NaN  NaN " << sliceSpacing << " NaN" << std::endl;
+      header << "thicknesses:  NaN  NaN " << DoubleConvert(sliceSpacing) << " NaN" << std::endl;
       // need to check
       header << "space directions: "
-             << "(" << (NRRDSpaceDirection[0][0]) << ","<< (NRRDSpaceDirection[1][0]) << ","<< (NRRDSpaceDirection[2][0]) << ") "
-             << "(" << (NRRDSpaceDirection[0][1]) << ","<< (NRRDSpaceDirection[1][1]) << ","<< (NRRDSpaceDirection[2][1]) << ") "
-             << "(" << (NRRDSpaceDirection[0][2]) << ","<< (NRRDSpaceDirection[1][2]) << ","<< (NRRDSpaceDirection[2][2])
+             << "("
+             << DoubleConvert(NRRDSpaceDirection[0][0]) << ","
+             << DoubleConvert(NRRDSpaceDirection[1][0]) << ","
+             << DoubleConvert(NRRDSpaceDirection[2][0])
+             << ") "
+             << "("
+             << DoubleConvert(NRRDSpaceDirection[0][1]) << ","
+             << DoubleConvert(NRRDSpaceDirection[1][1]) << ","
+             << DoubleConvert(NRRDSpaceDirection[2][1]) << ") "
+             << "("
+             << DoubleConvert(NRRDSpaceDirection[0][2]) << ","
+             << DoubleConvert(NRRDSpaceDirection[1][2]) << ","
+             << DoubleConvert(NRRDSpaceDirection[2][2])
              << ") none" << std::endl;
       header << "centerings: cell cell cell ???" << std::endl;
       header << "kinds: space space space list" << std::endl;
@@ -2064,9 +2042,9 @@ int main(int argc, char *argv[])
       header << "encoding: raw" << std::endl;
       header << "space units: \"mm\" \"mm\" \"mm\"" << std::endl;
       header << "space origin: "
-             <<"(" << ImageOrigin[0]
-             << ","<< ImageOrigin[1]
-             << ","<< ImageOrigin[2] << ") " << std::endl;
+             <<"(" << DoubleConvert(ImageOrigin[0])
+             << ","<< DoubleConvert(ImageOrigin[1])
+             << ","<< DoubleConvert(ImageOrigin[2]) << ") " << std::endl;
       if (!nrrdFormat)
         {
         header << "data file: " << itksys::SystemTools::GetFilenameName(outputVolumeDataName) << std::endl;
@@ -2098,9 +2076,15 @@ int main(int argc, char *argv[])
       else
         {
         header << "measurement frame: "
-               << "(" << (MeasurementFrame[0][0]) << ","<< (MeasurementFrame[1][0]) << ","<< (MeasurementFrame[2][0]) << ") "
-               << "(" << (MeasurementFrame[0][1]) << ","<< (MeasurementFrame[1][1]) << ","<< (MeasurementFrame[2][1]) << ") "
-               << "(" << (MeasurementFrame[0][2]) << ","<< (MeasurementFrame[1][2]) << ","<< (MeasurementFrame[2][2]) << ")"
+               << "(" << DoubleConvert(MeasurementFrame[0][0]) << ","
+               << DoubleConvert(MeasurementFrame[1][0]) << ","
+               << DoubleConvert(MeasurementFrame[2][0]) << ") "
+               << "(" << DoubleConvert(MeasurementFrame[0][1]) << ","
+               << DoubleConvert(MeasurementFrame[1][1]) << ","
+               << DoubleConvert(MeasurementFrame[2][1]) << ") "
+               << "(" << DoubleConvert(MeasurementFrame[0][2]) << ","
+               << DoubleConvert(MeasurementFrame[1][2]) << ","
+               << DoubleConvert(MeasurementFrame[2][2]) << ")"
                << std::endl;
         }
 
@@ -2118,9 +2102,9 @@ int main(int argc, char *argv[])
         for(unsigned int imageCount = 0; imageCount < nUsableVolumes; ++imageCount)
           {
           header << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << imageCount << ":="
-                 << gradientVectors[imageCount][0] << "   "
-                 << gradientVectors[imageCount][1] << "   "
-                 << gradientVectors[imageCount][2]
+                 << DoubleConvert(gradientVectors[imageCount][0]) << "   "
+                 << DoubleConvert(gradientVectors[imageCount][1]) << "   "
+                 << DoubleConvert(gradientVectors[imageCount][2])
                  << std::endl;
           }
         }
@@ -2149,9 +2133,9 @@ int main(int argc, char *argv[])
           // if (print_gradient == true)
             {
             header << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << k << ":="
-                   << gradientVectors[gradientVecIndex][0]  << "   "
-                   << gradientVectors[gradientVecIndex][1]  << "   "
-                   << gradientVectors[gradientVecIndex][2]
+                   << DoubleConvert(gradientVectors[gradientVecIndex][0] ) << "   "
+                   << DoubleConvert(gradientVectors[gradientVecIndex][1] ) << "   "
+                   << DoubleConvert(gradientVectors[gradientVecIndex][2] )
                    << std::endl;
             ++gradientVecIndex;
             }
@@ -2197,9 +2181,12 @@ int main(int argc, char *argv[])
       const std::string protocolGradientsFileName=outputVolumeHeaderName+".txt";
       protocolGradientsFile.open ( protocolGradientsFileName.c_str() );
       protocolGradientsFile << "ImageOrientationPatient (0020|0032): "
-                            << std::setprecision(17) << std::scientific
-                            << LPSDirCos[0][0] << "\\" << LPSDirCos[1][0] << "\\" << LPSDirCos[2][0] << "\\"
-                            << LPSDirCos[0][1] << "\\" << LPSDirCos[1][1] << "\\" << LPSDirCos[2][1] << "\\"
+                            << DoubleConvert(LPSDirCos[0][0]) << "\\"
+                            << DoubleConvert(LPSDirCos[1][0])
+                            << "\\" << DoubleConvert(LPSDirCos[2][0]) << "\\"
+                            << DoubleConvert(LPSDirCos[0][1])
+                            << "\\" << DoubleConvert(LPSDirCos[1][1]) << "\\"
+                            << DoubleConvert(LPSDirCos[2][1]) << "\\"
                             << std::endl;
       protocolGradientsFile << "==================================" << std::endl;
       protocolGradientsFile << "Direction Cosines: " << std::endl << LPSDirCos << std::endl;
@@ -2214,9 +2201,9 @@ int main(int argc, char *argv[])
           scaleFactor = sqrt( bValues[k]/maxBvalue );
           }
         protocolGradientsFile << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << k << "=["
-                              << DiffusionVectors[k-nBaseline][0] * scaleFactor << ";"
-                              << DiffusionVectors[k-nBaseline][1] * scaleFactor << ";"
-                              << DiffusionVectors[k-nBaseline][2] * scaleFactor << "]" <<std::endl;
+                              << DoubleConvert(DiffusionVectors[k-nBaseline][0] * scaleFactor) << ";"
+                              << DoubleConvert(DiffusionVectors[k-nBaseline][1] * scaleFactor) << ";"
+                              << DoubleConvert(DiffusionVectors[k-nBaseline][2] * scaleFactor) << "]" <<std::endl;
         }
       protocolGradientsFile << "==================================" << std::endl;
       for (unsigned int k = 0; k < nUsableVolumes; ++k)
@@ -2228,9 +2215,9 @@ int main(int argc, char *argv[])
           }
         const vnl_vector_fixed<double, 3u> ProtocolGradient= InverseMeasurementFrame*DiffusionVectors[k-nBaseline];
         protocolGradientsFile << "Protocol_gradient_" << std::setw(4) << std::setfill('0') << k << "=["
-                              << ProtocolGradient[0] * scaleFactor << ";"
-                              << ProtocolGradient[1] * scaleFactor << ";"
-                              << ProtocolGradient[2] * scaleFactor << "]" <<std::endl;
+                              << DoubleConvert(ProtocolGradient[0] * scaleFactor) << ";"
+                              << DoubleConvert(ProtocolGradient[1] * scaleFactor) << ";"
+                              << DoubleConvert(ProtocolGradient[2] * scaleFactor) << "]" <<std::endl;
         }
       protocolGradientsFile << "==================================" << std::endl;
       protocolGradientsFile.close();
