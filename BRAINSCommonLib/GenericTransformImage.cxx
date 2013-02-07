@@ -190,8 +190,8 @@ int WriteBothTransformsToDisk(const GenericTransformType::ConstPointer genericTr
       {
       std::cout << "Unsupported initial transform file -- TransformBase first transform typestring, "
                 << transformFileType
-                <<
-      " not equal to any recognized type VersorRigid3DTransform OR ScaleVersor3DTransform OR ScaleSkewVersor3DTransform OR AffineTransform"
+                << " not equal to any recognized type VersorRigid3DTransform OR"
+                << " ScaleVersor3DTransform OR ScaleSkewVersor3DTransform OR AffineTransform"
                 << std::endl;
       return -1;
       }
@@ -244,9 +244,10 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
 	      if( currentTransformList.size() == 0 )
 	        {
 	        itkGenericExceptionMacro( << "Number of currentTransformList = " << currentTransformList.size()
-	          << "FATAL ERROR: Failed to read transform" << initialTransform);
+                                          << "FATAL ERROR: Failed to read transform" << initialTransform);
 	        }
-        std::cout << "HACK: " << currentTransformList.size() << "  " << ( *( currentTransformList.begin() ) )->GetNameOfClass() << std::endl;
+              std::cout << "HACK: " << currentTransformList.size() << "  "
+                        << ( *( currentTransformList.begin() ) )->GetNameOfClass() << std::endl;
 	      }
       }
     catch( itk::ExceptionObject & excp )
@@ -427,12 +428,11 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     else
       {
       std::cout << "[FAILED]" << std::endl;
-      std::cerr
-      << "Error using the currentTransformList has two elements, but neither of them are a BSplineDeformableTransform/"
-      << std::endl;
-      std::cerr
-      << "There should not be more than two transforms in the transform list."
-      << std::endl;
+      std::cerr << "Error using the currentTransformList has two elements, but"
+                << " neither of them are a BSplineDeformableTransform/"
+                << std::endl
+                << "There should not be more than two transforms in the transform list."
+                << std::endl;
       return NULL;
       }
     genericTransform = outputBSplineTransform.GetPointer();
@@ -441,12 +441,11 @@ GenericTransformType::Pointer ReadTransformFromDisk(const std::string & initialT
     {
     // Error, too many transforms on transform list.
     std::cout << "[FAILED]" << std::endl;
-    std::cerr
-    << "Error using the currentTransformList for initializing a BSPlineDeformableTransform:"
-    << std::endl;
-    std::cerr
-    << "There should not be more than two transforms in the transform list."
-    << std::endl;
+    std::cerr << "Error using the currentTransformList for initializing a"
+              << " BSPlineDeformableTransform:"
+              << std::endl
+              << "There should not be more than two transforms in the transform list."
+              << std::endl;
     return NULL;
     }
   return genericTransform;

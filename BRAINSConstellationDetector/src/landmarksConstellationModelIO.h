@@ -13,7 +13,7 @@
 
 #include "itkByteSwapper.h"
 #include "itkIO.h"
-
+#include "DoubleToString.h"
 #include <vector>
 #include <fstream>
 #include <iostream>
@@ -232,7 +232,7 @@ public:
     //
     //
     // //////////////////////////////////////////////////////////////////////////
-
+    DoubleToString doubleToString;
     std::ofstream output( filename.c_str() ); // open setup file for reading
 
     if( !output.is_open() )
@@ -259,8 +259,8 @@ public:
            it2 != this->m_TemplateMeansComputed.end(); ++it2 )
         {
         output << it2->first.c_str() << std::endl;
-        output << this->GetRadius(it2->first) << std::endl;
-        output << this->GetHeight(it2->first) << std::endl;
+        output << doubleToString(this->GetRadius(it2->first)) << std::endl;
+        output << doubleToString(this->GetHeight(it2->first)) << std::endl;
         }
       output << "END" << std::endl;
 
@@ -611,6 +611,7 @@ public:
           const Float2DVectorType & a,
           const Float2DVectorType & b)
   {
+    DoubleToString doubleToString;
     for( unsigned i = 0; i < a.size(); i++ )
       {
       for( unsigned j = 0; j < a[i].size(); j++ )
@@ -618,9 +619,9 @@ public:
         if( NE(a[i][j], b[i][j]) )
           {
           std::cerr << label << " a[" << i
-                    << "] = " << a[i][j]
+                    << "] = " << doubleToString(a[i][j])
                     << "b[" << j << "] = "
-                    << b[i][j] << std::endl;
+                    << doubleToString(b[i][j]) << std::endl;
           return true;
           }
         }

@@ -20,34 +20,34 @@
 
 #include "itkQuadEdgeMeshVectorDataVTKPolyDataWriter.h"
 #include "itkMeasurementVectorTraits.h"
-
+#include "DoubleToString.h"
 
 namespace itk
 {
 
-// 
+//
 // Constructor
-// 
+//
 template< class TMesh >
-QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh> 
-::QuadEdgeMeshVectorDataVTKPolyDataWriter() 
+QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
+::QuadEdgeMeshVectorDataVTKPolyDataWriter()
 {
   m_CellDataName = "";
   m_PointDataName = "";
 }
 
-// 
+//
 // Destructor
-// 
+//
 template< class TMesh >
-QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh> 
+QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 ::~QuadEdgeMeshVectorDataVTKPolyDataWriter()
 {
 }
 
 template< class TMesh >
 void
-QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh> 
+QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 ::GenerateData()
 {
   this->Superclass::GenerateData();
@@ -57,11 +57,11 @@ QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 
 template< class TMesh >
 void
-QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh> 
+QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 ::WriteCellData()
 {
   CellDataContainerConstPointer celldata = this->m_Input->GetCellData();
-
+  DoubleToString doubleToString;
   if( celldata )
     {
     if( celldata->Size() != 0 )
@@ -79,7 +79,7 @@ QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
         {
         outputFile <<"double double" <<std::endl;
         }
-      
+
       outputFile <<"LOOKUP_TABLE default" <<std::endl;
 
       unsigned long k(0);
@@ -94,7 +94,7 @@ QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
         CellType* cellPointer = it.Value();
         if( cellPointer->GetType() != 1 )
           {
-          outputFile <<c_it.Value();
+          outputFile << doubleToString(c_it.Value());
           if( k++ % 3 == 0 )
             {
             outputFile <<std::endl;
@@ -111,11 +111,11 @@ QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 
 template< class TMesh >
 void
-QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh> 
+QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
 ::WritePointData()
 {
   PointDataContainerConstPointer pointdata = this->m_Input->GetPointData();
-
+  DoubleToString doubleToString;
   if( pointdata )
     {
     std::ofstream outputFile( this->m_FileName.c_str(), std::ios_base::app );
@@ -142,7 +142,7 @@ QuadEdgeMeshVectorDataVTKPolyDataWriter<TMesh>
       {
       for( unsigned int j = 0; j < vectorSize; j++ )
         {
-        outputFile << static_cast< double >( c_it.Value()[j] ) << " ";
+        outputFile << doubleToString(static_cast< double >( c_it.Value()[j] )) << " ";
         ++k;
         if( k % 3 == 0 )
           {

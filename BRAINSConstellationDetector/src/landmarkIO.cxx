@@ -12,85 +12,86 @@
 #include "hdf5.h"
 #include "H5Cpp.h"
 #endif
+#include "DoubleToString.h"
 
 RGBImageType::Pointer ReturnOrientedRGBImage (SImageType::Pointer inputImage)
 {
-    RGBImageType::Pointer orientedImage;
-    
-    // std::cout << "inputImage information:\n" << inputImage << std::endl;
-    
-    // StatisticsImageFilter clears the buffer of the input image, so we have to pass a copy 
-    // of the input image through that
-    SImageType::Pointer inputStatsImage;
+  RGBImageType::Pointer orientedImage;
+
+  // std::cout << "inputImage information:\n" << inputImage << std::endl;
+
+  // StatisticsImageFilter clears the buffer of the input image, so we have to pass a copy
+  // of the input image through that
+  SImageType::Pointer inputStatsImage;
+  {
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  duplicator->SetInputImage(inputImage);
+  duplicator->Update();
+  inputStatsImage = duplicator->GetOutput();
+  }
+
+  itk::StatisticsImageFilter<SImageType>::Pointer stats = itk::StatisticsImageFilter<SImageType>::New();
+  stats->SetInput(inputStatsImage);
+  stats->Update();
+
+  SImageType::PixelType minPixel( stats->GetMinimum() );
+  SImageType::PixelType maxPixel( stats->GetMaximum() );
+
+  // std::cout << "size of inputImage: " << inputImage->GetLargestPossibleRegion().GetSize()[0] << ","
+  //    << inputImage->GetLargestPossibleRegion().GetSize()[1] << "," << inputImage->GetLargestPossibleRegion().GetSize()[2] << std::endl;
+
+  //  itkUtil::WriteImage<SImageType>(inputImage, "inputImage.nii.gz");
+
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  rgbImage->CopyInformation(inputImage);
+  rgbImage->SetRegions( inputImage->GetLargestPossibleRegion() );
+  rgbImage->Allocate();
+
+  // First just make RGB Image with greyscale values.
+  itk::ImageRegionIterator<RGBImageType> rgbIt( rgbImage, rgbImage->GetLargestPossibleRegion() );
+  itk::ImageRegionIterator<SImageType> sIt( inputImage, inputImage->GetLargestPossibleRegion() );
+  for( ; !sIt.IsAtEnd(); ++rgbIt, ++sIt )
     {
-        DuplicatorType::Pointer duplicator = DuplicatorType::New();
-        duplicator->SetInputImage(inputImage);
-        duplicator->Update();
-        inputStatsImage = duplicator->GetOutput();
+    unsigned char charVal( ShortToUChar(sIt.Value(), minPixel, maxPixel) );
+    RGBPixelType  pixel;
+    pixel.SetRed(charVal);
+    pixel.SetGreen(charVal);
+    pixel.SetBlue(charVal);
+    rgbIt.Set(pixel);
     }
-    
-    itk::StatisticsImageFilter<SImageType>::Pointer stats = itk::StatisticsImageFilter<SImageType>::New();
-    stats->SetInput(inputStatsImage);
-    stats->Update();
-    
-    SImageType::PixelType minPixel( stats->GetMinimum() );
-    SImageType::PixelType maxPixel( stats->GetMaximum() );
-    
-    // std::cout << "size of inputImage: " << inputImage->GetLargestPossibleRegion().GetSize()[0] << "," 
-    //    << inputImage->GetLargestPossibleRegion().GetSize()[1] << "," << inputImage->GetLargestPossibleRegion().GetSize()[2] << std::endl;
-    
-    //  itkUtil::WriteImage<SImageType>(inputImage, "inputImage.nii.gz");
-    
-    RGBImageType::Pointer rgbImage = RGBImageType::New();
-    rgbImage->CopyInformation(inputImage);
-    rgbImage->SetRegions( inputImage->GetLargestPossibleRegion() );
-    rgbImage->Allocate();
-    
-    // First just make RGB Image with greyscale values.
-    itk::ImageRegionIterator<RGBImageType> rgbIt( rgbImage, rgbImage->GetLargestPossibleRegion() );
-    itk::ImageRegionIterator<SImageType> sIt( inputImage, inputImage->GetLargestPossibleRegion() );
-    for( ; !sIt.IsAtEnd(); ++rgbIt, ++sIt )
-    {
-        unsigned char charVal( ShortToUChar(sIt.Value(), minPixel, maxPixel) );
-        RGBPixelType  pixel;
-        pixel.SetRed(charVal);
-        pixel.SetGreen(charVal);
-        pixel.SetBlue(charVal);
-        rgbIt.Set(pixel);
-    }
-    return orientedImage = rgbImage;
+  return orientedImage = rgbImage;
 }
 
 RGB2DImageType::Pointer GenerateRGB2DImage( RGBImageType::Pointer orientedImage)
 {
-    // Alocate 2DImage
-    RGB2DImageType::Pointer    TwoDImage = RGB2DImageType::New();
-    RGB2DImageType::IndexType  TwoDIndex;
-    TwoDIndex[0] = 0;
-    TwoDIndex[1] = 0;
-    RGB2DImageType::SizeType TwoDSize;
-    TwoDSize[0] = orientedImage->GetLargestPossibleRegion().GetSize()[1];
-    TwoDSize[1] = orientedImage->GetLargestPossibleRegion().GetSize()[2];
-    RGB2DImageType::RegionType TwoDImageRegion;
-    TwoDImageRegion.SetIndex(TwoDIndex);
-    TwoDImageRegion.SetSize(TwoDSize);
-    TwoDImage->SetRegions(TwoDImageRegion);
-    TwoDImage->Allocate();
-    
-    // Fill 2DImage
-    RGBImageType::IndexType ThreeDIndex;
-    ThreeDIndex[0] = ( orientedImage->GetLargestPossibleRegion().GetSize()[0] ) / 2;
-    for( TwoDIndex[1] = 0; TwoDIndex[1] < static_cast<signed int>( TwoDSize[1] ); ( TwoDIndex[1] )++ )
+  // Alocate 2DImage
+  RGB2DImageType::Pointer    TwoDImage = RGB2DImageType::New();
+  RGB2DImageType::IndexType  TwoDIndex;
+  TwoDIndex[0] = 0;
+  TwoDIndex[1] = 0;
+  RGB2DImageType::SizeType TwoDSize;
+  TwoDSize[0] = orientedImage->GetLargestPossibleRegion().GetSize()[1];
+  TwoDSize[1] = orientedImage->GetLargestPossibleRegion().GetSize()[2];
+  RGB2DImageType::RegionType TwoDImageRegion;
+  TwoDImageRegion.SetIndex(TwoDIndex);
+  TwoDImageRegion.SetSize(TwoDSize);
+  TwoDImage->SetRegions(TwoDImageRegion);
+  TwoDImage->Allocate();
+
+  // Fill 2DImage
+  RGBImageType::IndexType ThreeDIndex;
+  ThreeDIndex[0] = ( orientedImage->GetLargestPossibleRegion().GetSize()[0] ) / 2;
+  for( TwoDIndex[1] = 0; TwoDIndex[1] < static_cast<signed int>( TwoDSize[1] ); ( TwoDIndex[1] )++ )
     {
-        ThreeDIndex[2] = TwoDSize[1] - 1 - TwoDIndex[1];
-        for( TwoDIndex[0] = 0; TwoDIndex[0] < static_cast<signed int>( TwoDSize[0] ); ( TwoDIndex[0] )++ )
-        {
-            ThreeDIndex[1] = TwoDIndex[0];
-            TwoDImage->SetPixel( TwoDIndex, orientedImage->GetPixel(ThreeDIndex) );
-        }
+    ThreeDIndex[2] = TwoDSize[1] - 1 - TwoDIndex[1];
+    for( TwoDIndex[0] = 0; TwoDIndex[0] < static_cast<signed int>( TwoDSize[0] ); ( TwoDIndex[0] )++ )
+      {
+      ThreeDIndex[1] = TwoDIndex[0];
+      TwoDImage->SetPixel( TwoDIndex, orientedImage->GetPixel(ThreeDIndex) );
+      }
     }
-    
-    return TwoDImage;
+
+  return TwoDImage;
 }
 
 static bool IsOnCylinder(const SImageType::PointType & curr_point,
@@ -108,7 +109,7 @@ static bool IsOnCylinder(const SImageType::PointType & curr_point,
     curr_point.GetVectorFromOrigin() - center_point2.GetVectorFromOrigin();
 
   return cylinder_side_squared < thickness * thickness
-         || PointDist2.GetNorm() < 2;
+    || PointDist2.GetNorm() < 2;
 }
 
 static bool IsOnSphere(const SImageType::PointType & curr_point,
@@ -135,14 +136,14 @@ MakeBrandeddebugImage(SImageType::ConstPointer in,
                       const SImageType::PointType & PC2,
                       const SImageType::PointType & VN42)
 {
-  
-    
+
+
   SImageType::Pointer inputImage = itkUtil::OrientImage<SImageType>(in,
                                                                     itk::SpatialOrientation::
                                                                     ITK_COORDINATE_ORIENTATION_RAI);
 
   RGBImageType::Pointer orientedImage = ReturnOrientedRGBImage( inputImage );
-    
+
   for( unsigned int which = 0; which < 4; which++ )
     {
     SImageType::PointType pt = RP;
@@ -184,7 +185,7 @@ MakeBrandeddebugImage(SImageType::ConstPointer in,
       SImageType::IndexType index = rgbIt.GetIndex();
       SImageType::PointType p;
       orientedImage->TransformIndexToPhysicalPoint(index, p);
-  
+
       if( IsOnCylinder(p, pt, pt2, radius, height) )
         {
         RGBPixelType pixel = rgbIt.Value();
@@ -234,10 +235,10 @@ MakePointBranded3DImage(SImageType::ConstPointer in,
                                                                     ITK_COORDINATE_ORIENTATION_RAI);
   SImageType::Pointer inputStatsImage;
   {
-      DuplicatorType::Pointer duplicator = DuplicatorType::New();
-      duplicator->SetInputImage(inputImage);
-      duplicator->Update();
-      inputStatsImage = duplicator->GetOutput();
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  duplicator->SetInputImage(inputImage);
+  duplicator->Update();
+  inputStatsImage = duplicator->GetOutput();
   }
 
   itk::StatisticsImageFilter<SImageType>::Pointer stats = itk::StatisticsImageFilter<SImageType>::New();
@@ -273,11 +274,11 @@ MakeBranded2DImage(SImageType::ConstPointer in,
                    const SImageType::PointType & CM,
                    const std::string & fname)
 {
-  
+
   SImageType::Pointer inputImage = itkUtil::OrientImage<SImageType>(in,
                                                                     itk::SpatialOrientation::
                                                                     ITK_COORDINATE_ORIENTATION_RAI);
-    
+
   RGBImageType::Pointer orientedImage = ReturnOrientedRGBImage( inputImage );
 
   for( unsigned int which = 0; which < 5; which++ )
@@ -387,6 +388,7 @@ WriteMRMLFile(std::string outputMRML,
               const VersorTransformPointer versorTransform)
 {
   const unsigned int LocalImageDimension = 3;
+  DoubleToString doubleToString;
 
   typedef short                                      PixelType;
   typedef itk::Image<PixelType, LocalImageDimension> ImageType;
@@ -459,8 +461,8 @@ WriteMRMLFile(std::string outputMRML,
 
   // Common mrml header
   myfile
-  <<
-  "<MRML  version=\"13298\" userTags=\"\">  \n  <Selection  \n  id=\"vtkMRMLSelectionNode1\"  name=\"vtkMRMLSelectionNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  activeVolumeID=\"vtkMRMLScalarVolumeNode2\"  secondaryVolumeID=\"NULL\"  activeLabelVolumeID=\"NULL\"  activeFiducialListID=\"vtkMRMLFiducialListNode1\"  activeROIListID=\"NULL\"  activeCameraID=\"NULL\"  activeViewID=\"NULL\"  activeLayoutID=\"vtkMRMLLayoutNode1\"></Selection>  \n  <Interaction  \n  id=\"vtkMRMLInteractionNode1\"  name=\"vtkMRMLInteractionNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  currentInteractionMode=\"ViewTransform\"  lastInteractionMode=\"ViewTransform\" ></Interaction>  \n  <Layout  \n  id=\"vtkMRMLLayoutNode1\"  name=\"vtkMRMLLayoutNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  currentViewArrangement=\"3\"  guiPanelVisibility=\"1\"  bottomPanelVisibility =\"0\"  guiPanelLR=\"0\"  collapseSliceControllers=\"0\"  \n  numberOfCompareViewRows=\"1\"  numberOfCompareViewColumns=\"1\"  numberOfLightboxRows=\"1\"  numberOfLightboxColumns=\"1\"  mainPanelSize=\"400\"  secondaryPanelSize=\"400\" ></Layout>  \n  <TGParameters  \n  id=\"vtkMRMLChangeTrackerNode1\"  name=\"vtkMRMLChangeTrackerNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  ROIMin=\"-1 -1 -1\"  ROIMax=\"-1 -1 -1\"  SegmentThresholdMin=\"-1\"  SegmentThresholdMax=\"-1\"  Analysis_Intensity_Flag=\"0\"  Analysis_Deformable_Flag=\"0\"  UseITK=\"1\"  RegistrationChoice=\"3\"  ROIRegistration=\"1\"  ResampleChoice=\"3\"  ResampleConst=\"0.5\" ></TGParameters>  \n  <Crosshair  \n  id=\"vtkMRMLCrosshairNode1\"  name=\"vtkMRMLCrosshairNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  crosshairMode=\"NoCrosshair\"  navigation=\"true\"  crosshairBehavior=\"Normal\"  crosshairThickness=\"Fine\"  crosshairRAS=\"0 0 0\" ></Crosshair>  \n  <Slice  \n  id=\"vtkMRMLSliceNode1\"  name=\"Green\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"374.356 322.12 0.534398\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"-1 0 0 2.04504 0 0 1 0 0 1 0 -9.66354 0 0 0 1\"  layoutName=\"Green\"  orientation=\"Coronal\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode1\"  name=\"vtkMRMLSliceCompositeNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Green\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <Slice  \n  id=\"vtkMRMLSliceNode2\"  name=\"Red\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"364.349 313.51 1.29601\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"-1 0 0 2.04504 0 1 0 -12.7088 0 0 1 0 0 0 0 1\"  layoutName=\"Red\"  orientation=\"Axial\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode2\"  name=\"vtkMRMLSliceCompositeNode2\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Red\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <Slice  \n  id=\"vtkMRMLSliceNode3\"  name=\"Yellow\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"374.356 322.12 1.11022\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"0 0 1 0 -1 0 0 -12.7088 0 1 0 -9.66354 0 0 0 1\"  layoutName=\"Yellow\"  orientation=\"Sagittal\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode3\"  name=\"vtkMRMLSliceCompositeNode3\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Yellow\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <ScriptedModule  \n  id=\"vtkMRMLScriptedModuleNode1\"  name=\"vtkMRMLScriptedModuleNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\" ModuleName =\"Editor\" parameter0= \"label 1\" ></ScriptedModule>  \n  <View  \n  id=\"vtkMRMLViewNode1\"  name=\"View6\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  active=\"true\"  visibility=\"true\"  fieldOfView=\"200\"  letterSize=\"0.05\"  boxVisible=\"true\"  fiducialsVisible=\"true\"  fiducialLabelsVisible=\"true\"  axisLabelsVisible=\"true\"  backgroundColor=\"0.70196 0.70196 0.90588\"  animationMode=\"Off\"  viewAxisMode=\"LookFrom\"  spinDegrees=\"2\"  spinMs=\"5\"  spinDirection=\"YawLeft\"  rotateDegrees=\"5\"  rockLength=\"200\"  rockCount=\"0\"  stereoType=\"NoStereo\"  renderMode=\"Perspective\" ></View>  \n  <Camera  \n  id=\"vtkMRMLCameraNode1\"  name=\"Camera6\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  position=\"0 500 0\"  focalPoint=\"0 0 0\"  viewUp=\"0 0 1\"  parallelProjection=\"false\"  parallelScale=\"1\"  activetag=\"vtkMRMLViewNode1\" ></Camera>  \n";
+    <<
+    "<MRML  version=\"13298\" userTags=\"\">  \n  <Selection  \n  id=\"vtkMRMLSelectionNode1\"  name=\"vtkMRMLSelectionNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  activeVolumeID=\"vtkMRMLScalarVolumeNode2\"  secondaryVolumeID=\"NULL\"  activeLabelVolumeID=\"NULL\"  activeFiducialListID=\"vtkMRMLFiducialListNode1\"  activeROIListID=\"NULL\"  activeCameraID=\"NULL\"  activeViewID=\"NULL\"  activeLayoutID=\"vtkMRMLLayoutNode1\"></Selection>  \n  <Interaction  \n  id=\"vtkMRMLInteractionNode1\"  name=\"vtkMRMLInteractionNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  currentInteractionMode=\"ViewTransform\"  lastInteractionMode=\"ViewTransform\" ></Interaction>  \n  <Layout  \n  id=\"vtkMRMLLayoutNode1\"  name=\"vtkMRMLLayoutNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  currentViewArrangement=\"3\"  guiPanelVisibility=\"1\"  bottomPanelVisibility =\"0\"  guiPanelLR=\"0\"  collapseSliceControllers=\"0\"  \n  numberOfCompareViewRows=\"1\"  numberOfCompareViewColumns=\"1\"  numberOfLightboxRows=\"1\"  numberOfLightboxColumns=\"1\"  mainPanelSize=\"400\"  secondaryPanelSize=\"400\" ></Layout>  \n  <TGParameters  \n  id=\"vtkMRMLChangeTrackerNode1\"  name=\"vtkMRMLChangeTrackerNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  ROIMin=\"-1 -1 -1\"  ROIMax=\"-1 -1 -1\"  SegmentThresholdMin=\"-1\"  SegmentThresholdMax=\"-1\"  Analysis_Intensity_Flag=\"0\"  Analysis_Deformable_Flag=\"0\"  UseITK=\"1\"  RegistrationChoice=\"3\"  ROIRegistration=\"1\"  ResampleChoice=\"3\"  ResampleConst=\"0.5\" ></TGParameters>  \n  <Crosshair  \n  id=\"vtkMRMLCrosshairNode1\"  name=\"vtkMRMLCrosshairNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  crosshairMode=\"NoCrosshair\"  navigation=\"true\"  crosshairBehavior=\"Normal\"  crosshairThickness=\"Fine\"  crosshairRAS=\"0 0 0\" ></Crosshair>  \n  <Slice  \n  id=\"vtkMRMLSliceNode1\"  name=\"Green\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"374.356 322.12 0.534398\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"-1 0 0 2.04504 0 0 1 0 0 1 0 -9.66354 0 0 0 1\"  layoutName=\"Green\"  orientation=\"Coronal\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode1\"  name=\"vtkMRMLSliceCompositeNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Green\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <Slice  \n  id=\"vtkMRMLSliceNode2\"  name=\"Red\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"364.349 313.51 1.29601\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"-1 0 0 2.04504 0 1 0 -12.7088 0 0 1 0 0 0 0 1\"  layoutName=\"Red\"  orientation=\"Axial\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode2\"  name=\"vtkMRMLSliceCompositeNode2\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Red\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <Slice  \n  id=\"vtkMRMLSliceNode3\"  name=\"Yellow\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fieldOfView=\"374.356 322.12 1.11022\"  dimensions=\"430 370 1\"  activeSlice=\"0\"  layoutGridRows=\"1\"  layoutGridColumns=\"1\"  sliceToRAS=\"0 0 1 0 -1 0 0 -12.7088 0 1 0 -9.66354 0 0 0 1\"  layoutName=\"Yellow\"  orientation=\"Sagittal\"  jumpMode=\"1\"  sliceVisibility=\"false\"  widgetVisibility=\"false\"  useLabelOutline=\"false\"  sliceSpacingMode=\"0\"  prescribedSliceSpacing=\"1 1 1\" ></Slice>  \n  <SliceComposite  \n  id=\"vtkMRMLSliceCompositeNode3\"  name=\"vtkMRMLSliceCompositeNode3\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  backgroundVolumeID=\"vtkMRMLScalarVolumeNode1\"  foregroundVolumeID=\"\"  labelVolumeID=\"\"  compositing=\"0\"  labelOpacity=\"1\"  linkedControl=\"0\"  foregroundGrid=\"0\"  backgroundGrid=\"0\"  labelGrid=\"1\"  fiducialVisibility=\"1\"  fiducialLabelVisibility=\"1\"  sliceIntersectionVisibility=\"0\"  layoutName=\"Yellow\"  annotationMode=\"All\"  doPropagateVolumeSelection=\"1\" ></SliceComposite>  \n  <ScriptedModule  \n  id=\"vtkMRMLScriptedModuleNode1\"  name=\"vtkMRMLScriptedModuleNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\" ModuleName =\"Editor\" parameter0= \"label 1\" ></ScriptedModule>  \n  <View  \n  id=\"vtkMRMLViewNode1\"  name=\"View6\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  active=\"true\"  visibility=\"true\"  fieldOfView=\"200\"  letterSize=\"0.05\"  boxVisible=\"true\"  fiducialsVisible=\"true\"  fiducialLabelsVisible=\"true\"  axisLabelsVisible=\"true\"  backgroundColor=\"0.70196 0.70196 0.90588\"  animationMode=\"Off\"  viewAxisMode=\"LookFrom\"  spinDegrees=\"2\"  spinMs=\"5\"  spinDirection=\"YawLeft\"  rotateDegrees=\"5\"  rockLength=\"200\"  rockCount=\"0\"  stereoType=\"NoStereo\"  renderMode=\"Perspective\" ></View>  \n  <Camera  \n  id=\"vtkMRMLCameraNode1\"  name=\"Camera6\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  position=\"0 500 0\"  focalPoint=\"0 0 0\"  viewUp=\"0 0 1\"  parallelProjection=\"false\"  parallelScale=\"1\"  activetag=\"vtkMRMLViewNode1\" ></Camera>  \n";
 
   // For fiducial landmarks in output space
   if( outputLandmarksInOutputSpace.compare("") != 0 )
@@ -468,14 +470,17 @@ WriteMRMLFile(std::string outputMRML,
     myfile << "<FiducialList\n id=\"vtkMRMLFiducialListNode1\" name=\""
            << outputLandmarksInOutputSpaceFullFilenameWithoutExtension
            <<
-    "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLFiducialListStorageNode1\" userTags=\"\" symbolScale=\"5\" symbolType=\"13\" textScale=\"4.5\" visibility=\"1\" color=\"0.4 1 1\" selectedcolor=\"1 0.5 0.5\" ambient=\"0\" diffuse=\"1\" specular=\"0\" power=\"1\" locked=\"0\" opacity=\"1\" fiducials=\"\n";
+      "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLFiducialListStorageNode1\" userTags=\"\" symbolScale=\"5\" symbolType=\"13\" textScale=\"4.5\" visibility=\"1\" color=\"0.4 1 1\" selectedcolor=\"1 0.5 0.5\" ambient=\"0\" diffuse=\"1\" specular=\"0\" power=\"1\" locked=\"0\" opacity=\"1\" fiducials=\"\n";
 
     LandmarksMapType::const_iterator it;
     unsigned int                     index = 0;
+
     for( it = outputLandmarksInOutputSpaceMap.begin(); it != outputLandmarksInOutputSpaceMap.end(); ++it )
       {
       myfile << "id " << it->first << " labeltext " << it->first << " xyz "
-             << ( it->second )[0] << " " << ( it->second )[1] << " " << ( it->second )[2];
+             << doubleToString(( it->second )[0]) << " "
+             << doubleToString(( it->second )[1]) << " "
+             << doubleToString(( it->second )[2]);
       if( ++index < outputLandmarksInOutputSpaceMap.size() )
         {
         myfile << " orientationwxyz 0 0 0 1 selected 1 visibility 1\n";
@@ -487,10 +492,9 @@ WriteMRMLFile(std::string outputMRML,
       }
 
     myfile
-    <<
-    "<FiducialListStorage\n id=\"vtkMRMLFiducialListStorageNode1\" name=\"vtkMRMLFiducialListStorageNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
-    << outputLandmarksInOutputSpace
-    << "\" useCompression=\"1\" readState=\"0\" writeState=\"0\"></FiducialListStorage>\n";
+      << "<FiducialListStorage\n id=\"vtkMRMLFiducialListStorageNode1\" name=\"vtkMRMLFiducialListStorageNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
+      << outputLandmarksInOutputSpace
+      << "\" useCompression=\"1\" readState=\"0\" writeState=\"0\"></FiducialListStorage>\n";
     }
 
   // For fiducial landmarks in input space
@@ -499,14 +503,16 @@ WriteMRMLFile(std::string outputMRML,
     myfile << "<FiducialList\n id=\"vtkMRMLFiducialListNode2\" name=\""
            << outputLandmarksInInputSpaceFullFilenameWithoutExtension
            <<
-    "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLFiducialListStorageNode2\" userTags=\"\" symbolScale=\"5\" symbolType=\"13\" textScale=\"4.5\" visibility=\"1\" color=\"0.4 1 1\" selectedcolor=\"1 0.5 0.5\" ambient=\"0\" diffuse=\"1\" specular=\"0\" power=\"1\" locked=\"0\" opacity=\"1\" fiducials=\"\n";
+      "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLFiducialListStorageNode2\" userTags=\"\" symbolScale=\"5\" symbolType=\"13\" textScale=\"4.5\" visibility=\"1\" color=\"0.4 1 1\" selectedcolor=\"1 0.5 0.5\" ambient=\"0\" diffuse=\"1\" specular=\"0\" power=\"1\" locked=\"0\" opacity=\"1\" fiducials=\"\n";
 
     LandmarksMapType::const_iterator it;
     unsigned int                     index = 0;
     for( it = outputLandmarksInInputSpaceMap.begin(); it != outputLandmarksInInputSpaceMap.end(); ++it )
       {
       myfile << "id " << it->first << " labeltext " << it->first << " xyz "
-             << ( it->second )[0] << " " << ( it->second )[1] << " " << ( it->second )[2];
+             << doubleToString(( it->second )[0]) << " "
+             << doubleToString(( it->second )[1]) << " "
+             << doubleToString(( it->second )[2]);
       if( ++index < outputLandmarksInInputSpaceMap.size() )
         {
         myfile << " orientationwxyz 0 0 0 1 selected 1 visibility 1\n";
@@ -518,10 +524,10 @@ WriteMRMLFile(std::string outputMRML,
       }
 
     myfile
-    <<
-    "<FiducialListStorage\n id=\"vtkMRMLFiducialListStorageNode2\" name=\"vtkMRMLFiducialListStorageNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
-    << outputLandmarksInInputSpace
-    << "\" useCompression=\"1\" readState=\"0\" writeState=\"0\"></FiducialListStorage>\n";
+      <<
+      "<FiducialListStorage\n id=\"vtkMRMLFiducialListStorageNode2\" name=\"vtkMRMLFiducialListStorageNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
+      << outputLandmarksInInputSpace
+      << "\" useCompression=\"1\" readState=\"0\" writeState=\"0\"></FiducialListStorage>\n";
     }
 
   // For output volume
@@ -534,29 +540,32 @@ WriteMRMLFile(std::string outputMRML,
     ImageType::SpacingType   spacing = reader->GetOutput()->GetSpacing();
     ImageType::PointType     origin = reader->GetOutput()->GetOrigin();
     myfile
-    <<
-    "<VolumeArchetypeStorage\n id=\"vtkMRMLVolumeArchetypeStorageNode1\" name=\"vtkMRMLVolumeArchetypeStorageNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
-    << outputVolumeFullFilename
-    <<
-    "\" useCompression=\"1\" readState=\"0\" writeState=\"0\" centerImage=\"0\" singleFile=\"0\" UseOrientationFromFile=\"1\"></VolumeArchetypeStorage>\n";
+      <<
+      "<VolumeArchetypeStorage\n id=\"vtkMRMLVolumeArchetypeStorageNode1\" name=\"vtkMRMLVolumeArchetypeStorageNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
+      << outputVolumeFullFilename
+      <<
+      "\" useCompression=\"1\" readState=\"0\" writeState=\"0\" centerImage=\"0\" singleFile=\"0\" UseOrientationFromFile=\"1\"></VolumeArchetypeStorage>\n";
 
     myfile << "<Volume\n id=\"vtkMRMLScalarVolumeNode1\" name=\"" << outputVolumeFilenameWithoutPath
            <<
-    "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLVolumeArchetypeStorageNode1\" userTags=\"\" displayNodeRef=\"vtkMRMLScalarVolumeDisplayNode1\" ijkToRASDirections=\"";
+      "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLVolumeArchetypeStorageNode1\" userTags=\"\" displayNodeRef=\"vtkMRMLScalarVolumeDisplayNode1\" ijkToRASDirections=\"";
     for( unsigned int i = 0; i < LocalImageDimension; ++i )
       {
       for( unsigned int j = 0; j < LocalImageDimension; ++j )
         {
-        myfile << direction(i, j) << " ";
+        myfile << doubleToString(direction(i, j)) << " ";
         }
       }
     myfile
-    << "\" spacing=\""
-    << spacing[0] << " " << spacing[1] << " " << spacing[2]
-    << "\" origin=\""
-    << origin[0] << " " << origin[1] << " " << origin[2] <<
-
-    "\" labelMap=\"0\"></Volume>\n<VolumeDisplay\n id=\"vtkMRMLScalarVolumeDisplayNode1\" name=\"vtkMRMLScalarVolumeDisplayNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" color=\"0.5 0.5 0.5\" selectedColor=\"1 0 0\" selectedAmbient=\"0.4\" ambient=\"0\" diffuse=\"1\" selectedSpecular=\"0.5\" specular=\"0\" power=\"1\" opacity=\"1\" visibility=\"true\" clipping=\"false\" sliceIntersectionVisibility=\"false\" backfaceCulling=\"true\" scalarVisibility=\"false\" vectorVisibility=\"false\" tensorVisibility=\"false\" autoScalarRange=\"true\" scalarRange=\"0 100\" colorNodeRef=\"vtkMRMLColorTableNodeGrey\"  window=\"204\" level=\"153\" upperThreshold=\"32767\" lowerThreshold=\"-32768\" interpolate=\"1\" autoWindowLevel=\"1\" applyThreshold=\"0\" autoThreshold=\"0\"></VolumeDisplay>\n";
+      << "\" spacing=\""
+      << doubleToString(spacing[0]) << " "
+      << doubleToString(spacing[1]) << " "
+      << doubleToString(spacing[2])
+      << "\" origin=\""
+      << doubleToString(origin[0]) << " "
+      << doubleToString(origin[1]) << " "
+      << doubleToString(origin[2])
+      << "\" labelMap=\"0\"></Volume>\n<VolumeDisplay\n id=\"vtkMRMLScalarVolumeDisplayNode1\" name=\"vtkMRMLScalarVolumeDisplayNode1\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" color=\"0.5 0.5 0.5\" selectedColor=\"1 0 0\" selectedAmbient=\"0.4\" ambient=\"0\" diffuse=\"1\" selectedSpecular=\"0.5\" specular=\"0\" power=\"1\" opacity=\"1\" visibility=\"true\" clipping=\"false\" sliceIntersectionVisibility=\"false\" backfaceCulling=\"true\" scalarVisibility=\"false\" vectorVisibility=\"false\" tensorVisibility=\"false\" autoScalarRange=\"true\" scalarRange=\"0 100\" colorNodeRef=\"vtkMRMLColorTableNodeGrey\"  window=\"204\" level=\"153\" upperThreshold=\"32767\" lowerThreshold=\"-32768\" interpolate=\"1\" autoWindowLevel=\"1\" applyThreshold=\"0\" autoThreshold=\"0\"></VolumeDisplay>\n";
     }
 
   // For input volume
@@ -568,30 +577,33 @@ WriteMRMLFile(std::string outputMRML,
     ImageType::DirectionType direction = reader->GetOutput()->GetDirection();
     ImageType::SpacingType   spacing = reader->GetOutput()->GetSpacing();
     ImageType::PointType     origin = reader->GetOutput()->GetOrigin();
-    myfile
-    <<
-    "<VolumeArchetypeStorage\n id=\"vtkMRMLVolumeArchetypeStorageNode2\" name=\"vtkMRMLVolumeArchetypeStorageNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
-    << inputVolumeFullFilename
-    <<
-    "\" useCompression=\"1\" readState=\"0\" writeState=\"0\" centerImage=\"0\" singleFile=\"0\" UseOrientationFromFile=\"1\"></VolumeArchetypeStorage>\n";
+    myfile <<
+      "<VolumeArchetypeStorage\n id=\"vtkMRMLVolumeArchetypeStorageNode2\" name=\"vtkMRMLVolumeArchetypeStorageNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" fileName=\""
+           << inputVolumeFullFilename
+           <<
+      "\" useCompression=\"1\" readState=\"0\" writeState=\"0\" centerImage=\"0\" singleFile=\"0\" UseOrientationFromFile=\"1\"></VolumeArchetypeStorage>\n";
 
     myfile << "<Volume\n id=\"vtkMRMLScalarVolumeNode2\" name=\"" << inputVolumeFilenameWithoutPath
            <<
-    "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLVolumeArchetypeStorageNode2\" userTags=\"\" displayNodeRef=\"vtkMRMLScalarVolumeDisplayNode2\" ijkToRASDirections=\"";
+      "\" hideFromEditors=\"false\" selectable=\"true\" selected=\"false\" storageNodeRef=\"vtkMRMLVolumeArchetypeStorageNode2\" userTags=\"\" displayNodeRef=\"vtkMRMLScalarVolumeDisplayNode2\" ijkToRASDirections=\"";
     for( unsigned int i = 0; i < LocalImageDimension; ++i )
       {
       for( unsigned int j = 0; j < LocalImageDimension; ++j )
         {
-        myfile << direction(i, j) << " ";
+        myfile << doubleToString(direction(i, j)) << " ";
         }
       }
     myfile
-    << "\" spacing=\""
-    << spacing[0] << " " << spacing[1] << " " << spacing[2]
-    << "\" origin=\""
-    << origin[0] << " " << origin[1] << " " << origin[2]
-    <<
-    "\" labelMap=\"0\"></Volume>\n<VolumeDisplay\n id=\"vtkMRMLScalarVolumeDisplayNode2\" name=\"vtkMRMLScalarVolumeDisplayNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" color=\"0.5 0.5 0.5\" selectedColor=\"1 0 0\" selectedAmbient=\"0.4\" ambient=\"0\" diffuse=\"1\" selectedSpecular=\"0.5\" specular=\"0\" power=\"1\" opacity=\"1\" visibility=\"true\" clipping=\"false\" sliceIntersectionVisibility=\"false\" backfaceCulling=\"true\" scalarVisibility=\"false\" vectorVisibility=\"false\" tensorVisibility=\"false\" autoScalarRange=\"true\" scalarRange=\"0 100\" colorNodeRef=\"vtkMRMLColorTableNodeGrey\"  window=\"204\" level=\"153\" upperThreshold=\"32767\" lowerThreshold=\"-32768\" interpolate=\"1\" autoWindowLevel=\"1\" applyThreshold=\"0\" autoThreshold=\"0\"></VolumeDisplay>\n";
+      << "\" spacing=\""
+      << doubleToString(spacing[0]) << " "
+      << doubleToString(spacing[1]) << " "
+      << doubleToString(spacing[2])
+      << "\" origin=\""
+      << doubleToString(origin[0]) << " "
+      << doubleToString(origin[1]) << " "
+      << doubleToString(origin[2])
+      <<
+      "\" labelMap=\"0\"></Volume>\n<VolumeDisplay\n id=\"vtkMRMLScalarVolumeDisplayNode2\" name=\"vtkMRMLScalarVolumeDisplayNode2\" hideFromEditors=\"true\" selectable=\"true\" selected=\"false\" color=\"0.5 0.5 0.5\" selectedColor=\"1 0 0\" selectedAmbient=\"0.4\" ambient=\"0\" diffuse=\"1\" selectedSpecular=\"0.5\" specular=\"0\" power=\"1\" opacity=\"1\" visibility=\"true\" clipping=\"false\" sliceIntersectionVisibility=\"false\" backfaceCulling=\"true\" scalarVisibility=\"false\" vectorVisibility=\"false\" tensorVisibility=\"false\" autoScalarRange=\"true\" scalarRange=\"0 100\" colorNodeRef=\"vtkMRMLColorTableNodeGrey\"  window=\"204\" level=\"153\" upperThreshold=\"32767\" lowerThreshold=\"-32768\" interpolate=\"1\" autoWindowLevel=\"1\" applyThreshold=\"0\" autoThreshold=\"0\"></VolumeDisplay>\n";
     }
 
   // For output transform
@@ -599,21 +611,19 @@ WriteMRMLFile(std::string outputMRML,
     {
     VersorTransformMatrixType tm = versorTransform->GetMatrix();
 
-    myfile
-    <<
-    "<TransformStorage  \n  id=\"vtkMRMLTransformStorageNode1\"  name=\"vtkMRMLTransformStorageNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fileName=\""
-    << outputTransformFullFilename
-    << "\"  useCompression=\"1\"  readState=\"0\"  writeState=\"0\" ></TransformStorage>  \n"
-    <<
-    "<LinearTransform  \n  id=\"vtkMRMLLinearTransformNode1\"  name=\""
-    << outputTransformFilenameWithoutPath
-    <<
-    "\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  storageNodeRef=\"vtkMRMLTransformStorageNode1\"  userTags=\"\"  matrixTransformToParent=\"";
+    myfile << "<TransformStorage  \n  id=\"vtkMRMLTransformStorageNode1\"  name=\"vtkMRMLTransformStorageNode1\"  hideFromEditors=\"true\"  selectable=\"true\"  selected=\"false\"  fileName=\""
+           << outputTransformFullFilename
+           << "\"  useCompression=\"1\"  readState=\"0\"  writeState=\"0\" ></TransformStorage>  \n"
+           <<
+      "<LinearTransform  \n  id=\"vtkMRMLLinearTransformNode1\"  name=\""
+           << outputTransformFilenameWithoutPath
+           <<
+      "\"  hideFromEditors=\"false\"  selectable=\"true\"  selected=\"false\"  storageNodeRef=\"vtkMRMLTransformStorageNode1\"  userTags=\"\"  matrixTransformToParent=\"";
     for( unsigned int i = 0; i <  LocalImageDimension; ++i )
       {
       for( unsigned int j = 0; j <  LocalImageDimension; ++j )
         {
-        myfile << tm(i, j) << " ";
+        myfile << doubleToString(tm(i, j)) << " ";
         }
       }
     myfile << "\" ></LinearTransform>  \n";
@@ -704,7 +714,7 @@ loadLLSModel(std::string llsModelFilename,
         if( !getline(myfile, line) )
           {
           itkGenericExceptionMacro(<< "Bad linear model coefficients in llsModelFile!")
-          }
+            }
         else
           {
           unsigned int pos1 = 0;
@@ -765,4 +775,3 @@ writeVerificationScript(std::string outputVerificationScriptFilename,
   ScriptFile << std::endl;
   ScriptFile.close();
 }
-

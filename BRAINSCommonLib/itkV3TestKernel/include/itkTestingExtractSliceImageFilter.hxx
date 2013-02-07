@@ -237,9 +237,11 @@ ExtractSliceImageFilter< TInputImage, TOutputImage >
     case DIRECTIONCOLLAPSETOUNKOWN:
     default:
         {
-        itkExceptionMacro( << "It is required that the strategy for collapsing the direction matrix be explicitly specified. "
-          << "Set with either myfilter->SetDirectionCollapseToIdentity() or myfilter->SetDirectionCollapseToSubmatrix() "
-          << typeid( ImageBase< InputImageDimension > * ).name() );
+        itkExceptionMacro( << "It is required that the strategy for collapsing"
+                           " the direction matrix be explicitly specified. "
+                           "Set with either myfilter->SetDirectionCollapseToIdentity()"
+                           " or myfilter->SetDirectionCollapseToSubmatrix() "
+                           << typeid( ImageBase< InputImageDimension > * ).name() );
         }
       }
 
