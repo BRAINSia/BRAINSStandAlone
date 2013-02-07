@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
     NrrdValue = " ";
     for(unsigned dir = 0; dir < 3; ++dir)
       {
-      if(i > 0) { NrrdValue += " "; }
+      if(dir > 0) { NrrdValue += " "; }
       NrrdValue += doubleConvert(curGradientDirection[dir]);
       }
     itk::EncapsulateMetaData<std::string>(resampleImage->GetMetaDataDictionary(), KeyString, NrrdValue);
