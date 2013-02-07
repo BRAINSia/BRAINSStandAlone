@@ -8,7 +8,7 @@
   <version>4.0.0</version>
   <documentation-url>http://wiki.slicer.org/slicerWiki/index.php/Modules:GTRACT</documentation-url>
   <license>http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt</license>
-  <contributor>This tool was developed by Vincent Magnotta and Greg Harris.</contributor>
+  <contributor>This tool was developed by Vincent Magnotta, Greg Harris, Hans Johnson, and Joy Matsui.</contributor>
 
 
   <parameters>
@@ -39,6 +39,19 @@
       <default>0</default>
     </integer>
 
+  </parameters>
+
+  <parameters advanced="true">
+    <label>Main Parameters</label>
+
+    <integer-vector>
+      <name>paddedImageSize</name>
+      <longflag>paddedImageSize</longflag>
+      <label>Padded Image Size</label>
+      <description>Final image size of each diffusion weighted volume in the output image after image padding.</description>
+      <default>0,0,0</default>
+    </integer-vector>
+  
   </parameters>
 
   <parameters>

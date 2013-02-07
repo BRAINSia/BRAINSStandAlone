@@ -32,6 +32,7 @@
 #include <itkTransformFileWriter.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
+#include <itkConstantPadImageFilter.h>
 #include "GenericTransformImage.h"
 #include "BRAINSFitHelper.h"
 #include "BRAINSThreadControl.h"
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
     std::cout << "Input Transform: " <<  inputTransform << std::endl;
     std::cout << "Output Image: " <<  outputVolume << std::endl;
     std::cout << "Debug Level: " << debugLevel << std::endl;
+    std::cout << "Padded Image Size: " << paddedImageSize[0] << "," << paddedImageSize[1] << "," << paddedImageSize[2] << std::endl;
     std::cout << "=====================================================" << std::endl;
     }
 
@@ -173,9 +175,7 @@ int main(int argc, char *argv[])
       DWIMeasurementFrame[ i ][ j ] = msrFrame[ i ][ j ];
     }
   }
-  std::cout << "DWI measurement frame (DWIMeasurementFrame): " << DWIMeasurementFrame << std::endl;
   vnl_matrix_fixed< double, 3, 3 > DWIInverseMeasurementFrame = vnl_inverse( DWIMeasurementFrame );
-  std::cout << "DWI inverse measurement frame (DWIInverseMeasurementFrame): " << DWIInverseMeasurementFrame << std::endl; 
   
   
   // Resample DWI in place
@@ -198,11 +198,9 @@ int main(int argc, char *argv[])
       NrrdValue.c_str(), " %lf %lf %lf", &curGradientDirection[0], &curGradientDirection[1], &curGradientDirection[2]);
 
     // Rotate the diffusion gradient with rigid transform and inverse measurement frame
-    std::cout << "Current gradient direction (before rotation): " << curGradientDirection << std::endl;
     RigidTransformType::Pointer inverseRigidTransform = RigidTransformType::New();
     const bool invertWorked = rigidTransform->GetInverse( inverseRigidTransform );
     curGradientDirection = inverseRigidTransform->GetMatrix().GetVnlMatrix() * DWIInverseMeasurementFrame * curGradientDirection;
-    std::cout << "Current gradient direction (after rotation): " << curGradientDirection << std::endl;
 
     // Updated the Image MetaData Dictionary with Updated Gradient Information
     //sprintf(tmpStr, " %18.15lf %18.15lf %18.15lf", curGradientDirection[0], curGradientDirection[1],
@@ -220,7 +218,6 @@ int main(int argc, char *argv[])
   // Set DWI measurement frame to identity by multiplying by its inverse
   // Update Image MetaData Dictionary with new measurement frame
   vnl_matrix_fixed< double, 3, 3 > newMeasurementFrame = DWIInverseMeasurementFrame * DWIMeasurementFrame;
-  std::cout << "New measurement frame (newMeasurementFrame): " << newMeasurementFrame << std::endl;
   std::vector< std::vector< double > > newMf(3);
   for( unsigned int i = 0; i < 3; i++ )
   {
@@ -232,13 +229,39 @@ int main(int argc, char *argv[])
   }
   itk::EncapsulateMetaData< std::vector< std::vector< double > > >( resampleImage->GetMetaDataDictionary(), "NRRD_measurement frame", newMf ); 
 
- 
+  
+  // Pad image
+  typedef itk::ConstantPadImageFilter< NrrdImageType, NrrdImageType > ConstantPadImageFilterType;
+  
+  NrrdImageType::RegionType region = resampleImage->GetLargestPossibleRegion();
+  NrrdImageType::SizeType size = region.GetSize();
+  
+  NrrdImageType::SizeType lowerExtendRegion;
+  lowerExtendRegion[0] = ( paddedImageSize[0] - size[0] ) / 2;
+  lowerExtendRegion[1] = ( paddedImageSize[1] - size[1] ) / 2;
+  lowerExtendRegion[2] = ( paddedImageSize[2] - size[2] ) / 2;
+
+  NrrdImageType::SizeType upperExtendRegion;
+  upperExtendRegion[0] = ( paddedImageSize[0] - size[0] ) / 2;
+  upperExtendRegion[1] = ( paddedImageSize[1] - size[1] ) / 2;
+  upperExtendRegion[2] = ( paddedImageSize[2] - size[2] ) / 2;
+
+  NrrdImageType::PixelType constantPixel = 0;
+  
+  ConstantPadImageFilterType::Pointer padFilter = ConstantPadImageFilterType::New();
+  padFilter->SetInput( resampleImage );
+  padFilter->SetPadLowerBound( lowerExtendRegion );
+  padFilter->SetPadUpperBound( upperExtendRegion );
+  padFilter->SetConstant( constantPixel );
+  padFilter->Update();
+
+
   // Write out resampled in place DWI
   typedef itk::ImageFileWriter<NrrdImageType> WriterType;
   WriterType::Pointer nrrdWriter = WriterType::New();
   nrrdWriter->UseCompressionOn();
   nrrdWriter->UseInputMetaDataDictionaryOn();
-  nrrdWriter->SetInput( resampleImage );
+  nrrdWriter->SetInput( padFilter->GetOutput() );
   nrrdWriter->SetFileName( outputVolume );
   try
     {
