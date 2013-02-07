@@ -131,9 +131,8 @@ int main( int argc, char *argv[] )
     }
     catch( itk::ExceptionObject & err )
     {
-      std::cerr << "Exception Object caught:\n"
-                << err << std::endl;
-      return EXIT_FAILURE;
+    std::cerr << "Exception Object caught:\n" << err << std::endl;
+    return EXIT_FAILURE;
     }
 
   return 0;

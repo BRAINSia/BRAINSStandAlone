@@ -1248,34 +1248,26 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
   bool sizematch = true;
   if( this->getXDim() != newlmks.getXDim() )
     {
-    std::cout
-    <<
-    "Error. X dimensions of landmark objects do not match in ConcatLandmarks!"
-    << std::endl;
+    std::cout << "Error. X dimensions of landmark objects do not match in ConcatLandmarks!"
+              << std::endl;
     sizematch = false;
     }
   if( this->getYDim() != newlmks.getYDim() )
     {
-    std::cout
-    <<
-    "Error. Y dimensions of landmark objects do not match in ConcatLandmarks!"
-    << std::endl;
+    std::cout << "Error. Y dimensions of landmark objects do not match in ConcatLandmarks!"
+              << std::endl;
     sizematch = false;
     }
   if( this->getZDim() != newlmks.getZDim() )
     {
-    std::cout
-    <<
-    "Error. Z dimensions of landmark objects do not match in ConcatLandmarks!"
-    << std::endl;
+    std::cout << "Error. Z dimensions of landmark objects do not match in ConcatLandmarks!"
+              << std::endl;
     sizematch = false;
     }
   if( this->getTDim() != newlmks.getTDim() )
     {
-    std::cout
-    <<
-    "Error. T dimensions of landmark objects do not match in ConcatLandmarks!"
-    << std::endl;
+    std::cout << "Error. T dimensions of landmark objects do not match in ConcatLandmarks!"
+              << std::endl;
     sizematch = false;
     }
   if( sizematch == false )
@@ -1501,8 +1493,7 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      << "ERROR: End of file reached before LANDMARK_HEADER_BEGIN found"
+      std::cout << "ERROR: End of file reached before LANDMARK_HEADER_BEGIN found"
       << std::endl;
       }
     }
@@ -1553,9 +1544,8 @@ bool InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      << "ERROR: End of file reached before LANDMARK_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before LANDMARK_HEADER_END found"
+                << std::endl;
       }
     }
 
@@ -1740,10 +1730,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     // std::cout << "LINE: " << buffer << std::endl;
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_BEGIN found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_BEGIN found"
+                << std::endl;
       }
     }
 
@@ -1795,10 +1783,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     // }
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     }
 
@@ -1829,10 +1815,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("AC_Point", buffer, ImageDims, ImageRes,
                           AC_Point) == false )
@@ -1844,10 +1828,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("PC_Point", buffer, ImageDims, ImageRes,
                           PC_Point) == false )
@@ -1859,10 +1841,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("SLAPoint", buffer, ImageDims, ImageRes,
                           SLAPoint) == false )
@@ -1874,10 +1854,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("IRPPoint", buffer, ImageDims, ImageRes,
                           IRPPoint) == false )
@@ -2108,10 +2086,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_BEGIN found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_BEGIN found"
+                << std::endl;
       }
     }
 
@@ -2149,10 +2125,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     // }
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     }
 
@@ -2182,10 +2156,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("SLAPoint", buffer, ImageDims, ImageRes,
                           SLAPoint) == false )
@@ -2197,10 +2169,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
       status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
       if( status == NULL )
         {
-        std::cout
-        <<
-        "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-        << std::endl;
+        std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                  << std::endl;
         }
       // if(process_bnd_point("AC_Point", buffer, ImageDims, ImageRes,
       // AC_Point)==false) {return false;}
@@ -2210,10 +2180,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("FV_Point", buffer, ImageDims, ImageRes,
                           FV_Point) == false )
@@ -2225,10 +2193,8 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     status = fgets(buffer, FILE_BUFFER_SIZE, tempfile);
     if( status == NULL )
       {
-      std::cout
-      <<
-      "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
-      << std::endl;
+      std::cout << "ERROR: End of file reached before TALAIRACH_PARAMETER_HEADER_END found"
+                << std::endl;
       }
     if( process_bnd_point("IRPPoint", buffer, ImageDims, ImageRes,
                           IRPPoint) == false )
@@ -2339,7 +2305,7 @@ InverseConsistentLandmarks<PointStorageType, PointSetType>
     }
 }
 
-template <typename PointStorageType, typename PointSetType>
+template typename PointStorageType, typename PointSetType>
 bool
 InverseConsistentLandmarks<PointStorageType, PointSetType>
 ::ReadIPLCerebellarPointTypes(const std::string lmrkfilename,

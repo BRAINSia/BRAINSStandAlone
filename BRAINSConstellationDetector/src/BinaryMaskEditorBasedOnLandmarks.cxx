@@ -7,42 +7,43 @@
 #include "itkImageRegionIterator.h"
 #include "itkImageFileWriter.h"
 #include "vcl_algorithm.h"
-
 #include "BinaryMaskEditorBasedOnLandmarksCLP.h"
+#include "DoubleToString.h"
 
 class ThreeLandmarksForPlane
 {
   // The definition depends on Slicer3LandmarkIO.
-  // Point type is simply itk::Pointe<double, 3> 
+  // Point type is simply itk::Pointe<double, 3>
   public:
   PointType A;
   PointType B;
   PointType C;
 
-  
+
   typedef itk::Point<double, 3>    VectorType;
 
   void SetNormal()
   {
+  DoubleToString doubleConvert;
   // Determine AB and AC vector components
   VectorType AB;
   AB[ 0 ] = B[ 0 ] - A[ 0 ];
   AB[ 1 ] = B[ 1 ] - A[ 1 ];
   AB[ 2 ] = B[ 2 ] - A[ 2 ];
-  std::cout<<"AB::: [" 
-           << AB[0] << ", "
-           << AB[1] << ", "
-           << AB[2] << " ]"
+  std::cout<<"AB::: ["
+           << doubleConvert(AB[0]) << ", "
+           << doubleConvert(AB[1]) << ", "
+           << doubleConvert(AB[2]) << " ]"
            <<std::endl;
-  
+
   VectorType AC;
   AC[ 0 ] = C[ 0 ] - A[ 0 ];
-  AC[ 1 ] = C[ 1 ] - A[ 1 ]; 
+  AC[ 1 ] = C[ 1 ] - A[ 1 ];
   AC[ 2 ] = C[ 2 ] - A[ 2 ];
-  std::cout<<"AC::: [" 
-           << AC[0] << ", "
-           << AC[1] << ", "
-           << AC[2] << " ]"
+  std::cout<<"AC::: ["
+           << doubleConvert(AC[0]) << ", "
+           << doubleConvert(AC[1]) << ", "
+           << doubleConvert(AC[2]) << " ]"
            <<std::endl;
 
   // Find cross product components
@@ -54,11 +55,11 @@ class ThreeLandmarksForPlane
   double magnitude = vcl_sqrt( normal[0] * normal[0] +
                                normal[1] * normal[1] +
                                normal[2] * normal[2] );
-    
-  std::cout<<"Normal::: Before Norm[" 
-           << normal[0] << ", "
-           << normal[1] << ", "
-           << normal[2] << " ]"
+
+  std::cout<<"Normal::: Before Norm["
+           << doubleConvert(normal[0]) << ", "
+           << doubleConvert(normal[1]) << ", "
+           << doubleConvert(normal[2]) << " ]"
            <<std::endl;
   normal[ 0 ] = normal[ 0 ] / magnitude;
   normal[ 1 ] = normal[ 1 ] / magnitude;
@@ -70,14 +71,14 @@ class ThreeLandmarksForPlane
     normal[ 1 ] = - normal[ 1 ] ;
     normal[ 2 ] = - normal[ 2 ] ;
     }
-  std::cout<<"Normal:::  After Norm[" 
-           << normal[0] << ", "
-           << normal[1] << ", "
-           << normal[2] << " ]"
+  std::cout<<"Normal:::  After Norm["
+           << doubleConvert(normal[0]) << ", "
+           << doubleConvert(normal[1]) << ", "
+           << doubleConvert(normal[2]) << " ]"
            <<std::endl;
   }
 
-  double 
+  double
   GetRelativeLocationToPlane( PointType x )
   {
     double answer =
@@ -94,18 +95,19 @@ class ThreeLandmarksForPlane
 
   private:
   VectorType normal;
-  
+
 };
 
-// ------------------------------------------------------------------------ // 
+
+// ------------------------------------------------------------------------ //
 template<class TImageType>
 void
 CutBinaryVolumeByPlaneWithDirection( typename TImageType::Pointer * _imageVolume,
-                                     ThreeLandmarksForPlane * currentPlane, 
+                                     ThreeLandmarksForPlane * currentPlane,
                                      const std::string & direction )
 {
   typedef itk::ImageRegionIterator< TImageType > ImageRegionIteratorType;
-  ImageRegionIteratorType it(  *_imageVolume, 
+  ImageRegionIteratorType it(  *_imageVolume,
                               (*_imageVolume)->GetRequestedRegion() );
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
@@ -114,24 +116,24 @@ CutBinaryVolumeByPlaneWithDirection( typename TImageType::Pointer * _imageVolume
     PointType currentPhysicalLocation;
     (*_imageVolume)->TransformIndexToPhysicalPoint( it.GetIndex(), currentPhysicalLocation );
 
-    if( direction == "true" && 
+    if( direction == "true" &&
         (*currentPlane).GetRelativeLocationToPlane( currentPhysicalLocation ) > 0.0F )
-      { 
-      it.Set( 0.0F ); 
+      {
+      it.Set( 0.0F );
       }
     else if( direction =="false" &&
         (*currentPlane).GetRelativeLocationToPlane( currentPhysicalLocation ) < 0.0F ){ it.Set( 0.0F ); }
     }
 
 }
-// ------------------------------------------------------------------------ // 
+// ------------------------------------------------------------------------ //
 template <class TImageType>
 void
-CutBinaryVolumeByPointWithDirection( typename TImageType::Pointer * _imageVolume, 
+CutBinaryVolumeByPointWithDirection( typename TImageType::Pointer * _imageVolume,
                                      const PointType _landmark,
                                      const std::string & _direction )
 {
-  
+
   // set directional constant for convenient programming
   //
   enum DIRECTION{
@@ -145,7 +147,7 @@ CutBinaryVolumeByPointWithDirection( typename TImageType::Pointer * _imageVolume
   else if( _direction == "INFERIOR" ) { myDirection = INFERIOR; }
 
   typedef itk::ImageRegionIterator< TImageType > ImageRegionIteratorType;
-  ImageRegionIteratorType it(  *_imageVolume, 
+  ImageRegionIteratorType it(  *_imageVolume,
                               (*_imageVolume)->GetRequestedRegion() );
   std::cout<<__LINE__<<"::"<<__FILE__<<std::endl;
 
@@ -181,7 +183,7 @@ int main( int argc, char * argv[] )
 {
   PARSE_ARGS;
 
-  // check input 
+  // check input
   //
   if( inputBinaryVolume.empty() ||
       inputLandmarksFilename.empty()
@@ -197,7 +199,7 @@ int main( int argc, char * argv[] )
     {
     std::cout<<" Size should match between inputLandmarkNames and"
              <<" setCutDirectionForLandmark but "
-             << inputLandmarkNames.size() << " != " 
+             << inputLandmarkNames.size() << " != "
              << setCutDirectionForLandmark.size() <<std::endl;
     }
 
@@ -218,7 +220,7 @@ int main( int argc, char * argv[] )
 
   // read landmark file in
   //
-  std::cout << "Reading: " 
+  std::cout << "Reading: "
             << inputLandmarksFilename << std::endl;
   LandmarksMapType landmarksSet = ReadSlicer3toITKLmk( inputLandmarksFilename );
 
@@ -242,7 +244,7 @@ int main( int argc, char * argv[] )
     {
     if( landmarksSet.find( *ldmkIt ) == landmarksSet.end() )
       {
-      std::cerr << "ERROR: Landmark not found: " << *ldmkIt << std::endl; 
+      std::cerr << "ERROR: Landmark not found: " << *ldmkIt << std::endl;
       std::exit( EXIT_FAILURE );
       }
 
@@ -273,7 +275,7 @@ int main( int argc, char * argv[] )
 
   if( inputLandmarkNamesForObliquePlane.size() % 3 != 0)
     {
-    std::cerr << "ERROR: Landmarks set for plane has to given as a multiple of three: " 
+    std::cerr << "ERROR: Landmarks set for plane has to given as a multiple of three: "
               << inputLandmarkNamesForObliquePlane.size() << std::endl;
     std::exit( EXIT_FAILURE );
     }
@@ -286,13 +288,13 @@ int main( int argc, char * argv[] )
       {
       std::cout<<"Directional information for plane has to be match "
                <<"to the number of plane descriptions.("
-               <<inputLandmarkNamesForObliquePlane.size() <<"!=" 
+               <<inputLandmarkNamesForObliquePlane.size() <<"!="
                <<setCutDirectionForObliquePlane.size()<< ")"
                <<std::endl;
       return( EXIT_FAILURE );
       }
   }
-                
+
   for( LandMarkForPlaneType::const_iterator  inputLdmrIt= inputLandmarkNamesForObliquePlane.begin();
        inputLdmrIt< inputLandmarkNamesForObliquePlane.end();
        ++inputLdmrIt )

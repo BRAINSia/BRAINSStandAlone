@@ -216,7 +216,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     {
     image = volOrig;
     }
-      
+
   landmarksConstellationDetector myDetector;
     {
     // a little abuse of the duplicator here
@@ -225,13 +225,13 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
     duplicator->Update();
     // The detector will use the output image after the Hough eye detector
     myDetector.SetVolOrig( duplicator->GetOutput() );
-        
+
     // The detector also needs the original input if it has to fix a bad estimation of the MSP
     duplicator->SetInputImage( image );
     duplicator->Update();
     myDetector.SetOriginalInput( duplicator->GetOutput() );
     }
-    
+
   myDetector.SetInputTemplateModel( myModel );
   myDetector.SetLlsMatrices( this->m_LlsMatrices );
   myDetector.SetLlsMeans( this->m_LlsMeans );
@@ -385,7 +385,7 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 
       {
         image = myDetector.GetOriginalInput(); // image -> myDetector(modification May happen) -> image
-          
+
         {
         //const SImageType * constImage( this->m_OriginalInputImage.GetPointer() );
         const SImageType * constImage( image.GetPointer() );
@@ -399,8 +399,8 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
         }
 
         {
-        this->m_OutputResampledImage = TransformResample<SImageType, SImageType> ( image, 
-                                                                                   MakeIsoTropicReferenceImage(), 
+        this->m_OutputResampledImage = TransformResample<SImageType, SImageType> ( image,
+                                                                                   MakeIsoTropicReferenceImage(),
                                                                                    BackgroundFillValue,
                                                                                    GetInterpolatorFromString<SImageType>(this->m_InterpolationMode),
                                                                                    this->m_VersorTransform.GetPointer() );
@@ -507,14 +507,14 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
             {
                 std::cout << lit->first << "=" << lit->second[0] << "," << lit->second[1] << "," << lit->second[2] << std::endl << std::endl;
             }
-                  
+
             std::cout << "filename : " << this->m_WriteBranded2DImage << std::endl;
-            
+
             itkUtil::WriteImage<SImageType>(this->m_OutputResampledImage, "m_OutputResampledImage.nii.gz");
-            
+
             double height = myDetector.GetModelHeight("AC");
             */
-            
+
             MakeBranded2DImage(this->m_OutputResampledImage.GetPointer(), myDetector,
                            this->m_AlignedPoints["RP"],
                            this->m_AlignedPoints["AC"],
@@ -534,8 +534,6 @@ BRAINSConstellationDetector2<TInputImage, TOutputImage>
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-
-  // os << "Mode: " << this->m_Mode << std::endl;
 }
 
 }
