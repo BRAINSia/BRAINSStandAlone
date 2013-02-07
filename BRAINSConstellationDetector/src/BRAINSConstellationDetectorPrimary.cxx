@@ -99,7 +99,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
     catch( itk::ExceptionObject & err )
     {
         std::cerr << " Error while reading image file( s ) with ITK:\n "
-        << err << std::endl;
+                  << err << std::endl;
     }
     std::cout << "Processing: " << this->m_inputVolume << std::endl;
     
@@ -332,7 +332,7 @@ bool BRAINSConstellationDetectorPrimary::Compute( void )
              ( this->m_inputLandmarksPaired.compare( "" ) != 0 ) ) )
     {
         std::cerr << "The outputLandmark parameter should be paired with"
-        << "the inputLandmark parameter." << std::endl;
+                  << "the inputLandmark parameter." << std::endl;
         std::cerr << "No output acpc-aligned landmark list file is generated" << std::endl;
     }
     //------------------------
