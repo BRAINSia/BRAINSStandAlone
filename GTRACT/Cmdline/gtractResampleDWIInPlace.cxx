@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     std::cout << "Input Transform: " <<  inputTransform << std::endl;
     std::cout << "Output Image: " <<  outputVolume << std::endl;
     std::cout << "Debug Level: " << debugLevel << std::endl;
-    std::cout << "Padded Image Size: " << paddedImageSize[0] << "," << paddedImageSize[1] << "," << paddedImageSize[2] << std::endl;
+    std::cout << "Padded Image Size: " << imagePadding[0] << "," << imagePadding[1] << "," << imagePadding[2] << std::endl;
     std::cout << "=====================================================" << std::endl;
     }
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
   typedef signed short                        PixelType;
   typedef itk::VectorImage<PixelType, 3>      NrrdImageType;
   typedef itk::VersorRigid3DTransform<double> RigidTransformType;
-
+  typedef itk::Image<PixelType, 3>            InputIndexImageType;
   typedef itk::ImageFileReader<NrrdImageType,
                                itk::DefaultConvertPixelTraits<PixelType> > FileReaderType;
   FileReaderType::Pointer imageReader = FileReaderType::New();
@@ -181,8 +181,9 @@ int main(int argc, char *argv[])
   // Resample DWI in place
   resampleImage = SetVectorImageRigidTransformInPlace<NrrdImageType>(rigidTransform.GetPointer(), resampleImage);
 
-  
   std::cout << "Rigid transform matrix: " << rigidTransform->GetMatrix().GetVnlMatrix() << std::endl;
+  
+  
   // Rotate gradient vectors by rigid transform and inverse measurement frame
   for( unsigned int i = 0; i < resampleImage->GetVectorLength(); i++ )
     {
@@ -231,29 +232,60 @@ int main(int argc, char *argv[])
 
   
   // Pad image
-  typedef itk::ConstantPadImageFilter< NrrdImageType, NrrdImageType > ConstantPadImageFilterType;
+  typedef itk::VectorIndexSelectionCastImageFilter< NrrdImageType, InputIndexImageType > ExtractImageFilterType;
+  ExtractImageFilterType::Pointer individualVolumeFilter = ExtractImageFilterType::New();
+  individualVolumeFilter->SetInput( resampleImage );
+  individualVolumeFilter->Update();
   
-  NrrdImageType::RegionType region = resampleImage->GetLargestPossibleRegion();
-  NrrdImageType::SizeType size = region.GetSize();
-  
-  NrrdImageType::SizeType lowerExtendRegion;
-  lowerExtendRegion[0] = ( paddedImageSize[0] - size[0] ) / 2;
-  lowerExtendRegion[1] = ( paddedImageSize[1] - size[1] ) / 2;
-  lowerExtendRegion[2] = ( paddedImageSize[2] - size[2] ) / 2;
+  typedef itk::ConstantPadImageFilter< InputIndexImageType, InputIndexImageType > ConstantPadImageFilterType;
 
-  NrrdImageType::SizeType upperExtendRegion;
-  upperExtendRegion[0] = ( paddedImageSize[0] - size[0] ) / 2;
-  upperExtendRegion[1] = ( paddedImageSize[1] - size[1] ) / 2;
-  upperExtendRegion[2] = ( paddedImageSize[2] - size[2] ) / 2;
+  NrrdImageType::Pointer paddedImage = NrrdImageType::New();
+  paddedImage->SetRegions( resampleImage->GetLargestPossibleRegion() );
+  paddedImage->SetSpacing( resampleImage->GetSpacing() );
+  paddedImage->SetOrigin( resampleImage->GetOrigin() );
+  paddedImage->SetDirection( resampleImage->GetDirection() );
+  paddedImage->SetVectorLength( resampleImage->GetVectorLength() );
+  paddedImage->SetMetaDataDictionary( resampleImage->GetMetaDataDictionary() );
+  paddedImage->Allocate();
 
-  NrrdImageType::PixelType constantPixel = 0;
+  typedef itk::ImageRegionConstIterator< InputIndexImageType > ConstIteratorType;
+  typedef itk::ImageRegionIterator< NrrdImageType > IteratorType;
+
+  IteratorType ot( paddedImage, paddedImage->GetRequestedRegion() );
+  NrrdImageType::PixelType vectorImagePixel; 
   
-  ConstantPadImageFilterType::Pointer padFilter = ConstantPadImageFilterType::New();
-  padFilter->SetInput( resampleImage );
-  padFilter->SetPadLowerBound( lowerExtendRegion );
-  padFilter->SetPadUpperBound( upperExtendRegion );
-  padFilter->SetConstant( constantPixel );
-  padFilter->Update();
+  for( unsigned int i = 0; i < resampleImage->GetVectorLength(); i++ )
+  {
+    individualVolumeFilter->SetIndex( i );
+    individualVolumeFilter->Update();
+ 
+    InputIndexImageType::SizeType lowerExtendRegion;
+    lowerExtendRegion[0] = imagePadding[0];
+    lowerExtendRegion[1] = imagePadding[1];
+    lowerExtendRegion[2] = imagePadding[2];
+
+    InputIndexImageType::SizeType upperExtendRegion;
+    upperExtendRegion[0] = imagePadding[3];
+    upperExtendRegion[1] = imagePadding[4];
+    upperExtendRegion[2] = imagePadding[5];
+
+    InputIndexImageType::PixelType constantPixel = 0;
+
+    ConstantPadImageFilterType::Pointer padFilter = ConstantPadImageFilterType::New();
+    padFilter->SetInput( individualVolumeFilter->GetOutput() );
+    padFilter->SetPadLowerBound( lowerExtendRegion );
+    padFilter->SetPadUpperBound( upperExtendRegion );
+    padFilter->SetConstant( constantPixel );
+    padFilter->Update();
+  
+    ConstIteratorType it( padFilter->GetOutput(), padFilter->GetOutput()->GetRequestedRegion() );
+    for( ot.GoToBegin(), it.GoToBegin(); !ot.IsAtEnd(); ++ot, ++it )
+    {
+      vectorImagePixel = ot.Get();
+      vectorImagePixel[ i ] = it.Value();
+      ot.Set( vectorImagePixel );
+    }
+  }
 
 
   // Write out resampled in place DWI
@@ -261,7 +293,7 @@ int main(int argc, char *argv[])
   WriterType::Pointer nrrdWriter = WriterType::New();
   nrrdWriter->UseCompressionOn();
   nrrdWriter->UseInputMetaDataDictionaryOn();
-  nrrdWriter->SetInput( padFilter->GetOutput() );
+  nrrdWriter->SetInput( paddedImage ); 
   nrrdWriter->SetFileName( outputVolume );
   try
     {

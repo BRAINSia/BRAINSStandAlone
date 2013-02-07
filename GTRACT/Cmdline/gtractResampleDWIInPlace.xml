@@ -45,11 +45,11 @@
     <label>Main Parameters</label>
 
     <integer-vector>
-      <name>paddedImageSize</name>
-      <longflag>paddedImageSize</longflag>
-      <label>Padded Image Size</label>
-      <description>Final image size of each diffusion weighted volume in the output image after image padding.</description>
-      <default>0,0,0</default>
+      <name>imagePadding</name>
+      <longflag>imagePadding</longflag>
+      <label>Image Padding</label>
+      <description>Number of voxels to be added to the lower x, y, z region and uppser x, y, z region.</description>
+      <default>0,0,0,0,0,0</default>
     </integer-vector>
   
   </parameters>
