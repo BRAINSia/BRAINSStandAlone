@@ -48,8 +48,8 @@
       <name>imagePadding</name>
       <longflag>imagePadding</longflag>
       <label>Image Padding</label>
-      <description>Number of voxels to be added to the lower x, y, z region and uppser x, y, z region.</description>
-      <default>0,0,0,0,0,0</default>
+      <description>Number of voxels to be added to the lower x, y, z region and upper x, y, z region.</description>
+      <default>0,0,0</default>
     </integer-vector>
   
   </parameters>

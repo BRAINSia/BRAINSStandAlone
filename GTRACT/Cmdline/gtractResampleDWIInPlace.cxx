@@ -32,7 +32,6 @@
 #include <itkTransformFileWriter.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
-#include <itkConstantPadImageFilter.h>
 #include "GenericTransformImage.h"
 #include "BRAINSFitHelper.h"
 #include "BRAINSThreadControl.h"
@@ -97,7 +96,7 @@ int main(int argc, char *argv[])
     std::cout << "Input Transform: " <<  inputTransform << std::endl;
     std::cout << "Output Image: " <<  outputVolume << std::endl;
     std::cout << "Debug Level: " << debugLevel << std::endl;
-    std::cout << "Padded Image Size: " << imagePadding[0] << "," << imagePadding[1] << "," << imagePadding[2] << std::endl;
+    std::cout << "Image Padding To Each Side (x, y, z): " << imagePadding[0] << "," << imagePadding[1] << "," << imagePadding[2] << std::endl; 
     std::cout << "=====================================================" << std::endl;
     }
 
@@ -164,7 +163,8 @@ int main(int argc, char *argv[])
 
   // Get measurement frame and its inverse from DWI scan
   std::vector< std::vector< double > > msrFrame;
-  itk::ExposeMetaData< std::vector< std::vector< double > > >( inputMetaDataDictionary, "NRRD_measurement frame", msrFrame );
+  itk::ExposeMetaData< std::vector< std::vector< double > > >( inputMetaDataDictionary, 
+    "NRRD_measurement frame", msrFrame );
   
 
   vnl_matrix_fixed< double, 3, 3 > DWIMeasurementFrame;
@@ -232,61 +232,47 @@ int main(int argc, char *argv[])
 
   
   // Pad image
-  typedef itk::VectorIndexSelectionCastImageFilter< NrrdImageType, InputIndexImageType > ExtractImageFilterType;
-  ExtractImageFilterType::Pointer individualVolumeFilter = ExtractImageFilterType::New();
-  individualVolumeFilter->SetInput( resampleImage );
-  individualVolumeFilter->Update();
-  
-  typedef itk::ConstantPadImageFilter< InputIndexImageType, InputIndexImageType > ConstantPadImageFilterType;
+  const NrrdImageType::RegionType inputRegion = resampleImage->GetLargestPossibleRegion();
+  const NrrdImageType::SizeType inputSize = inputRegion.GetSize();
+  const NrrdImageType::PointType inputOrigin = resampleImage->GetOrigin();
+  NrrdImageType::SizeType newSize;
+  NrrdImageType::PointType newOrigin;
 
   NrrdImageType::Pointer paddedImage = NrrdImageType::New();
-  paddedImage->SetRegions( resampleImage->GetLargestPossibleRegion() );
   paddedImage->SetSpacing( resampleImage->GetSpacing() );
-  paddedImage->SetOrigin( resampleImage->GetOrigin() );
   paddedImage->SetDirection( resampleImage->GetDirection() );
   paddedImage->SetVectorLength( resampleImage->GetVectorLength() );
   paddedImage->SetMetaDataDictionary( resampleImage->GetMetaDataDictionary() );
+
+  for( unsigned int i = 0; i < 3; i++ )
+  {
+    std::cout << "inputSize: " << inputSize[ i ] << std::endl;
+    std::cout << "imagePadding: " << imagePadding[ i ] << std::endl;
+    newOrigin[ i ] = inputOrigin[ i ] - imagePadding[ i ];
+    newSize[ i ] = inputSize[ i ] + ( imagePadding[ i ] * 2 );
+    std::cout << "newSize: " << newSize[ i ] << std::endl;
+  }
+  std::cout << "oldSize: " << inputSize << std::endl;
+  std::cout << "newSize: " << newSize << std::endl;
+  paddedImage->SetRegions( newSize );
+  paddedImage->SetOrigin( newOrigin );
   paddedImage->Allocate();
 
-  typedef itk::ImageRegionConstIterator< InputIndexImageType > ConstIteratorType;
   typedef itk::ImageRegionIterator< NrrdImageType > IteratorType;
+  IteratorType InIt( resampleImage, resampleImage->GetRequestedRegion() );
 
-  IteratorType ot( paddedImage, paddedImage->GetRequestedRegion() );
-  NrrdImageType::PixelType vectorImagePixel; 
-  
-  for( unsigned int i = 0; i < resampleImage->GetVectorLength(); i++ )
+  for( InIt.GoToBegin(); !InIt.IsAtEnd(); ++InIt )
   {
-    individualVolumeFilter->SetIndex( i );
-    individualVolumeFilter->Update();
- 
-    InputIndexImageType::SizeType lowerExtendRegion;
-    lowerExtendRegion[0] = imagePadding[0];
-    lowerExtendRegion[1] = imagePadding[1];
-    lowerExtendRegion[2] = imagePadding[2];
+    NrrdImageType::IndexType InIndex = InIt.GetIndex();
+    NrrdImageType::IndexType OutIndex;
+    OutIndex[ 0 ] = InIndex[ 0 ] + imagePadding[ 0 ];
+    OutIndex[ 1 ] = InIndex[ 1 ] + imagePadding[ 1 ];
+    OutIndex[ 2 ] = InIndex[ 2 ] + imagePadding[ 2 ];
 
-    InputIndexImageType::SizeType upperExtendRegion;
-    upperExtendRegion[0] = imagePadding[3];
-    upperExtendRegion[1] = imagePadding[4];
-    upperExtendRegion[2] = imagePadding[5];
-
-    InputIndexImageType::PixelType constantPixel = 0;
-
-    ConstantPadImageFilterType::Pointer padFilter = ConstantPadImageFilterType::New();
-    padFilter->SetInput( individualVolumeFilter->GetOutput() );
-    padFilter->SetPadLowerBound( lowerExtendRegion );
-    padFilter->SetPadUpperBound( upperExtendRegion );
-    padFilter->SetConstant( constantPixel );
-    padFilter->Update();
-  
-    ConstIteratorType it( padFilter->GetOutput(), padFilter->GetOutput()->GetRequestedRegion() );
-    for( ot.GoToBegin(), it.GoToBegin(); !ot.IsAtEnd(); ++ot, ++it )
-    {
-      vectorImagePixel = ot.Get();
-      vectorImagePixel[ i ] = it.Value();
-      ot.Set( vectorImagePixel );
-    }
+    NrrdImageType::PixelType InImagePixel = resampleImage->GetPixel( InIndex );
+    paddedImage->SetPixel( OutIndex, InImagePixel );
+    paddedImage->Update();
   }
-
 
   // Write out resampled in place DWI
   typedef itk::ImageFileWriter<NrrdImageType> WriterType;
