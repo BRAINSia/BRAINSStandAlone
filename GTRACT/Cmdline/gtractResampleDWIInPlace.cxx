@@ -200,7 +200,6 @@ int main(int argc, char *argv[])
 
     // Rotate the diffusion gradient with rigid transform and inverse measurement frame
     RigidTransformType::Pointer inverseRigidTransform = RigidTransformType::New();
-    const bool invertWorked = rigidTransform->GetInverse( inverseRigidTransform );
     curGradientDirection = inverseRigidTransform->GetMatrix().GetVnlMatrix() * DWIInverseMeasurementFrame * curGradientDirection;
 
     // Updated the Image MetaData Dictionary with Updated Gradient Information
@@ -235,25 +234,75 @@ int main(int argc, char *argv[])
   const NrrdImageType::RegionType inputRegion = resampleImage->GetLargestPossibleRegion();
   const NrrdImageType::SizeType inputSize = inputRegion.GetSize();
   const NrrdImageType::PointType inputOrigin = resampleImage->GetOrigin();
-  NrrdImageType::SizeType newSize;
-  NrrdImageType::PointType newOrigin;
+  const NrrdImageType::DirectionType inputDirection = resampleImage->GetDirection();
+  const NrrdImageType::SpacingType inputSpacing = resampleImage->GetSpacing();
 
-  NrrdImageType::Pointer paddedImage = NrrdImageType::New();
-  paddedImage->SetSpacing( resampleImage->GetSpacing() );
-  paddedImage->SetDirection( resampleImage->GetDirection() );
-  paddedImage->SetVectorLength( resampleImage->GetVectorLength() );
-  paddedImage->SetMetaDataDictionary( resampleImage->GetMetaDataDictionary() );
-
+  vnl_matrix_fixed< double, 3, 3 > inputDirectionMatrix;
+  vnl_matrix_fixed< double, 3, 3 > inputSpacingMatrix;
   for( unsigned int i = 0; i < 3; i++ )
   {
-    std::cout << "inputSize: " << inputSize[ i ] << std::endl;
-    std::cout << "imagePadding: " << imagePadding[ i ] << std::endl;
-    newOrigin[ i ] = inputOrigin[ i ] - imagePadding[ i ];
-    newSize[ i ] = inputSize[ i ] + ( imagePadding[ i ] * 2 );
-    std::cout << "newSize: " << newSize[ i ] << std::endl;
+    for ( unsigned int j = 0; j < 3; j++ )
+    {
+      inputDirectionMatrix[ i ][ j ] = inputDirection[ i ][ j ];
+      if( i == j )
+      {
+        inputSpacingMatrix[ i ][ j ] = inputSpacing[ i ];
+      }
+      else
+      {
+        inputSpacingMatrix[ i ][ j ] = 0.0;
+      }
+    }
   }
-  std::cout << "oldSize: " << inputSize << std::endl;
-  std::cout << "newSize: " << newSize << std::endl;
+ 
+  vnl_matrix_fixed< double, 3, 3 > spaceDirections = inputDirectionMatrix * inputSpacingMatrix;
+  vnl_matrix_fixed< double, 3, 4 > newMatrix;
+  for( unsigned int i = 0; i < 3; i++ )
+  {
+    for( unsigned int j = 0; j < 4; j++ )
+    {
+      if( j == 3 )
+      {
+        newMatrix[ i ][ j ] = inputOrigin[ i ];
+      }
+      else
+      {
+        newMatrix[ i ][ j ] = spaceDirections[ i ][ j ];
+      }
+    }
+  }
+
+  vnl_matrix_fixed< double, 4, 1 > voxelShift;
+  voxelShift[ 0 ][ 0 ] = -1.0 * ( double )( imagePadding[ 0 ] );
+  voxelShift[ 1 ][ 0 ] = -1.0 * ( double )( imagePadding[ 1 ] );
+  voxelShift[ 2 ][ 0 ] = -1.0 * ( double )( imagePadding[ 2 ] );
+  voxelShift[ 3 ][ 0 ] = 1.0;
+
+  vnl_matrix_fixed< double, 3, 1 > newOriginMatrix = newMatrix * voxelShift;
+
+  NrrdImageType::PointType newOrigin;
+  for( unsigned int i = 0; i < 3; i++ )
+  {
+    newOrigin[ i ] = newOriginMatrix[ i ][ 0 ];
+  }
+  
+  NrrdImageType::SizeType newSize;
+  for( unsigned int i = 0; i < 3; i++ )
+  {
+    newSize[ i ] = inputSize[ i ] + ( imagePadding[ i ] * 2 );
+  }
+
+  std::cout << "Input DWI Image Origin: ( " << inputOrigin[ 0 ] << ", " << inputOrigin[ 1 ] << ", " << inputOrigin[ 2 ] << " )" << std::endl;
+  std::cout << "Input DWI Image Size: " << inputSize[ 0 ] << " " << inputSize[ 1 ] << " " << inputSize[ 2 ] << std::endl;
+  std::cout << " " << std::endl;
+  std::cout << "Output DWI Image Origin: ( " << newOrigin[ 0 ] << ", " << newOrigin[ 1 ] << ", " << newOrigin[ 2 ] << " )" << std::endl;
+  std::cout << "Output DWI Image Size: " << newSize[ 0 ] << " " << newSize[ 1 ] << " " << newSize[ 2 ] << std::endl;
+  
+  NrrdImageType::Pointer paddedImage = NrrdImageType::New();
+  paddedImage->SetSpacing( inputSpacing );
+  paddedImage->SetDirection( inputDirection );
+  paddedImage->SetVectorLength( resampleImage->GetVectorLength() );
+  paddedImage->SetMetaDataDictionary( resampleImage->GetMetaDataDictionary() );
   paddedImage->SetRegions( newSize );
   paddedImage->SetOrigin( newOrigin );
   paddedImage->Allocate();
@@ -274,6 +323,7 @@ int main(int argc, char *argv[])
     paddedImage->Update();
   }
 
+  
   // Write out resampled in place DWI
   typedef itk::ImageFileWriter<NrrdImageType> WriterType;
   WriterType::Pointer nrrdWriter = WriterType::New();
