@@ -275,13 +275,9 @@ int main(int argc, char *argv[])
   }
 
   vnl_matrix_fixed< double, 4, 1 > voxelShift;
-  NrrdImageType::SizeType paddingShift;
-  paddingShift[ 0 ] = imagePadding[ 0 ] + imagePadding[ 3 ];
-  paddingShift[ 1 ] = imagePadding[ 1 ] + imagePadding[ 4 ];
-  paddingShift[ 2 ] = imagePadding[ 2 ] + imagePadding[ 5 ];
-  voxelShift[ 0 ][ 0 ] = -1.0 * ( double )( paddingShift[ 0 ] );
-  voxelShift[ 1 ][ 0 ] = -1.0 * ( double )( paddingShift[ 1 ] );
-  voxelShift[ 2 ][ 0 ] = -1.0 * ( double )( paddingShift[ 2 ] );
+  voxelShift[ 0 ][ 0 ] = -1.0 * ( double )( imagePadding[ 0 ] );
+  voxelShift[ 1 ][ 0 ] = -1.0 * ( double )( imagePadding[ 1 ] );
+  voxelShift[ 2 ][ 0 ] = -1.0 * ( double )( imagePadding[ 2 ] );
   voxelShift[ 3 ][ 0 ] = 1.0;
 
   vnl_matrix_fixed< double, 3, 1 > newOriginMatrix = newMatrix * voxelShift;
@@ -291,6 +287,11 @@ int main(int argc, char *argv[])
   {
     newOrigin[ i ] = newOriginMatrix[ i ][ 0 ];
   }
+  
+  NrrdImageType::SizeType paddingShift;
+  paddingShift[ 0 ] = imagePadding[ 0 ] + imagePadding[ 3 ];
+  paddingShift[ 1 ] = imagePadding[ 1 ] + imagePadding[ 4 ];
+  paddingShift[ 2 ] = imagePadding[ 2 ] + imagePadding[ 5 ];
   
   NrrdImageType::SizeType newSize;
   for( unsigned int i = 0; i < 3; i++ )
