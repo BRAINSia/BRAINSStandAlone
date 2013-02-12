@@ -96,7 +96,9 @@ int main(int argc, char *argv[])
     std::cout << "Input Transform: " <<  inputTransform << std::endl;
     std::cout << "Output Image: " <<  outputVolume << std::endl;
     std::cout << "Debug Level: " << debugLevel << std::endl;
-    std::cout << "Image Padding To Each Side (x, y, z): " << imagePadding[0] << "," << imagePadding[1] << "," << imagePadding[2] << std::endl; 
+    std::cout << "Image Padding To Lower (x, y, z) and Upper (x, y, z) Regions: " 
+      << imagePadding[0] << "," << imagePadding[1] << "," << imagePadding[2] << "," 
+      << imagePadding[3] << "," << imagePadding[4] << "," << imagePadding[5] << std::endl; 
     std::cout << "=====================================================" << std::endl;
     }
 
@@ -273,9 +275,13 @@ int main(int argc, char *argv[])
   }
 
   vnl_matrix_fixed< double, 4, 1 > voxelShift;
-  voxelShift[ 0 ][ 0 ] = -1.0 * ( double )( imagePadding[ 0 ] );
-  voxelShift[ 1 ][ 0 ] = -1.0 * ( double )( imagePadding[ 1 ] );
-  voxelShift[ 2 ][ 0 ] = -1.0 * ( double )( imagePadding[ 2 ] );
+  NrrdImageType::SizeType paddingShift;
+  paddingShift[ 0 ] = imagePadding[ 0 ] + imagePadding[ 3 ];
+  paddingShift[ 1 ] = imagePadding[ 1 ] + imagePadding[ 4 ];
+  paddingShift[ 2 ] = imagePadding[ 2 ] + imagePadding[ 5 ];
+  voxelShift[ 0 ][ 0 ] = -1.0 * ( double )( paddingShift[ 0 ] );
+  voxelShift[ 1 ][ 0 ] = -1.0 * ( double )( paddingShift[ 1 ] );
+  voxelShift[ 2 ][ 0 ] = -1.0 * ( double )( paddingShift[ 2 ] );
   voxelShift[ 3 ][ 0 ] = 1.0;
 
   vnl_matrix_fixed< double, 3, 1 > newOriginMatrix = newMatrix * voxelShift;
@@ -289,7 +295,7 @@ int main(int argc, char *argv[])
   NrrdImageType::SizeType newSize;
   for( unsigned int i = 0; i < 3; i++ )
   {
-    newSize[ i ] = inputSize[ i ] + ( imagePadding[ i ] * 2 );
+    newSize[ i ] = inputSize[ i ] + paddingShift[ i ];
   }
 
   std::cout << "Input DWI Image Origin: ( " << inputOrigin[ 0 ] << ", " << inputOrigin[ 1 ] << ", " << inputOrigin[ 2 ] << " )" << std::endl;
