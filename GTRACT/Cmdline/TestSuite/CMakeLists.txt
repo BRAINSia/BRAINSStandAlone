@@ -1,5 +1,4 @@
-
-
+if( FALSE )
 add_executable( gtractCoregBvaluesTests
     ${GTRACT_SOURCE_DIR}/Cmdline/gtractCoregBvaluesPrimary.cxx gtractCoregBvaluesTests.cxx )
 target_link_libraries( gtractCoregBvaluesTests  BRAINSCommonLib GTRACTCommon )
@@ -11,7 +10,7 @@ add_executable( gtractCoRegAnatomyTests
 target_link_libraries( gtractCoRegAnatomyTests  BRAINSCommonLib GTRACTCommon )
 set_target_properties(gtractCoRegAnatomyTests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${GTRACT_BINARY_DIR})
 set(GTRACT_CoRegAnatomy_TESTS ${GTRACT_BINARY_DIR}/gtractCoRegAnatomyTests )
-
+endif()
 
 set(GTRACT_TEST_OUTPUT_DIR "${GTRACT_BINARY_DIR}/Testing")
 make_directory(${GTRACT_TEST_OUTPUT_DIR})
@@ -19,7 +18,7 @@ make_directory(${GTRACT_TEST_OUTPUT_DIR})
 set(GTRACT_TEST_INPUT_DIR "${GTRACT_SOURCE_DIR}/Data")
 
 message(warning "${CMAKE_BUNDLE_OUTPUT_DIRECTORY}")
-
+if( FALSE )
 add_test(NAME gtractCoregBvalues_Test COMMAND ${LAUNCH_EXE} $<TARGET_FILE:GTRACT_CoregBvalues_TESTS>
  --compare
   ${GTRACT_SOURCE_DIR}/Data/b0_s.nhdr
@@ -58,4 +57,21 @@ add_test(NAME gtractCoRegAnatomy_Bspline_Test COMMAND ${LAUNCH_EXE} $<TARGET_FIL
      --gridSize 18,6,18
      --spatialScale 10
 )
+endif()
+# ResampleDWIInPlace
+# ==================
+MakeTestDriverFromSEMTool(gtractResampleDWIInPlace gtractResampleDWIInPlaceTest.cxx)
 
+set(GTRACT_EXEC gtractResampleDWIInPlace)
+set(CURRENT_TEST ${GTRACT_EXEC}_rot30LR)
+ExternalData_add_test(${PROJECT_NAME}FetchData NAME ${CURRENT_TEST}
+  COMMAND ${LAUNCH_EXE} $<TARGET_FILE:gtractResampleDWIInPlaceTestDriver>
+  --compare DATA{${TestData_DIR}/${CURRENT_TEST}.baseline.nrrd}
+            ${CMAKE_CURRENT_BINARY_DIR}/${CURRENT_TEST}.result.nrrd
+  gtractResampleDWIInPlaceTest
+  --inputVolume DATA{${TestData_DIR}/dwi.nrrd}
+  --inputTransform DATA{${TestData_DIR}/rot30LR.mat}
+  --imagePadding 18,18,15,18,18,15
+  --outputVolume ${CMAKE_CURRENT_BINARY_DIR}/${CURRENT_TEST}.result.nrrd
+  --debugLevel 50
+)
