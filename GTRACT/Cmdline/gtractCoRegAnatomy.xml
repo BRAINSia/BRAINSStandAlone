@@ -15,7 +15,7 @@
     <label>Input Image Parameters</label>
     <description>Parameters for specifying the Nrrd vector image to fit to the anatomical image</description>
 
-    <image fileExtensions=".nrrd">
+    <image fileExtensions=".nrrd,.nhdr">
       <name>inputVolume</name>
       <longflag>inputVolume</longflag>
       <description>Required: input vector image file name. It is recommended that the input volume is the skull stripped baseline image of the DWI scan.</description>
@@ -23,7 +23,7 @@
       <channel>input</channel>
     </image>
 
-    <image type="scalar" fileExtensions=".nrrd">
+    <image type="scalar" fileExtensions=".nrrd,.nhdr">
       <name>inputAnatomicalVolume</name>
       <longflag>inputAnatomicalVolume</longflag>
       <description>Required: input anatomical image file name. It is recommended that that the input anatomical image has been skull stripped and has the same orientation as the DWI scan.</description>
