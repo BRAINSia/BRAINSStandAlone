@@ -49,8 +49,6 @@ int main( int argc, char * argv[] )
   // Create all of the classes we will need
   vtkSmartPointer<vtkPolyDataReader> reader =
       vtkSmartPointer<vtkPolyDataReader>::New();
-  vtkSmartPointer<vtkPolyData> surface_in =
-	  vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPolyData> island =
 	  vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkMaskLabel> mask =
@@ -75,7 +73,7 @@ int main( int argc, char * argv[] )
   //read the label surface
   reader->SetFileName(inputSurfaceFile.c_str());
   reader->Update();
-  surface_in = reader->GetOutput();
+  vtkSmartPointer<vtkPolyData> surface_in = reader->GetOutput();
 
   vtkDataArray *labelArray = surface_in->GetPointData()->GetScalars();
 

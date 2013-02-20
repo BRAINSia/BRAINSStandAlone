@@ -58,9 +58,7 @@ unsigned int
 FastMarchingCostFunction
 ::GetNumberOfParameters() const
 {
-  unsigned int size = 0;
-
-  size = CostImageDimension;
+  unsigned int size = CostImageDimension;
   return size;
   // return SpaceDimension;
 }
@@ -135,13 +133,12 @@ FastMarchingCostFunction // < TCostImage>
   FVector neighOffset;              // vector representation of neighborhood
                                     // offsets
   FVector normal;   normal.fill(0); // normal used for derivative
-  double  value = 0.0;              // Cost Function solution
 
   CostImageSpacingType spacing = m_CostImage->GetSpacing();
 
   initialCost = m_CostIP->EvaluateAtContinuousIndex(inputIndex);
 
-  value = initialCost;
+  double value = initialCost; // Cost Function solution
 
   // Get complete neighborhood of selected point to calculate normal (direction)
 
