@@ -434,8 +434,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
     this->m_AtlasToSubjectTransform = this->m_AtlasToSubjectInitialTransform;
     atlasToSubjectRegistrationHelper->SetCurrentGenericTransform(m_AtlasToSubjectTransform);
     const unsigned int atlasReferenceImageIndex = 0;
-      {
-        {   // Register all atlas images to first image
+      {   // Register all atlas images to first image
           { // Set the fixed and moving image
           atlasToSubjectRegistrationHelper->SetFixedVolume(m_IntraSubjectOriginalImageList[atlasReferenceImageIndex]);
           atlasToSubjectRegistrationHelper->SetMovingVolume(m_AtlasOriginalImageList[atlasReferenceImageIndex]);
@@ -607,7 +606,7 @@ AtlasRegistrationMethod<TOutputPixel, TProbabilityPixel>
                      << " " << m_AtlasToSubjectTransform->GetParameters() <<   std::endl );
           }
         }
-      } // End generating the best initial transform for atlas T1 to subject T1
+      // End generating the best initial transform for atlas T1 to subject T1
 #if 0
     //Update the registration with all the other non-primary images.
       {

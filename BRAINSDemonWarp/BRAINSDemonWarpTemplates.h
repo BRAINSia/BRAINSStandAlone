@@ -552,7 +552,7 @@ void ThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     {
     std::cout << "Caught an ITK exception: " << std::endl;
     std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-    throw err;
+    throw;
     }
   catch( ... )
     {
@@ -982,7 +982,7 @@ void VectorThirionFunction(const struct BRAINSDemonWarpAppParameters & command)
     {
     std::cout << "Caught an ITK exception: " << std::endl;
     std::cout << err << " " << __FILE__ << " " << __LINE__ << std::endl;
-    throw err;
+    throw;
     }
   catch( ... )
     {
