@@ -132,10 +132,8 @@ main(int argc, char *argv[])
   //
   // Images
   //
-  InputImageType::Pointer imageInX = InputImageType::New();
-  imageInX = rescaler1->GetOutput();
-  InputImageType::Pointer imageInY = InputImageType::New();
-  imageInY = rescaler2->GetOutput();
+  const InputImageType::ConstPointer imageInX = rescaler1->GetOutput();
+  const InputImageType::ConstPointer imageInY = rescaler2->GetOutput();
 
   //
   // Start Iterator
@@ -151,7 +149,7 @@ main(int argc, char *argv[])
   // * Iterator For Image
   //
 
-  itk::ImageRegionIterator<InputImageType> it (imageInX,
+  itk::ImageRegionConstIterator<InputImageType> it (imageInX,
                                                imageInX->GetLargestPossibleRegion() );
 
   InputImageType::SizeType imageInYSize = imageInY->GetLargestPossibleRegion().GetSize();
