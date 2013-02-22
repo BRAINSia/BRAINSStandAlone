@@ -79,6 +79,7 @@ LogisticRegression<TSampleType>::LogisticRegression(const unsigned int featureCo
   this->m_problem.y = new int [totalSamples];
   this->m_problem.x = new struct feature_node * [this->m_problem.l];
   this->m_featureNodes = new struct feature_node [this->m_problem.n*this->m_problem.l];
+  this->m_model = NULL;
 }
 
 template <typename TSampleType>
@@ -103,6 +104,7 @@ LogisticRegression<TSampleType>::LogisticRegression (const LogisticRegression & 
   this->m_problem.y = new int [LR.m_totalSamples];
   this->m_problem.x = new struct feature_node * [LR.m_problem.l];
   this->m_featureNodes = new struct feature_node [LR.m_problem.n*LR.m_problem.l];
+  this->m_model = NULL;
 }
 
 template <typename TSampleType>
