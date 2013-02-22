@@ -116,8 +116,7 @@ int main( int argc, char **argv )
 	  ici->SetOutputOrigin( 0, 0, 0 );
 	  ici->Update();
 
-	  vtkTransform * transformIJKtoRAS = NULL;
-	  transformIJKtoRAS = vtkTransform::New();
+	  vtkTransform::Pointer transformIJKtoRAS = vtkTransform::New();
 	  transformIJKtoRAS->SetMatrix(reader->GetRasToIjkMatrix());
 	  transformIJKtoRAS->Inverse();
 
@@ -195,8 +194,7 @@ int main( int argc, char **argv )
   convertor->SetPolyData(surface);
   convertor->Update();
 
-  MeshType::Pointer mesh = MeshType::New();
-  mesh = convertor->GetOutput();
+  MeshType::Pointer mesh = convertor->GetOutput();
   mesh -> DisconnectPipeline();
 
   //decimate the surface if requires

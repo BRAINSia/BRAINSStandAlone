@@ -55,7 +55,6 @@ QuadEdgeMeshClampScalarsFilter< TInputMesh, TOutputMesh >
   
   OutputPointDataContainerPointer outputPointData = this->GetOutput()->GetPointData();
 
-  OutputPointDataContainerIterator outputDataItr = outputPointData->Begin();
   OutputPointDataContainerIterator outputDataEnd = outputPointData->End();
   
   InputPointDataContainerConstPointer inputPointData = this->GetInput()->GetPointData();
@@ -66,7 +65,7 @@ QuadEdgeMeshClampScalarsFilter< TInputMesh, TOutputMesh >
   // Clamp the output scalars when needed
   //
       
-  outputDataItr = outputPointData->Begin();
+  OutputPointDataContainerIterator outputDataItr = outputPointData->Begin();
   while( outputDataItr != outputDataEnd )
     {
     if (this->m_ClampMin || this->m_ClampMax)

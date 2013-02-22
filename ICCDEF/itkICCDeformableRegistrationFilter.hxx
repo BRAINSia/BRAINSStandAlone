@@ -774,10 +774,6 @@ ICCDeformableRegistrationFilter<TFixedImage, TMovingImage, TDisplacementField>
 ::CalculateChange()
 {
   // int threadCount;
-  TimeStepType dt;
-
-  dt = 1.0;
-
   ICCDeformableFunctionType *f = this->GetForwardRegistrationFunctionType();
   void *                     globalData;
   globalData = f->GetGlobalDataPointer();
@@ -793,11 +789,10 @@ ICCDeformableRegistrationFilter<TFixedImage, TMovingImage, TDisplacementField>
   m_Coefficients[1] = b->GetCoefficient();
 
   f->ComputeMetric(globalData);
-  dt = f->ComputeGlobalTimeStep(globalData);
   f->ReleaseGlobalDataPointer(globalData);
 
   b->ComputeMetric(globalData1);
-  dt = b->ComputeGlobalTimeStep(globalData1);
+  TimeStepType dt = b->ComputeGlobalTimeStep(globalData1);
   b->ReleaseGlobalDataPointer(globalData1);
 
   return dt;
@@ -860,13 +855,10 @@ ICCDeformableRegistrationFilter<TFixedImage, TMovingImage, TDisplacementField>
   invfftIC21->SetInput(sub21->GetOutput() );
   invfftIC21->Update();
 
-  DisplacementFieldFFTPointer invfft0 = DisplacementFieldFFTType::New();
-  DisplacementFieldFFTPointer invfft1 = DisplacementFieldFFTType::New();
-
-  invfft0 = invfftIC12->GetOutput();
+  DisplacementFieldFFTPointer invfft0 = invfftIC12->GetOutput();
   invfft0->DisconnectPipeline();
 
-  invfft1 = invfftIC21->GetOutput();
+  DisplacementFieldFFTPointer invfft1 = invfftIC21->GetOutput();
   invfft1->DisconnectPipeline();
 
   if( m_InverseWeight > 0.0 )
