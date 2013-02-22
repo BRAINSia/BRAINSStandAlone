@@ -25,7 +25,7 @@ vtkFSSurfaceScalarReader* vtkFSSurfaceScalarReader::New()
   vtkObject* ret = vtkObjectFactory::CreateInstance("vtkFSSurfaceScalarReader");
   if(ret)
     {
-    return (vtkFSSurfaceScalarReader*)ret;
+    return dynamic_cast<vtkFSSurfaceScalarReader*> ret;
     }
   // If the factory was unable to create the object, then create it here.
   return new vtkFSSurfaceScalarReader;

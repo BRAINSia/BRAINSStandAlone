@@ -121,9 +121,6 @@ ExtractSiemensDiffusionInformation(const std::string & tagString,
   unsigned int vm = ConvertFromCharPtr(infoAsCharPtr+64);
   {
   std::string vr = infoAsString.substr( 68, 2 );
-  int syngodt = ConvertFromCharPtr(infoAsCharPtr+72);
-  int nItems = ConvertFromCharPtr(infoAsCharPtr+76);
-  int localDummy = ConvertFromCharPtr(infoAsCharPtr+80);
 
   //std::cout << "\tName String: " << nameString << std::endl;
   //std::cout << "\tVR: " << vr << std::endl;
@@ -149,9 +146,6 @@ ExtractSiemensDiffusionInformation(const std::string & tagString,
       vm = ConvertFromCharPtr(infoAsCharPtr+64);
       vr = infoAsString.substr( 68, 2 );
       if (vr == "FD") loop = false;
-      syngodt = ConvertFromCharPtr(infoAsCharPtr+72);
-      nItems = ConvertFromCharPtr(infoAsCharPtr+76);
-      localDummy = ConvertFromCharPtr(infoAsCharPtr+80);
       //std::cout << "\tVR: " << vr << std::endl;
       //std::cout << "\tVM: " << vm << std::endl;
       }
@@ -483,7 +477,6 @@ int main(int argc, char *argv[])
   else
     {
       // FSL output of gradients & BValues
-      std::string fslPrefix;
       size_t extensionPos;
       extensionPos = outputVolumeHeaderName.find(".nii.gz");
       if(extensionPos == std::string::npos)
@@ -1152,7 +1145,6 @@ int main(int argc, char *argv[])
         std::cout << "Number of Volumes: " << nVolume << std::endl;
         std::cout << "Number of Slices in each volume: " << nSliceInVolume << std::endl;
 
-        std::string tmpString = "";
         //NOTE:  Philips interleaves the directions, so the all gradient directions can be
         //determined in the first "nVolume" slices which represents the first slice from each
         //of the gradient volumes.

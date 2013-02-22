@@ -210,7 +210,8 @@ ESMDemonsRegistrationWithMaskFunction<TFixedImage, TMovingImage, TDisplacementFi
 ::ComputeUpdate( const NeighborhoodType & it, void *gd,
                  const FloatOffsetType & itkNotUsed(offset) )
 {
-  GlobalDataStruct *globalData = (GlobalDataStruct *)gd;
+  GlobalDataStruct *globalData = reinterpret_cast<GlobalDataStruct *> (gd);
+  
   PixelType         update;
   IndexType         FirstIndex = this->GetFixedImage()->GetLargestPossibleRegion().GetIndex();
   IndexType         LastIndex = this->GetFixedImage()->GetLargestPossibleRegion().GetIndex()
@@ -499,8 +500,8 @@ void
 ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::ReleaseGlobalDataPointer(void *gd) const
 {
-  GlobalDataStruct *globalData = (GlobalDataStruct *)gd;
-
+  GlobalDataStruct *globalData = reinterpret_cast<GlobalDataStruct *> (gd);
+  
   m_MetricCalculationLock.Lock();
   m_SumOfSquaredDifference += globalData->m_SumOfSquaredDifference;
   m_NumberOfPixelsProcessed += globalData->m_NumberOfPixelsProcessed;

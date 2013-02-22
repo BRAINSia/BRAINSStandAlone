@@ -71,7 +71,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "ProbabilityMap" )
@@ -99,7 +99,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "Registration" )
@@ -127,7 +127,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "RegistrationConfiguration" )
@@ -149,7 +149,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "Mask" )
@@ -169,7 +169,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "Image" )
@@ -189,7 +189,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "SpatialLocation" )
@@ -209,7 +209,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "TrainingVectorConfiguration" || Name == "NeuralNetParams" ) // TODO Change NeuralNet Param
@@ -240,7 +240,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "RandomForestParameters" )
@@ -268,7 +268,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "ANNParameters" )
@@ -307,7 +307,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else if( Name == "ApplyModel" )
@@ -327,7 +327,7 @@ XMLConfigurationFileParser::StartElement(void *userData,
     catch( BRAINSCutExceptionStringHandler& ex )
       {
       std::cerr << ex << std::endl;
-      throw ex;
+      throw;
       }
     }
   else

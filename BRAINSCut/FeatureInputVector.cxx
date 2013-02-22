@@ -557,15 +557,15 @@ void
 FeatureInputVector
 ::NormalizationOfVector( InputVectorMapType& currentFeatureVector, std::string ROIName )
 {
-  minmaxPairVectorType currentMinmaxPairVector = m_minmax.find(ROIName)->second;
-
   for( InputVectorMapType::iterator eachInputVector = currentFeatureVector.begin();
        eachInputVector != currentFeatureVector.end();
        ++eachInputVector )
     {
     InputVectorType::iterator featureElementIterator = (eachInputVector->second).begin();
     featureElementIterator += (m_roiIDsInOrder.size() + m_spatialLocations.size() );
-    /*for( minmaxPairVectorType::const_iterator m_minmaxIt = currentMinmaxPairVector.begin();
+    /*
+    minmaxPairVectorType currentMinmaxPairVector = m_minmax.find(ROIName)->second;
+      for( minmaxPairVectorType::const_iterator m_minmaxIt = currentMinmaxPairVector.begin();
          m_minmaxIt != currentMinmaxPairVector.end();
          ++m_minmaxIt )
       {
@@ -579,7 +579,8 @@ FeatureInputVector
             }
         ++featureElementIterator;
         }
-      }*/
+      }
+    */
     ImageTypeNo currentImgType=0;
     for( WorkingImageVectorType::const_iterator eachTypeOfImage = m_imagesOfInterestInOrder.begin();
          eachTypeOfImage != m_imagesOfInterestInOrder.end(); 
