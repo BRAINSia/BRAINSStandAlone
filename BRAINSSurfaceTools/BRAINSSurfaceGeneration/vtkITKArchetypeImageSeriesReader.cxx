@@ -350,7 +350,6 @@ void vtkITKArchetypeImageSeriesReader::ExecuteInformation()
     {
       typedef itk::GDCMSeriesFileNames DICOMNameGeneratorType;
       DICOMNameGeneratorType::Pointer inputImageFileGenerator = DICOMNameGeneratorType::New();
-      std::string fileNameName = itksys::SystemTools::GetFilenameName( this->Archetype );
       std::string fileNamePath = itksys::SystemTools::GetFilenamePath( this->Archetype );
       if (fileNamePath == "")
       {
@@ -778,7 +777,6 @@ const char* vtkITKArchetypeImageSeriesReader::GetNthFileName ( int idxSeriesInst
 {
   int nFiles = this->AllFileNames.size();
   int count = 0;
-  std::string FirstName;
   for (int k = 0; k < nFiles; k++)
   {
   if ( (this->IndexSeriesInstanceUIDs[k] != idxSeriesInstanceUID && this->IndexSeriesInstanceUIDs[k] >= 0 && idxSeriesInstanceUID >= 0) ||
@@ -799,7 +797,6 @@ const char* vtkITKArchetypeImageSeriesReader::GetNthFileName ( int idxSeriesInst
       }
       else if( count == 0 )
       {
-        FirstName = this->AllFileNames[k];
         count ++;
       }
       else

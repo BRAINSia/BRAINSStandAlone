@@ -43,7 +43,6 @@ int main(int argc, char * *argv)
 
   BRAINSCutGenerateRegistrations m_registrationGenerator( m_dataHandler );
   const bool                     m_applyDataSetOff = false;
-  const bool                     m_applyDataSetOn = true;
   const bool                     m_shuffleTrainVector = (NoTrainingVectorShuffling != true );
 
   std::cout << "m_shuffleTrainVector::" << m_shuffleTrainVector << std::endl;
@@ -112,6 +111,7 @@ int main(int argc, char * *argv)
     {
     try
       {
+      const bool m_applyDataSetOn = true;
       m_registrationGenerator.SetAtlasToSubjectRegistrationOn( true );
       m_registrationGenerator.SetDataSet( m_applyDataSetOn );
       m_registrationGenerator.GenerateRegistrations();

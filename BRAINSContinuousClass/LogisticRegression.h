@@ -16,6 +16,7 @@ private:
 
 public:
   LogisticRegressionSample(const unsigned int featureCount);
+  LogisticRegressionSample(const LogisticRegressionSample & LRS);
   ~LogisticRegressionSample();
   double GetLabelProbability(unsigned int const &);
   void SetSample(std::vector<TSampleType> &);
@@ -45,6 +46,7 @@ private:
 
 public:
   LogisticRegression (const unsigned int featureCount, const unsigned int sampleCount);
+  LogisticRegression (const LogisticRegression & LR);
   ~LogisticRegression ();
   void AddLabeledSample(LogisticRegressionSample<TSampleType> const & );
   void TrainModel();

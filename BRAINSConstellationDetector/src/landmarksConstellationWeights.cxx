@@ -59,7 +59,6 @@ int main( int argc, char *argv[] )
 	double d0, d1, d2, dist;
     LandmarksDistanceMapType LandmarksDistanceMap;
 	LandmarksValueMapType LandmarksAverageMap;  //for average
-	LandmarksValueMapType LandmarksVarianceMap; //for variance
 	LandmarksValueMapType LandmarksSTDMap;      //for standard deviation
     LandmarksValueMapType LandmarksWeightMap;   //for weights
     LandmarksMapTypeVec LandmarksMapVector;
@@ -178,7 +177,6 @@ int main( int argc, char *argv[] )
         {
             sum += pow( LandmarksDistanceMap[name][i]-LandmarksAverageMap[name], 2);
         }
-        LandmarksVarianceMap[name] = sum/k;
         LandmarksSTDMap[name] = sqrt(sum/k);
     }
 
