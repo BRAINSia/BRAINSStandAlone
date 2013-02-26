@@ -7,6 +7,7 @@
 #include "itkImageRegionIterator.h"
 #include "GenericTransformImage.h"
 #include "itkTranslationTransform.h"
+#include "itkMatrix.h"
 
 //
 // transform ranking,
@@ -18,6 +19,30 @@
 // Affine 4
 // BSpline 5
 // BSplineROI 5
+
+void
+TransformConvertWarning(GenericTransformType *inputXfrm,
+                           const std::string &targetClassName)
+{
+      std::cout << "Converting transform of type "
+                << inputXfrm->GetTransformTypeAsString()
+                << " to "
+                << targetClassName
+                << std::endl
+                << "WARNING: The output transform is not equivalent to the input!"
+                << std::endl;
+}
+
+void
+TransformConvertError(GenericTransformType *inputXfrm,
+                           const std::string &targetClassName)
+{
+      std::cerr << "Can't convert transform of type "
+                << inputXfrm->GetTransformTypeAsString()
+                << " to "
+                << targetClassName
+                << std::endl;
+}
 
 inline
 bool
@@ -100,6 +125,21 @@ ExtractTransform(VersorRigid3DTransformType::Pointer &result,
     result->SetCenter(versorXfrm->GetCenter());
     return true;
     }
+  // affine == rigid components only
+  if(IsClass(source,"AffineTransform"))
+    {
+    typedef AffineTransformType::Superclass MatrixOffsetTransformType;
+    const MatrixOffsetTransformType *matBasePtr =
+      dynamic_cast<const MatrixOffsetTransformType *>(source);
+    if(matBasePtr == 0)
+      {
+      return false;
+      }
+    result->SetCenter(matBasePtr->GetCenter());
+    result->SetMatrix(matBasePtr->GetMatrix());
+    return true;
+    }
+
   return false;
 }
 
@@ -207,16 +247,6 @@ ExtractTransform(BSplineTransformType::Pointer &result,
   return true;
 }
 
-void
-TransformConvertError(GenericTransformType *inputXfrm,
-                           const std::string &targetClassName)
-{
-      std::cerr << "Can't convert transform of type "
-                << inputXfrm->GetTransformTypeAsString()
-                << " to "
-                << targetClassName
-                << std::endl;
-}
 
 #define CHECK_PARAMETER_IS_SET(parameter,message) \
   if(parameter == "")                             \
@@ -333,6 +363,11 @@ int main(int argc, char *argv[])
     {
     VersorRigid3DTransformType::Pointer versorRigidXfrm =
       VersorRigid3DTransformType::New();
+    if(IsClass(inputXfrm, "AffineTransform"))
+      {
+      // WARNING: possible truncation of transform!!!
+      TransformConvertWarning(inputXfrm, "VersorRigid3D Transform");
+      }
     if(ExtractTransform(versorRigidXfrm,inputXfrm.GetPointer()) == false)
       {
       TransformConvertError(inputXfrm,"VersorRigid3D Transform");
