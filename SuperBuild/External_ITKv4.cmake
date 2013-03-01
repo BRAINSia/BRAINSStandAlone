@@ -125,7 +125,7 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
   ### --- End Project specific additions
 #  message(FATAL_ERROR ":${cmakeversion_external_update}:")
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 3c03e162c7e287b81115e2175898482998b50a34) #2013-01-30 New FFTW DCMTK for DWIConvert with clang
+  set(${proj}_GIT_TAG 0a5e0992cf46a9199c6078f3939b8c2d56149cc8) #2013-01-30 New FFTW DCMTK for DWIConvert with clang
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
