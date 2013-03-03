@@ -1,4 +1,0 @@
-StandardBRAINSBuildMacro(NAME BRAINSSurfaceStat
-ADDITIONAL_SRCS vtkFSSurfaceReader vtkFSSurfaceScalarReader
-TARGET_LIBRARIES ${VTK_LIBRARIES})
-
