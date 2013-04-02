@@ -713,6 +713,7 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                 LinearSubjectToAtlasANTsApplyTransforms = dict()
                 MultiLabelSubjectToAtlasANTsApplyTransforms = dict()
                 Subj2Atlas_DS = dict()
+                Subj2AtlasTransforms_DS = dict()
                 FSBASE_DS = dict()
 
                 if 'SEGMENTATION' in WORKFLOW_COMPONENTS:  # Run the ANTS Registration from Atlas to Subject for BCut spatial priors propagation.
@@ -990,6 +991,17 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                             (r'_LinearSubjectToAtlasANTsApplyTransforms_[^/]*', r'' + sessionid + '/')
                             ]
                     baw200.connect(LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'output_image', Subj2Atlas_DS[sessionid], 'SubjectToAtlasWarped.@linear_output_images')
+
+                    Subj2AtlasTransforms_DSName = "SubjectToAtlasTransforms_DS_" + str(sessionid)
+                    Subj2AtlasTransforms_DS[sessionid] = pe.Node(nio.DataSink(), name=Subj2AtlasTransforms_DSName)
+                    Subj2AtlasTransforms_DS[sessionid].overwrite = GLOBAL_DATA_SINK_REWRITE
+                    Subj2AtlasTransforms_DS[sessionid].inputs.base_directory = ExperimentBaseDirectoryResults
+                    # Subj2AtlasTransforms_DS[sessionid].inputs.regexp_substitutions = GenerateSubjectOutputPattern(subjectid)
+                    Subj2AtlasTransforms_DS[sessionid].inputs.regexp_substitutions = [
+                            (r'SubjectToAtlasWarped', r'SubjectToAtlasWarped/' + sessionid + '/')
+                           ]
+                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'composite_transform', Subj2AtlasTransforms_DS[sessionid], 'SubjectToAtlasWarped.@composite_transform')
+                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'inverse_composite_transform', Subj2AtlasTransforms_DS[sessionid], 'SubjectToAtlasWarped.@inverse_composite_transform')
                     # baw200.connect(MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid],'output_image',Subj2Atlas_DS[sessionid],'SubjectToAtlasWarped.@multilabel_output_images')
 
                     print("HACK:  DEBUGGING HERE")
