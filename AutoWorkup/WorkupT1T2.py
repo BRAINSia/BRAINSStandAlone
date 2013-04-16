@@ -884,7 +884,7 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     AntsLabelWarpToSubject[sessionid].inputs.dimension = 3
                     AntsLabelWarpToSubject[sessionid].inputs.output_image = 'warped_hncma_atlas_seg.nii.gz'
                     AntsLabelWarpToSubject[sessionid].inputs.interpolation = "MultiLabel"
-                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'composite_transform',  # check with Hans, why not sessionid???
+                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'composite_transform',
                                     AntsLabelWarpToSubject[sessionid], 'transforms')
                     baw200.connect(PHASE_2_oneSubjWorkflow[sessionid], 'outputspec.t1_average',
                                     AntsLabelWarpToSubject[sessionid], 'reference_image')
@@ -953,8 +953,7 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     LinearSubjectToAtlasANTsApplyTransforms[sessionid] = pe.MapNode(interface=ApplyTransforms(), iterfield=['input_image'], name=LinearSubjectToAtlasANTsApplyTransformsName)
                     LinearSubjectToAtlasANTsApplyTransforms[sessionid].plugin_args = {'template': SGE_JOB_SCRIPT, 'qsub_args': '-S /bin/bash -cwd -pe smp1 1 -l mem_free=1000M -o /dev/null -e /dev/null {QUEUE_OPTIONS}'.format(QUEUE_OPTIONS=CLUSTER_QUEUE), 'overwrite': True}
                     LinearSubjectToAtlasANTsApplyTransforms[sessionid].inputs.interpolation = 'Linear'
-                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'reverse_transforms', LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'transforms')
-                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'reverse_invert_flags', LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'invert_transform_flags')
+                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'inverse_composite_transform', LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'transforms')
                     baw200.connect(BAtlas[subjectid], 'template_t1', LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'reference_image')
                     baw200.connect(MergeSessionSubjectToAtlas[sessionid], 'out', LinearSubjectToAtlasANTsApplyTransforms[sessionid], 'input_image')
 
@@ -972,8 +971,7 @@ def WorkupT1T2(subjectid, mountPrefix, ExperimentBaseDirectoryCache, ExperimentB
                     MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid] = pe.MapNode(interface=ApplyTransforms(), iterfield=['input_image'], name=MultiLabelSubjectToAtlasANTsApplyTransformsName)
                     MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid].plugin_args = {'template': SGE_JOB_SCRIPT, 'qsub_args': '-S /bin/bash -cwd -pe smp1 1 -l mem_free=1000M -o /dev/null -e /dev/null {QUEUE_OPTIONS}'.format(QUEUE_OPTIONS=CLUSTER_QUEUE), 'overwrite': True}
                     MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid].inputs.interpolation = 'MultiLabel'
-                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'reverse_transforms', MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid], 'transforms')
-                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'reverse_invert_flags', MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid], 'invert_transform_flags')
+                    baw200.connect(AtlasToSubjectantsRegistration[sessionid], 'inverse_composite_transform', MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid], 'transforms')
                     baw200.connect(BAtlas[subjectid], 'template_t1', MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid], 'reference_image')
                     baw200.connect(MergeMultiLabelSessionSubjectToAtlas[sessionid], 'out', MultiLabelSubjectToAtlasANTsApplyTransforms[sessionid], 'input_image')
                     #}
