@@ -28,6 +28,7 @@ class FSScriptInputSpec(CommandLineInputSpec):
 ## LONG and BASE flags
     base_template_id = traits.Str(argstr='--base_template_id %s', desc='The name of the result subdirectory (not full path) for the base/template processing to occur')
 
+
 class FSScriptOutputSpec(TraitedSpec):
     T1_out = File(exist=True, desc='brain.mgz')
     label1_out = File(exist=True, desc='aparc+aseg.nii.gz')
@@ -37,15 +38,17 @@ class FSScriptOutputSpec(TraitedSpec):
     ## HACK: TEST
     subj_session_id = traits.Str(desc='Subject_Session used for "-subjid <> in cross sectional and used in -long <> for longitudinal')
 
+
 class FSScript(CommandLine):
     """
     Examples
     --------
     """
-    import inspect, os
-    this_file = inspect.getfile(inspect.currentframe()) # script filename (usually with path)
-    this_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script)
-    _cmd = '{0} {1}'.format(sys.executable, os.path.join(this_path,'fsscript.py'))
+    import inspect
+    import os
+    this_file = inspect.getfile(inspect.currentframe())  # script filename (usually with path)
+    this_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script)
+    _cmd = '{0} {1}'.format(sys.executable, os.path.join(this_path, 'fsscript.py'))
     # _cmd = 'fsscript.py'
     input_spec = FSScriptInputSpec
     output_spec = FSScriptOutputSpec
